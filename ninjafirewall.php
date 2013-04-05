@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true web application firewall for WordPress.
-Version: 1.0.0
+Version: 1.0.1
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -18,10 +18,10 @@ License: GPLv2 or later
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-03-25 01:28:51                                       |
+ | REVISION: 2013-04-05 00:00:26                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.0.0' );
+define( 'NFW_ENGINE_VERSION', '1.0.1' );
 define( 'NFW_RULES_VERSION',  '20130325' );
  /*
  +---------------------------------------------------------------------+
@@ -43,7 +43,7 @@ if (! defined( 'ABSPATH' ) ) { die( 'Forbidden' ); }
 if (! session_id() ) { session_start(); }
 
 
-/* ================================================================== */	/* 2013-03-14 00:16:36 */
+/* ================================================================== */	/* 2013-04-05 00:01:19 */
 
 function nfw_activate() {
 
@@ -60,6 +60,15 @@ function nfw_activate() {
 	if ( version_compare( PHP_VERSION, '5.3.0', '<' ) ) {
 		exit( "NinjaFirewall requires <strong>PHP 5.3 or greater</strong> " . "
 		but your current version is " . PHP_VERSION );
+	}
+
+	// Yes, there are still some people who have SAFE_MODE enabled with
+	// PHP 5.3 ! We must check that right away otherwise the user may lock
+	// himself/herself out of the site as soon as NinjaFirewall will be
+	// activated :
+	if ( ini_get( 'safe_mode' ) ) {
+		exit( "You have SAFE_MODE enabled. Please <strong>disable it</strong>, " .
+		"it is deprecated as of PHP 5.3.0 (see http://php.net/safe-mode)" );
 	}
 
 	// No support for multisite installation :
@@ -99,6 +108,27 @@ function nfw_deactivate() {
 }
 
 register_deactivation_hook( __FILE__, 'nfw_deactivate' );
+
+/* ================================================================== */	/* 2013-04-04 18:22:52 */
+
+function nfw_upgrade() {
+
+	// Only used when upgrading NinjaFirewall :
+
+	global $nfw_options;
+
+	if (! isset( $nfw_options ) ) {
+		$nfw_options = get_option( 'nfw_options' );
+	}
+
+	// update engine version number if needed :
+	if ( ( $nfw_options ) && ( $nfw_options['engine_version'] != NFW_ENGINE_VERSION ) ) {
+		$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
+		update_option( 'nfw_options', $nfw_options);
+	}
+}
+
+add_action('admin_init', 'nfw_upgrade' );
 
 /* ================================================================== */	/* 2013-03-12 16:14:32 */
 

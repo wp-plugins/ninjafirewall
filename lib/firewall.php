@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-03-22 18:57:06                                       |
+ | REVISION: 2013-04-05 00:00:15                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -309,7 +309,7 @@ function nfw_check_upload() {
 	}
 }
 
-/* ================================================================== */	/* 2013-03-04 18:28:38 */
+/* ================================================================== */	/* 2013-04-05 00:10:29 */
 
 function nfw_check_request( $nfw_rules ) {
 
@@ -344,11 +344,11 @@ function nfw_check_request( $nfw_rules ) {
 			if ( (($sub_value[0] == 'POST') && ( empty($nfw_options['post_scan']))) || (($sub_value[0] == 'GET' ) && ( empty($nfw_options['get_scan']))) || (($sub_value[0] == 'COOKIE' ) && ( empty($nfw_options['cookies_scan']))) ) { continue; }
 			if ( @isset($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) {
 				if ( is_array($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) {
-					$res = flatten( "\n", $GLOBALS['_' . $sub_value[0]] [$sub_value[1]] );
+					$res = nfw_flatten( "\n", $GLOBALS['_' . $sub_value[0]] [$sub_value[1]] );
 					$GLOBALS['_' . $sub_value[0]] [$sub_value[1]] = $res;
 					$rules_values['what'] = '(?m:'. $rules_values['what'] .')';
 				}
-				if (! $reqvalue) { continue; }
+				if (! $GLOBALS['_' . $sub_value[0]][$sub_value[1]] ) { continue; }
 				if ( preg_match('`'. $rules_values['what'] .'`', $GLOBALS['_' . $sub_value[0]][$sub_value[1]]) ) {
 					nfw_log($rules_values['why'], $sub_value[0]. ':' .$sub_value[1]. ' = ' .$GLOBALS['_' . $sub_value[0]][$sub_value[1]], $rules_values['level'], $rules_id);
 					nfw_block();
