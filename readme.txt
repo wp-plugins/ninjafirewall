@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: firewall, security, protection, malware, virus, hacking, attack, admin
 Requires at least: 3.3.0
 Tested up to: 3.5.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,7 +24,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Hides PHP error and notice messages
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers)
 * Blocks direct access to PHP scripts located inside specific directories
-* Whitelist option for WordPress administrator(s), server IP, localhost and private IP address spaces
+* Whitelist option for WordPress administrator(s), localhost and private IP address spaces
 * Configurable HTTP return code and message
 * Activity log and statistics
 * Debugging mode
@@ -56,6 +56,11 @@ NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functio
 
 == Upgrade Notice ==
 
+= 1.0.2 =
+* Updated firewall rules.
+* Added extensive contextual help to the Firewall Policies page.
+* Fixed some code, minor errors and typos.
+
 = 1.0.1 =
 * Fixed a `Call to undefined function flatten()` error message.
 * NinjaFirewall will warn and refuse to install if `SAFE_MODE` is enabled with PHP 5.3+.
@@ -64,6 +69,11 @@ NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functio
 * Initial release.
 
 == Changelog ==
+
+= 1.0.2 =
+* Updated firewall rules.
+* Added extensive contextual help to the Firewall Policies page.
+* Fixed some code, minor errors and typos.
 
 = 1.0.1 =
 * Fixed a `Call to undefined function flatten()` error message.

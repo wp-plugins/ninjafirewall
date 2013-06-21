@@ -3,12 +3,12 @@
  +---------------------------------------------------------------------+
  | NinjaFirewall (WordPress edition)                                   |
  |                                                                     |
- | (c)2012-2013 Jerome Bruandet / NinTechNet                           |
+ | (c)2012-2013 NinTechNet                                             |
  | <wordpress@nintechnet.com>                                          |
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-04-05 00:00:15                                       |
+ | REVISION: 2013-06-21 13:55:50                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -164,7 +164,7 @@ if (! empty($nfw_options['php_errors']) ) {
 	@ini_set('display_errors', 0);
 }
 
-// Ignore server/localhost IPs & private IP address spaces ?
+// Ignore localhost & private IP address spaces ?
 if ( (! empty($nfw_options['allow_local_ip']) ) && (preg_match("/^(?:::ffff:)?(?:10|172\.(?:1[6-9]|2[0-9]|3[0-1])|192\.168)\./", $_SERVER['REMOTE_ADDR'])) ) {
 	$table_prefix = '';
 	$mysqli->close();
@@ -270,7 +270,7 @@ if ( (! empty($nfw_options['php_self']) ) && (! empty($_SERVER['PHP_SELF'])) ) {
 // That's all !
 return;
 
-/* ================================================================== */	/* 2013-03-03 01:15:59 */
+/* ================================================================== */
 
 function nfw_check_upload() {
 
@@ -309,7 +309,7 @@ function nfw_check_upload() {
 	}
 }
 
-/* ================================================================== */	/* 2013-04-05 00:10:29 */
+/* ================================================================== */
 
 function nfw_check_request( $nfw_rules ) {
 
@@ -340,9 +340,9 @@ function nfw_check_request( $nfw_rules ) {
 			}
 
 			// Specific POST:xx, GET:xx, COOKIE:xxx requests :
-			$sub_value = explode(':', $where, 2);
+			$sub_value = explode(':', $where);
 			if ( (($sub_value[0] == 'POST') && ( empty($nfw_options['post_scan']))) || (($sub_value[0] == 'GET' ) && ( empty($nfw_options['get_scan']))) || (($sub_value[0] == 'COOKIE' ) && ( empty($nfw_options['cookies_scan']))) ) { continue; }
-			if ( @isset($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) {
+			if ( (! empty($sub_value[1]) ) && ( @isset($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) ) {
 				if ( is_array($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) {
 					$res = nfw_flatten( "\n", $GLOBALS['_' . $sub_value[0]] [$sub_value[1]] );
 					$GLOBALS['_' . $sub_value[0]] [$sub_value[1]] = $res;
@@ -368,7 +368,7 @@ function nfw_check_request( $nfw_rules ) {
 	}
 }
 
-/* ================================================================== */	/* 2013-03-03 01:15:54 */
+/* ================================================================== */
 
 function nfw_flatten( $glue, $pieces ) {
 
@@ -382,7 +382,7 @@ function nfw_flatten( $glue, $pieces ) {
    return implode($glue, $ret);
 }
 
-/* ================================================================== */	/* 2013-03-03 23:19:56 */
+/* ================================================================== */
 
 function nfw_sanitise( $str, $how, $msg ) {
 
@@ -440,7 +440,7 @@ function nfw_sanitise( $str, $how, $msg ) {
 	}
 }
 
-/* ================================================================== */	/* 2013-03-03 01:16:27 */
+/* ================================================================== */
 
 function nfw_block() {
 
@@ -487,7 +487,7 @@ function nfw_block() {
 
 }
 
-/* ================================================================== */	/* 2013-03-03 22:57:13 */
+/* ================================================================== */
 
 function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 
