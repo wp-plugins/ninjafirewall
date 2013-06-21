@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true web application firewall for WordPress.
-Version: 1.0.1
+Version: 1.0.2
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -13,16 +13,16 @@ License: GPLv2 or later
  +---------------------------------------------------------------------+
  | NinjaFirewall (WordPress edition)                                   |
  |                                                                     |
- | (c)2012-2013 Jerome Bruandet / NinTechNet                           |
+ | (c)2012-2013 NinTechNet                                             |
  | <wordpress@nintechnet.com>                                          |
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-04-05 00:00:26                                       |
+ | REVISION: 2013-06-21 18:49:53                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.0.1' );
-define( 'NFW_RULES_VERSION',  '20130325' );
+define( 'NFW_ENGINE_VERSION', '1.0.2' );
+define( 'NFW_RULES_VERSION',  '20130621' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -43,7 +43,7 @@ if (! defined( 'ABSPATH' ) ) { die( 'Forbidden' ); }
 if (! session_id() ) { session_start(); }
 
 
-/* ================================================================== */	/* 2013-04-05 00:01:19 */
+/* ================================================================== */
 
 function nfw_activate() {
 
@@ -95,12 +95,12 @@ function nfw_activate() {
 
 register_activation_hook( __FILE__, 'nfw_activate' );
 
-/* ================================================================== */	/* 2013-03-13 16:24:04 */
+/* ================================================================== */
 
 function nfw_deactivate() {
 
-	// Disable the firewall (note: NinjaFirewall will keep running in the
-	// background but will not do anything) :
+	// Disable the firewall (NinjaFirewall will keep running
+	// in the background but will not do anything) :
 	$nfw_options = get_option( 'nfw_options' );
 	$nfw_options['enabled'] = 0;
 	update_option( 'nfw_options', $nfw_options);
@@ -109,28 +109,64 @@ function nfw_deactivate() {
 
 register_deactivation_hook( __FILE__, 'nfw_deactivate' );
 
-/* ================================================================== */	/* 2013-04-04 18:22:52 */
+/* ================================================================== */
 
 function nfw_upgrade() {
 
 	// Only used when upgrading NinjaFirewall :
 
 	global $nfw_options;
+	global $nfw_rules;
+	$is_update = 0;
 
 	if (! isset( $nfw_options ) ) {
 		$nfw_options = get_option( 'nfw_options' );
+	}
+	if (! isset( $nfw_rules) ) {
+		$nfw_rules = get_option( 'nfw_rules' );
 	}
 
 	// update engine version number if needed :
 	if ( ( $nfw_options ) && ( $nfw_options['engine_version'] != NFW_ENGINE_VERSION ) ) {
 		$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
+		$is_update = 1;
+	}
+
+	// do we need to update rules as well ?
+	if ( ( $nfw_options ) && ( $nfw_options['rules_version'] < NFW_RULES_VERSION ) ) {
+		// fetch new set of rules :
+		$_POST['nfw_act'] = 'x';
+		require_once( plugin_dir_path(__FILE__) . 'install.php' );
+		$nfw_rules_new = unserialize( nfw_default_rules() );
+
+		foreach ( $nfw_rules_new as $new_key => $new_value ) {
+			foreach ( $new_value as $key => $value ) {
+				// if that rule exists already, we keep its 'on' flag value :
+				if ( ( isset( $nfw_rules[$new_key]['on'] ) ) && ( $key == 'on' ) ) {
+					$nfw_rules_new[$new_key]['on'] = $nfw_rules[$new_key]['on'];
+				}
+			}
+		}
+		$nfw_rules_new[NFW_DOC_ROOT]['what']= $nfw_rules[NFW_DOC_ROOT]['what'];
+		$nfw_rules_new[NFW_DOC_ROOT]['on']	= $nfw_rules[NFW_DOC_ROOT]['on'];
+
+		// update rules... :
+		update_option( 'nfw_rules', $nfw_rules_new);
+		// ...and rules version number :
+		$nfw_options['rules_version'] = NFW_RULES_VERSION;
+		$is_update = 1;
+	}
+
+	// update options ?
+	if ( $is_update ) {
 		update_option( 'nfw_options', $nfw_options);
 	}
+
 }
 
 add_action('admin_init', 'nfw_upgrade' );
 
-/* ================================================================== */	/* 2013-03-12 16:14:32 */
+/* ================================================================== */
 
 function nfw_login_hook( $user_login, $user ) {
 
@@ -155,7 +191,7 @@ function nfw_login_hook( $user_login, $user ) {
 
 add_action( 'wp_login', 'nfw_login_hook', 10, 2 );
 
-/* ================================================================== */	/* 2013-03-12 16:14:44 */
+/* ================================================================== */
 
 function nfw_logout_hook() {
 
@@ -168,7 +204,7 @@ function nfw_logout_hook() {
 
 add_action( 'wp_logout', 'nfw_logout_hook' );
 
-/* ================================================================== */	/* 2013-03-22 19:36:34 */
+/* ================================================================== */
 
 function is_nfw_enabled() {
 
@@ -195,7 +231,7 @@ function is_nfw_enabled() {
 
 }
 
-/* ================================================================== */	/* 2013-03-02 11:26:03 */
+/* ================================================================== */
 
 function ninjafirewall_admin_menu() {
 
@@ -272,7 +308,7 @@ function ninjafirewall_admin_menu() {
 
 add_action( 'admin_menu', 'ninjafirewall_admin_menu' );
 
-/* ================================================================== */	/* 2013-03-02 11:26:05 */
+/* ================================================================== */
 
 function nf_menu_install() {
 
@@ -286,7 +322,7 @@ function nf_menu_install() {
 	require_once( plugin_dir_path(__FILE__) . 'install.php' );
 }
 
-/* ================================================================== */	/* 2013-03-02 11:26:12 */
+/* ================================================================== */
 
 function nf_menu_main() {
 
@@ -399,7 +435,7 @@ function nf_menu_main() {
 			$ro_msg .= '<tr>
 			<td width="200">PHP INI</td>
 			<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
-			<td><code>' . ABSPATH . $phpini . '</code> is read-only</td>
+			<td><code>' . $phpini . '</code> is read-only</td>
 			</tr>';
 			$ro++;
 		}
@@ -417,7 +453,7 @@ function nf_menu_main() {
 <?php
 }
 
-/* ================================================================== */	/* 2013-02-20 16:51:29 */
+/* ================================================================== */
 
 function nf_sub_statistics() {
 
@@ -434,55 +470,53 @@ function nf_sub_statistics() {
 	<h2>Statistics</h2>
 	<br />';
 
+	$critical = $high = $medium = $slow = $benchmark = $tot_bench = $speed = $upload = $total = 0;
+
 	// Do we have any log for this month ?
 	if (! file_exists( plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log' ) ) {
-		echo '<div class="updated settings-error"><p><strong>Cannot display stats :</strong> you do not have any log for the current month yet.</p></div></div>';
-		return;
-	}
+		echo '<div class="updated settings-error"><p>You do not have any stats for the current month yet.</p></div>';
+		$fast = 0;
+	} else {
+		$fast = 1000;
 
-	$critical = $high = $medium = $slow = $benchmark = $tot_bench = $speed = $upload = 0;
-   $fast = 1000;
-	if (! $fh = fopen( plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log', 'r') ) {
-		echo '<div class="error settings-error"><p><strong>Cannot open logfile :</strong> ' .
-			plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log</p></div></div>';
-		return;
-	}
-	// Retrieve all lines :
-	while (! feof( $fh) ) {
-		$line = fgets( $fh);
-		if (preg_match( '/^\[.+?\]\s+\[(.+?)\]\s+(?:\[.+?\]\s+){3}\[(1|2|3|4|5|6)\]/', $line, $match) ) {
-			if ( $match[2] == 1) {
-				$medium++;
-			} elseif ( $match[2] == 2) {
-				$high++;
-			} elseif ( $match[2] == 3) {
-				$critical++;
-			} elseif ( $match[2] == 5) {
-				$upload++;
-			}
-			if ( $match[1] > $slow) {
-				$slow = $match[1];
-			}
-			if ( $match[1] < $fast) {
-				$fast = $match[1];
-			}
-			$speed += $match[1];
-			$tot_bench++;
+		if (! $fh = @fopen( plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log', 'r') ) {
+			echo '<div class="error settings-error"><p><strong>Cannot open logfile :</strong> ' .
+				plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log</p></div></div>';
+			return;
 		}
-	}
-	fclose( $fh);
+		// Retrieve all lines :
+		while (! feof( $fh) ) {
+			$line = fgets( $fh);
+			if (preg_match( '/^\[.+?\]\s+\[(.+?)\]\s+(?:\[.+?\]\s+){3}\[(1|2|3|4|5|6)\]/', $line, $match) ) {
+				if ( $match[2] == 1) {
+					$medium++;
+				} elseif ( $match[2] == 2) {
+					$high++;
+				} elseif ( $match[2] == 3) {
+					$critical++;
+				} elseif ( $match[2] == 5) {
+					$upload++;
+				}
+				if ( $match[1] > $slow) {
+					$slow = $match[1];
+				}
+				if ( $match[1] < $fast) {
+					$fast = $match[1];
+				}
+				$speed += $match[1];
+				$tot_bench++;
+			}
+		}
+		fclose( $fh);
 
-   $total = $critical + $high + $medium;
-   if ( $total == 1) {$fast = $slow;}
-	if ( (! $total) || (! $tot_bench) ) {
-		echo '<div class="updated settings-error"><p><strong>Cannot display stats :</strong> logfile is empty.</p></div></div>';
-		return;
-   }
-	$coef = 100 / $total;
-	$critical = round( $critical * $coef, 2);
-	$high = round( $high * $coef, 2);
-	$medium = round( $medium * $coef, 2);
-	$speed = round( $speed / $tot_bench, 4);
+		$total = $critical + $high + $medium;
+		if ( $total == 1) {$fast = $slow;}
+		$coef = 100 / $total;
+		$critical = round( $critical * $coef, 2);
+		$high = round( $high * $coef, 2);
+		$medium = round( $medium * $coef, 2);
+		$speed = round( $speed / $tot_bench, 4);
+	}
 
 	echo '
 	<table class="form-table">
@@ -547,7 +581,7 @@ function nf_sub_statistics() {
 
 }
 
-/* ================================================================== */	/* 2013-02-22 19:57:58 */
+/* ================================================================== */
 
 function nf_sub_options() {
 
@@ -701,7 +735,7 @@ function default_msg() {
 
 }
 
-/* ================================================================== */	/* 2013-02-22 19:58:41 */
+/* ================================================================== */
 
 function nf_sub_options_save() {
 
@@ -744,7 +778,7 @@ function nf_sub_options_save() {
 
 }
 
-/* ================================================================== */	/* 2013-02-23 23:59:15 */
+/* ================================================================== */
 
 function nf_sub_policies() {
 
@@ -1116,7 +1150,7 @@ function chksubmenu() {
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Do not scan traffic coming from my server IP (<?php echo $_SERVER['REMOTE_ADDR'] ?>), localhost and private IP address spaces</td>
+			<td width="300">Do not scan traffic coming from localhost (127.0.0.1) and private IP address spaces</td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left width="120">
 				<label><input type="radio" name="nfw_options[allow_local_ip]" value="1"<?php if ( $allow_local_ip == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
@@ -1253,7 +1287,7 @@ function chksubmenu() {
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Block ASCII character 0x00 (NULL byte) in any HTTP request</td>
+			<td width="300">Block ASCII character 0x00 (NULL byte)</td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left width="120">
 				<label><input type="radio" name="nfw_rules[block_null_byte]" value="1"<?php if ( $block_null_byte == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
@@ -1263,7 +1297,7 @@ function chksubmenu() {
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Block ASCII control characters 1 to 8 and 14 to 31 in any HTTP request</td>
+			<td width="300">Block ASCII control characters 1 to 8 and 14 to 31</td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left>
 				<label><input type="radio" name="nfw_rules[block_ctrl_chars]" value="1"<?php if ( $block_ctrl_chars == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
@@ -1277,6 +1311,7 @@ function chksubmenu() {
 	<br />
 
 	<?php
+
 	if ( @strpos( $nfw_options['wp_dir'], 'wp-admin' ) !== FALSE ) {
 		$wp_admin = 1;
 	} else {
@@ -1426,7 +1461,7 @@ function chksubmenu() {
 <?php
 }
 
-/* ================================================================== */	/* 2013-02-23 23:59:22 */
+/* ================================================================== */
 
 function nf_sub_policies_save() {
 
@@ -1599,7 +1634,6 @@ function nf_sub_policies_save() {
 		$nfw_options['php_path_i'] = 1;
 	}
 
-
 	// WordPress directories PHP restrictions :
 	$nfw_options['wp_dir'] = $tmp = '';
 	if ( isset( $_POST['nfw_options']['wp_admin']) ) {
@@ -1737,7 +1771,7 @@ function nf_sub_policies_save() {
 
 }
 
-/* ================================================================== */	/* 2013-02-23 23:59:29 */
+/* ================================================================== */
 
 function nf_sub_policies_default() {
 
@@ -1804,7 +1838,7 @@ function nf_sub_policies_default() {
 
 }
 
-/* ================================================================== */	/* 2013-02-27 17:25:35 */
+/* ================================================================== */
 
 function nf_sub_log() {
 
@@ -1839,11 +1873,11 @@ function nf_sub_log() {
 
 	// Do we have any log for this month ?
 	if (! file_exists( $log ) ) {
-		echo '<div class="updated settings-error"><p><strong>Cannot display the log :</strong> you do not have any log for the current month yet.</p></div></div>';
+		echo '<div class="updated settings-error"><p>You do not have any log for the current month yet.</p></div></div>';
 		return;
 	}
 
-	if (! $fh = fopen( $log, 'r' ) ) {
+	if (! $fh = @fopen( $log, 'r' ) ) {
 		echo '<div class="error settings-error"><p><strong>Fatal error :</strong> cannot open the log ( ' . $log .' )</p></div></div>';
 		return;
 	}
@@ -1913,7 +1947,7 @@ function nf_sub_log() {
 
 }
 
-/* ================================================================== */	/* 2013-03-24 15:25:03 */
+/* ================================================================== */
 
 function nf_sub_about() {
 
@@ -1957,7 +1991,7 @@ function show_table(table_id) {
 				<td><font style="font-size: 1.2em; font-weight: bold;">NinjaFirewall (<font color="#21759">WP</font> edition)</font></td>
 			</tr>
 			<tr style="text-align:center">
-				<td>&copy; 2012-' . date( 'Y' ) . ' Jerome Bruandet / NinTechNet</td>
+				<td>&copy; 2012-' . date( 'Y' ) . ' NinTechNet</td>
 			</tr>
 			<tr style="text-align:center">
 				<td><fieldset style="border: 2px solid #DFDFDF;padding:10px;-moz-box-shadow:5px 5px 5px #888;-webkit-box-shadow:5px 5px 5px #888;box-shadow:5px 5px 5px #888;">
@@ -2033,22 +2067,21 @@ function show_table(table_id) {
 			echo '<tr><td width="47%;" align="right">RAM</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . number_format( $free ) . ' MB free / '. number_format( $MemTotal ) . ' MB total</td></tr>';
 		}
 
-		$cpu = @explode( "\n", `grep 'model name' /proc/cpuinfo | cut -d: -f2` );
+		$cpu = @explode( "\n", `grep 'model name' /proc/cpuinfo` );
 		if (! empty( $cpu[0] ) ) {
 			array_pop( $cpu );
-			echo '<tr><td width="47%;" align="right">CPU core</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . count( $cpu ) . '</td></tr>';
-			echo '<tr><td width="47%;" align="right">CPU model</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $cpu[0] . '</td></tr>';
+			echo '<tr><td width="47%;" align="right">Processor(s)</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . count( $cpu ) . '</td></tr>';
+			echo '<tr><td width="47%;" align="right">CPU model</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . str_replace ("model name\t:", '', $cpu[0]) . '</td></tr>';
 		}
 	}
 
 	echo '</table>
-
 	</center>
 </div>';
 
 }
 
-/* ================================================================== */	/* 2013-02-02 12:22:33 */
+/* ================================================================== */
 
 function ninjafirewall_settings_link( $links, $file ) {
 

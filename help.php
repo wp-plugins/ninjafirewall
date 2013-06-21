@@ -3,12 +3,12 @@
  +------------------------------------------------------------------+
  | NinjaFirewall (WordPress edition)                                |
  |                                                                  |
- | (c)2012-2013 Jerome Bruandet / NinTechNet                        |
+ | (c)2012-2013 NinTechNet                                          |
  | <wordpress@nintechnet.com>                                       |
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-03-26 16:52:50                                    |
+ | REVISION: 2013-06-21 18:54:02                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -30,7 +30,7 @@ if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 // of the admin panel to preview this.
 
 
-/* ================================================================== */	/* 2013-03-16 19:26:57 */
+/* ================================================================== */
 
 function help_nfsubmain() {
 
@@ -43,7 +43,7 @@ function help_nfsubmain() {
 	) );
 }
 
-/* ================================================================== */	/* 2013-03-16 19:26:38 */
+/* ================================================================== */
 
 function help_nfsubstat() {
 
@@ -57,10 +57,10 @@ function help_nfsubstat() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'help02',
 		'title'     => 'Benchmarks',
-		'content'   => '<br />Benchmarks show the time NinjaFirewall</b> took, in seconds, to proceed each request it has blocked.'
+		'content'   => '<br />Benchmarks show the time NinjaFirewall took, in seconds, to proceed each request it has blocked.'
 	) );
 }
-/* ================================================================== */	/* 2013-03-26 16:52:44 */
+/* ================================================================== */
 
 function help_nfsubopt() {
 
@@ -83,7 +83,7 @@ function help_nfsubopt() {
 		<li><code>%%REM_ADDRESS%%</code> : the blocked user IP.</li><li><code>%%NUM_INCIDENT%%</code> : the unique incident number as it will appear in the <a href="?page=nfsublog">firewall log</a> INCIDENT column.</li><li><code>%%NINJA_LOGO%%</code> : NinjaFirewall logo.</li>'
 	) );
 }
-/* ================================================================== */	/* 2013-03-22 00:17:14 */
+/* ================================================================== */
 
 function help_nfsubpolicies() {
 
@@ -102,13 +102,67 @@ function help_nfsubpolicies() {
 		<li>Sanitise : this option will not block but sanitise the user request by escaping characters that can be used to perform code or SQL injections (<code>\'</code>, <code>"</code>, <code>\\</code>, <code>\n</code>, <code>\r</code>, <code>`</code>, <code>\x1a</code>, <code>\x00</code>) and various exploits (XSS etc). If it is a variable (e.g <code>?name=value</code>), both its name and value will be sanitised.<br />This action will be performed when the filtering process is over, right before NinjaFirewall forwards the request to your PHP script.<br /><br /><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;<span class="description">If you enabled </span><code>POST</code><span class="description"> requests sanitising, articles and messages posted by your visitors could be corrupted with excessive backslashes or substitute characters.</span></li>'
 	) );
 	get_current_screen()->add_help_tab( array(
+		'id'			=> 'policies04',
+		'title'		=> 'Firewall Policies',
+		'content'	=> '<br />
+		<div style="height:250px;">
+
+		<strong>HTTP / HTTPS</strong>
+		<li>whether to filter HTTP and/or HTTPS traffic.</li>
+
+		<strong>Uploads</strong>
+		<li>File Uploads:<span class="description"> whether to allow/disallow file uploads.</span></li>
+		<li>Sanitise filenames:<span class="description"> any character that is not a letter <code>a-zA-Z</code>, a digit <code>0-9</code>, a dot <code>.</code>, a hyphen <code>-</code> or an underscore <code>_</code> will be removed from the filename and replaced with the <code>X</code> character.</span></li>
+
+		<strong>GET requests</strong>
+		<li>whether to scan and/or sanitise <code>GET</code> requests.</li>
+
+		<strong>POST requests</strong>
+		<li>whether to scan and/or sanitise <code>POST</code> requests.</li>
+
+		<strong>Cookies</strong>
+		<li>whether to scan and/or sanitise <code>Cookies</code> requests.</li>
+
+		<strong>HTTP_USER_AGENT server variable</strong>
+		<li>whether to scan and/or sanitise <code>HTTP_USER_AGENT</code> requests.</li>
+		<li>Block suspicious bots/scanners:<span class="description"> rejects some known bots, scanners and various malicious scripts attempting to access your blog.</span></li>
+
+		<strong>HTTP_REFERER server variable</strong>
+		<li>whether to scan and/or sanitise <code>HTTP_REFERER</code> requests.</li>
+		<li>Block POST requests that do not have an <code>HTTP_REFERER</code> header:<span class="description"> this option will block any <code>POST</code> request that does not have a Referrer header (<code>HTTP_REFERER</code> variable). If you need external applications to post to your scripts (ie: Paypal IPN), you are advised to keep this option disabled otherwise they will likely be blocked. Note that <code>POST</code> requests are not required to have a Referrer header and, for that reason, this option is disabled by default.</span></li>
+
+		<strong>IPs</strong>
+		<li>Block localhost IP in <code>GET/POST</code> requests:<span class="description"> this option will block any <code>GET</code> or <code>POST</code> request containing the localhost IP (127.0.0.1). It can be useful to block SQL dumpers and various hacker\'s shell scripts.</span></li>
+		<li>Block HTTP requests with an IP in the <code>Host</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . $_SERVER['SERVER_ADDR'] . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
+		<li>Do not scan traffic coming from localhost (127.0.0.1) and private IP address spaces:<span class="description"> this option will ignore traffic from all non-routable private IPs (10.0.0.0 to 10.255.255.255, 172.16.0.0 to 172.31.255.255 and 192.168.0.0 to 192.168.255.255) as well as the localhost IP.</span></li>
+
+		<strong>PHP</strong>
+		<li>Block PHP built-in wrappers:<span class="description"> PHP has several wrappers for use with the filesystem functions. It is possible for an attacker to use them to bypass firewalls and various IDS to exploit remote and local file inclusions. This option lets you block any script attempting to pass a <code>php://</code>or a <code>data://</code> stream inside a <code>GET</code> or <code>POST</code> request, cookies, user agent and referrer variables.</span></li>
+		<li>Hide PHP notice &amp; error messages:<span class="description"> this option lets you hide errors returned by your scripts. Such errors can leak sensitive informations which can be exploited by hackers.</span></li>
+		<li>Sanitise <code>PHP_SELF</code>, <code>PATH_TRANSLATED</code>, <code>PATH_INFO</code>:<span class="description"> this option can sanitise any dangerous characters found in those 3 server variables to prevent various XSS and database injection attempts.</span></li>
+
+		<strong>Various</strong>
+		<li>Block the <code>DOCUMENT_ROOT</code> server variable <code>' . getenv( 'DOCUMENT_ROOT' ) . '</code> in HTTP requests:<span class="description"> this option will block scripts attempting to pass the <code>DOCUMENT_ROOT</code> server variable in a <code>GET</code> or <code>POST</code> request. Hackers use shell scripts that often need to pass this value, but most legitimate programs do not.</span></li>
+		<li>Block ASCII character 0x00 (NULL byte):<span class="description"> this option will reject any <code>GET</code> or <code>POST</code> request, <code>COOKIE</code>, <code>HTTP_USER_AGENT</code>, <code>REQUEST_URI</code>, <code>PHP_SELF</code>, <code>PATH_INFO</code> variables containing the ASCII character 0x00 (NULL byte). Such a character is dangerous and should always be rejected.</span></li>
+		<li>Block ASCII control characters 1 to 8 and 14 to 31:<span class="description"> in most cases, those control characters are not needed and should be rejected as well.</span></li>
+
+		<strong>WordPress</strong>
+		<li>Block direct access to any PHP file located in one of these directories:<span class="description"> this option is enabled by default and there shouldn\'t be any reason to disable it.</span></li>
+		<li>Block <code>POST</code> requests in the themes folder <code>/wp-content/themes</code>:<span class="description"> this option can be useful to block hackers from installing backdoor in the PHP theme files. However, because some custom themes may include an HTML form (contact, search form etc), this option is not enabled by default.</span></li>
+		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear.</span></li>
+		<li>Disable the plugin and theme editor <code>DISALLOW_FILE_EDIT</code>:<span class="description"> disabling the plugin and theme editor provides an additional layer of security if a hacker gains access to a well-privileged user account.</span></li>
+		<li>Disable plugin and theme update/installation <code>DISALLOW_FILE_MODS</code>:<span class="description"> this option will block users being able to use the plugin and theme installation/update functionality from the WordPress admin area. Setting this constant also disables the Plugin and Theme editor.</span></li>
+
+		</div><br />'
+	) );
+	get_current_screen()->add_help_tab( array(
 		'id'        => 'policies03',
 		'title'     => 'Administrator',
-		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall.<br /><br /><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;<span class="description">if you wanted to perform some security tests in order to see how efficient is NinjaFirewall, you would need either to disable this feature, or to log out of the admin console prior to starting your tests.<span></li>'
+		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall. This applies to all Firewall Policies listed below, except <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options which, if enabled, are always enforced.<br /><span>'
 	) );
 
 }
-/* ================================================================== */	/* 2013-03-16 20:39:41 */
+/* ================================================================== */
 
 function help_nfsublog() {
 
@@ -121,7 +175,7 @@ function help_nfsublog() {
 	) );
 }
 
-/* ================================================================== */	/* 2013-03-16 19:32:11 */
+/* ================================================================== */
 
 function help_nfsubabout() {
 
