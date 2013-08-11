@@ -2,8 +2,8 @@
 Contributors: nintechnet
 Tags: firewall, security, protection, malware, virus, hacking, attack, admin
 Requires at least: 3.3.0
-Tested up to: 3.5.1
-Stable tag: 1.0.2
+Tested up to: 3.6
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,7 +29,8 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Activity log and statistics
 * Debugging mode
 
-NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional: no trialware, no registration or activation key needed :)
+[NinjaFirewall (WP edition)](http://ninjafirewall.com/ninjafirewall_wp.html "NinjaFirewall") is 100% free, 100% open source and 100% fully functional: no trialware, no registration or activation key needed :)
+
 
 = Requirements =
 
@@ -56,6 +57,11 @@ NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functio
 
 == Upgrade Notice ==
 
+= 1.0.3 =
+* Added a `Rules Editor` menu to enable/disable built-in rules individually.
+* Fixed installation issue with Listespeed HTTP server when using Apache-style configuration directives (`php_value`).
+* Added a call to `stripslashes()` to prevent WordPress from escaping quotes in the "Blocked user message" textarea.
+
 = 1.0.2 =
 * Updated firewall rules.
 * Added extensive contextual help to the Firewall Policies page.
@@ -69,6 +75,11 @@ NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functio
 * Initial release.
 
 == Changelog ==
+
+= 1.0.3 =
+* Added a `Rules Editor` menu to enable/disable built-in rules individually.
+* Fixed installation issue with Listespeed HTTP server when using Apache-style configuration directives (`php_value`).
+* Added a call to `stripslashes()` to prevent WordPress from escaping quotes in the "Blocked user message" textarea.
 
 = 1.0.2 =
 * Updated firewall rules.

@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-06-21 18:54:02                                    |
+ | REVISION: 2013-08-11 18:26:50                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -171,7 +171,24 @@ function help_nfsublog() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
 		'title'     => 'Firewall Log',
-		'content'   => '<br />The firewall log displays blocked and sanitised requests as well as some useful information. It has 6  columns:<li>DATE : date and time of the incident.</li><li>INCIDENT : unique incident number/ID as it was displayed to the <a href="?page=nfsubopt">blocked user.</a></li><li>LEVEL : level of severity (<code>critical</code>, <code>high</code> or <code>medium</code>), information (<code>info</code>, <code>error</code>, <code>upload</code>) and debugging mode (<code>DEBUG_ON</code>).</li><li>RULE : reference of the NinjaFirewall built-in security rule that triggered the action. No reference (<code>-</code>) means it was a rule from your own <a href="?page=nfsubpolicies">Firewall Policies</a>.</li><li>IP : the blocked user remote address.</li><li>REQUEST : the HTTP request including offending variables &amp; values as well as the reason the action was logged.</li>'
+		'content'   => '<br />The firewall log displays blocked and sanitised requests as well as some useful information. It has 6  columns:<li>DATE : date and time of the incident.</li><li>INCIDENT : unique incident number/ID as it was displayed to the <a href="?page=nfsubopt">blocked user.</a></li><li>LEVEL : level of severity (<code>critical</code>, <code>high</code> or <code>medium</code>), information (<code>info</code>, <code>error</code>, <code>upload</code>) and debugging mode (<code>DEBUG_ON</code>).</li><li>RULE : reference of the NinjaFirewall built-in security rule that triggered the action. A hyphen (<code>-</code>) instead of a number means it was a rule from your own <a href="?page=nfsubpolicies">Firewall Policies</a>.</li><li>IP : the blocked user remote address.</li><li>REQUEST : the HTTP request including offending variables &amp; values as well as the reason the action was logged.</li>'
+	) );
+}
+/* ================================================================== */
+
+function help_nfsubedit() {
+
+	// Firewall log menu help :
+
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'log01',
+		'title'     => 'Rules Editor',
+		'content'   => '<br />Besides the <a href="?page=nfsubpolicies">Firewall Policies</a>, NinjaFirewall includes also a large set of built-in rules used to protect your blog against the most common vulnerabilities and hacking attempts. They are always enabled and you cannot edit them, but if you notice that your visitors are wrongly blocked by some of those rules, you can use the Rules Editor below to disable them individually:<br />
+		<li>Check your <a href="?page=nfsublog">firewall log</a> and find the rule ID you want to disable (it is displayed in the <code>RULE</code> column).</li>
+		<li>Select its ID from the enabled rules list below and click the "Disable it" button.</li>
+		<br />
+		<span class="description">Note: if the <code>RULE</code> column from your log shows a hyphen <code>-</code> instead of a number, that means that the rule can be changed in your <a href="?page=nfsubpolicies">Firewall Policies</a> page.</span>
+		'
 	) );
 }
 
@@ -252,7 +269,7 @@ function help_nfsubabout() {
 		'title'     => 'NinjaWPass',
 		'content'   => '<br /><strong>NinjaWPass for WordPress :</strong> Secure WordPress log-in form against keyloggers, stolen passwords and brute-force attacks.
 		<br /><br />
-		NinjaWPass is a free WordPress plugin written to protect your blog administration console. It makes it basically impossible for a hacker who stole your password to log in to your console.
+		NinjaWPass is a WordPress plugin used to protect your blog administration console. It makes it basically impossible for a hacker who stole your password to log in to your console.
 		<br/><br/>
 		<center><a href="http://ninjafirewall.com/ninjawpass.html" title="NinjaWPass" target="_blank"><b>NinjaWPass</b></a></center><br />'
 	) );

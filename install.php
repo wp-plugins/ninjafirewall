@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-06-21 14:20:59                                       |
+ | REVISION: 2013-08-11 12:51:12                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -114,7 +114,8 @@ function nfw_install_2( $err ) {
 
 	// If mod_php is running, we won't need any PHP INI file :
 	if ( preg_match( '/apache/i', PHP_SAPI ) ) {
-		echo '<li>Your server seems to be running PHP as an Apache module (' . strtoupper( PHP_SAPI ) . '). Therefore, we will not need any PHP INI file.</li>';
+		echo '<li>Your server seems to be running PHP as an Apache module (<code>' . strtoupper( PHP_SAPI ) . '</code>). Therefore, we will not need any PHP INI file.</li>';
+
 		// look for .htaccess :
 		echo '<li>Looking for <code>' . ABSPATH . '.htaccess</code> file : ';
 		if ( file_exists( ABSPATH . '.htaccess' ) ) {
@@ -188,7 +189,7 @@ function nfw_install_2( $err ) {
 	// PHP as CGI :
 	} else {
 
-		echo '<li>Your server is running PHP as ' . strtoupper( PHP_SAPI ) . ' SAPI</li>';
+		echo '<li>Your server is running PHP as <code>' . strtoupper( PHP_SAPI ) . '</code> SAPI</li>';
 
 		// look for PHP INI file :
 		echo '<li>Looking for a PHP INI file inside <code>' . ABSPATH . '</code> : ';
@@ -344,11 +345,21 @@ function nfw_install_2( $err ) {
 
 		$htaccess_data = HTACCESS_BEGIN . "\n" . HTACCESS_CGI_01;
 		$htaccess_data .= ABSPATH . 'NFW_XYW';
-		$htaccess_data .= HTACCESS_CGI_02 . "\n" . HTACCESS_END . "\n\n";
+		$htaccess_data .= HTACCESS_CGI_02 . "\n";
+		// For Litespeed server, if running in mod_php-like mode:
+		if ( preg_match( '/litespeed/i', PHP_SAPI ) ) {
+			$htaccess_data .= HTACCESS_MODPHP . "\n";
+		}
+		$htaccess_data .= HTACCESS_END . "\n\n";
 
 		echo '<pre style="background-color:#EAEAEA;border: 1px solid #cccccc;padding:5px;overflow: auto;">' .
 			'<font color="red">' . HTACCESS_BEGIN . "\n" . htmlentities( HTACCESS_CGI_01 ) . ABSPATH .
-			'<font id="phpiniuser">php.ini</font>' . htmlentities( HTACCESS_CGI_02 ) . "\n" . HTACCESS_END . "\n\n</font>";
+			'<font id="phpiniuser">php.ini</font>' . htmlentities( HTACCESS_CGI_02 ) . "\n";
+		// For Litespeed server, if running in mod_php-like mode:
+		if ( preg_match( '/litespeed/i', PHP_SAPI ) ) {
+			echo htmlentities( HTACCESS_MODPHP ) . "\n";
+		}
+		echo HTACCESS_END . "\n\n</font>";
 
 		if (! empty( $data ) ) {
 			echo htmlentities( $data );

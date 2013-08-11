@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true web application firewall for WordPress.
-Version: 1.0.2
+Version: 1.0.3
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -18,10 +18,10 @@ License: GPLv2 or later
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-06-21 18:49:53                                       |
+ | REVISION: 2013-08-11 18:27:33                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.0.2' );
+define( 'NFW_ENGINE_VERSION', '1.0.3' );
 define( 'NFW_RULES_VERSION',  '20130621' );
  /*
  +---------------------------------------------------------------------+
@@ -299,8 +299,14 @@ function ninjafirewall_admin_menu() {
 		'nfsublog', 'nf_sub_log' );
 	add_action( 'load-' . $menu_hook, 'help_nfsublog' );
 
+	// Rules Editor menu :
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Rules Editor', 'Rules Editor', 'manage_options',
+		'nfsubedit', 'nf_sub_edit' );
+	add_action( 'load-' . $menu_hook, 'help_nfsubedit' );
+
+
 	// About menu :
-	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: About', 'About', 'manage_options',
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: About', 'About...', 'manage_options',
 		'nfsubabout', 'nf_sub_about' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubabout' );
 
@@ -764,7 +770,7 @@ function nf_sub_options_save() {
 	if ( empty( $_POST['nfw_options']['blocked_msg']) ) {
 		$nfw_options['blocked_msg'] = NFW_DEFAULT_MSG;
 	} else {
-		$nfw_options['blocked_msg'] = $_POST['nfw_options']['blocked_msg'];
+		$nfw_options['blocked_msg'] = stripslashes( $_POST['nfw_options']['blocked_msg'] );
 	}
 
 	if ( empty( $_POST['nfw_options']['debug']) ) {
@@ -1454,7 +1460,7 @@ function chksubmenu() {
 	<br />
 	<input class="button-primary" type="submit" name="Save" value="Save Firewall Policies" />
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<input class="button-primary" type="submit" name="Save" value="Restore Default Values" onclick="return restore();" />
+	<input class="button-secondary" type="submit" name="Save" value="Restore Default Values" onclick="return restore();" />
 	</form>
 </div>
 
@@ -1946,6 +1952,105 @@ function nf_sub_log() {
 </div>';
 
 }
+/* ================================================================== */
+
+function nf_sub_edit() {
+
+	// Rules Editor menu :
+
+	if (! current_user_can( 'manage_options' ) ) {
+		wp_die( 'You do not have sufficient permissions to access this page.',
+			'', array( 'response' => 403 ) );
+	}
+
+	echo '
+<div class="wrap">
+	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
+	<h2>Rules Editor</h2>
+	<br />';
+
+	global $nfw_rules;
+	if (! isset( $nfw_rules) ) {
+		$nfw_rules = get_option( 'nfw_rules' );
+	}
+	$is_update = 0;
+
+	if ( isset($_POST['sel_e_r']) ) {
+		if ( $_POST['sel_e_r'] < 1 ) {
+			echo '<div class="error settings-error"><p><strong>Error : you did not select a rule to disable</strong></p></div>';
+		} else if ( ( $_POST['sel_e_r'] == 2 ) || ( $_POST['sel_e_r'] > 499 ) && ( $_POST['sel_e_r'] < 600 ) ) {
+			echo '<div class="error settings-error"><p><strong>Error : to change this rule, use the "Firewall Policies" menu.</strong></p></div>';
+		} else if (! isset( $nfw_rules[$_POST['sel_e_r']] ) ) {
+			echo '<div class="error settings-error"><p><strong>Error : this rule does not exist&nbsp;!</strong></p></div>';
+		} else {
+			$nfw_rules[$_POST['sel_e_r']]['on'] = 0;
+			$is_update = 1;
+			echo '<div class="updated settings-error"><p><strong>Rule ID ' . $_POST['sel_e_r'] . ' has been disabled.</strong></p></div>';
+		}
+	} else if ( isset($_POST['sel_d_r']) ) {
+		if ( $_POST['sel_d_r'] < 1 ) {
+			echo '<div class="error settings-error"><p><strong>Error : you did not select a rule to enable</strong></p></div>';
+		} else if ( ( $_POST['sel_d_r'] == 2 ) || ( $_POST['sel_d_r'] > 499 ) && ( $_POST['sel_d_r'] < 600 ) ) {
+			echo '<div class="error settings-error"><p><strong>Error : to change this rule, use the "Firewall Policies" menu.</strong></p></div>';
+		} else if (! isset( $nfw_rules[$_POST['sel_d_r']] ) ) {
+			echo '<div class="error settings-error"><p><strong>Error : this rule does not exist&nbsp;!</strong></p></div>';
+		} else {
+			$nfw_rules[$_POST['sel_d_r']]['on'] = 1;
+			$is_update = 1;
+			echo '<div class="updated settings-error"><p><strong>Rule ID ' . $_POST['sel_d_r'] . ' has been enabled.</strong></p></div>';
+		}
+	}
+	if ( $is_update ) {
+		update_option( 'nfw_rules', $nfw_rules);
+	}
+
+	$disabled_rules = $enabled_rules = array();
+	foreach ( $nfw_rules as $rule_key => $rule_value ) {
+		if (! empty( $nfw_rules[$rule_key]['on'] ) ) {
+			$enabled_rules[] =  $rule_key;
+		} else {
+			$disabled_rules[] = $rule_key;
+		}
+	}
+
+	echo '<br /><h3>NinjaFirewall security built-in rules</h3>
+	<table class="form-table">
+		<tr>
+			<td width="300">
+			<p>Select the rule you want to disable or enable.</p>
+			</td>
+			<td width="20">&nbsp;</td>
+			<td align="left">
+			<form method="post">
+			<select name="sel_e_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
+				<option value="0">Total rules enabled : ' . count( $enabled_rules ) . '</option>';
+	ksort( $enabled_rules );
+$bla='    ';
+	foreach ( $enabled_rules as $key ) {
+		// skip those ones, they can be changed in the Firewall Policies section:
+		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) { continue; }
+		echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+	}
+	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Disable it">
+		</form>
+		<br />
+
+		<form method="post">
+		<select name="sel_d_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
+		<option value="0">Total rules disabled : ' . count( $disabled_rules ) . '</option>';
+	ksort( $disabled_rules );
+	foreach ( $disabled_rules as $key ) {
+		echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+	}
+
+	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Enable it">
+				</form>
+			</td>
+		</tr>
+	</table>
+</div>';
+
+}
 
 /* ================================================================== */
 
@@ -1981,29 +2086,52 @@ function show_table(table_id) {
 }
 </script>
 <div class="wrap">
-	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/nintechnet_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;" title="NinTechNet"></div>
+	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;" title="NinTechNet"></div>
 	<h2>About</h2>
 	<br />
 	<br />
 	<center>
-		<table border="0" width="460">
+		<table border="0" width="500" style="border: 1px solid #DFDFDF;padding:10px;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;background-color:#FCFCFC;">
 			<tr style="text-align:center">
-				<td><font style="font-size: 1.2em; font-weight: bold;">NinjaFirewall (<font color="#21759">WP</font> edition)</font></td>
-			</tr>
-			<tr style="text-align:center">
-				<td>&copy; 2012-' . date( 'Y' ) . ' NinTechNet</td>
-			</tr>
-			<tr style="text-align:center">
-				<td><fieldset style="border: 2px solid #DFDFDF;padding:10px;-moz-box-shadow:5px 5px 5px #888;-webkit-box-shadow:5px 5px 5px #888;box-shadow:5px 5px 5px #888;">
-					<a href="http://nintechnet.com/" target="_blank" title="Visit us !"><img src="' . plugins_url() . '/ninjafirewall/images/nintechnet.png" border="0" width="190" height="60"></a>
+				<td>
+					<font style="font-size: 1.2em; font-weight: bold;">NinjaFirewall (<font color="#21759">WP</font> edition) v' . NFW_ENGINE_VERSION . '</font>
 					<br />
-					~ ~ The Ninja Technologies Network ~ ~
 					<br />
-					<div style="width:25%;float:left;"><a href="http://ninjamonitoring.com/" target="_blank" title="Monitor your website for suspicious activities">NinjaMonitoring</a></div>
-					<div style="width:25%;float:left;"><a href="http://ninjafirewall.com/" target="_blank" title="Powerful firewall software for all your PHP applications">NinjaFirewall</a></div>
-					<div style="width:25%;float:left;"><a href="http://ninjarecovery.com/" target="_blank" title="Incident response, malware removal &amp; hacking recovery">NinjaRecovery</a></div>
-					<div style="width:25%;float:left;"><a href="http://ninjafirewall.com/ninjawpass.html" target="_blank" title="Secure WordPress log-in form against keyloggers, stolen passwords and brute-force attacks.">NinjaWPass</a></div>
-				</fieldset></td>
+					<a href="http://nintechnet.com/" target="_blank" title="The Ninja Technologies Network"><img src="' . plugins_url() . '/ninjafirewall/images/nintechnet.png" border="0" width="190" height="60" title="The Ninja Technologies Network"></a>
+					<br />
+					&copy; 2012-' . date( 'Y' ) . ' <a href="http://nintechnet.com/" target="_blank" title="The Ninja Technologies Network"><strong>NinTechNet</strong></a>
+					<br />
+					The Ninja Technologies Network
+					<br />
+					<br />
+
+					<table border="0" class="smallblack" cellspacing="2" cellpadding="10" width="100%">
+						<tr valign=top>
+							<td align=center style="border-right:dotted 0px #FDCD25;">
+								<img src="' . plugins_url( '/images/logo_nm_65.png', __FILE__ ) . '" width="65" height="65" border=0>
+								<br />
+								<a href="http://ninjamonitoring.com/" title="NinjaMonitoring: monitor your website for suspicious activities"><b>NinjaMonitoring</b></a>
+								<br />
+								Monitor your website for suspicious activities.
+							</td>
+							<td align=center style="border-right:dotted 0px #FDCD25;">
+								<img src="' . plugins_url( '/images/logo_pro_65.png', __FILE__ ) . '" width="65" height="65" border=0>
+								<br />
+								<a href="http://ninjafirewall.com/" title="NinjaFirewall: advanced firewall software for all your PHP applications"><b>NinjaFirewall</b></a>
+								<br />
+								Advanced firewall software for all your PHP applications.
+							</td>
+							<td align=center>
+								<img src="' . plugins_url( '/images/logo_nr_65.png', __FILE__ ) . '" width="65" height="65" border=0>
+								<br />
+								<a href="http://ninjarecovery.com/" title="NinjaRecovery: Incident response, malware removal &amp; hacking recovery"><b>NinjaRecovery</b></a>
+								<br />
+								Incident response, malware removal &amp; hacking recovery.
+							</td>
+						</tr>
+					</table>
+
+				</td>
 			</tr>
 		</table>
 		<br />
