@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-08-11 18:26:50                                    |
+ | REVISION: 2013-08-28 01:40:22                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -161,6 +161,18 @@ function help_nfsubpolicies() {
 		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall. This applies to all Firewall Policies listed below, except <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options which, if enabled, are always enforced.<br /><span>'
 	) );
 
+}
+/* ================================================================== */
+
+function help_nfsubalerts() {
+
+	// E-mail alerts menu help :
+
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'log01',
+		'title'     => 'E-mail alerts',
+		'content'   => '<br />NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.'
+	) );
 }
 /* ================================================================== */
 
