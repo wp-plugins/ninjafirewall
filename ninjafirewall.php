@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true web application firewall for WordPress.
-Version: 1.0.3
+Version: 1.0.4
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -18,10 +18,10 @@ License: GPLv2 or later
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-08-11 18:27:33                                       |
+ | REVISION: 2013-08-28 01:40:04                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.0.3' );
+define( 'NFW_ENGINE_VERSION', '1.0.4' );
 define( 'NFW_RULES_VERSION',  '20130621' );
  /*
  +---------------------------------------------------------------------+
@@ -37,11 +37,9 @@ define( 'NFW_RULES_VERSION',  '20130621' );
  +---------------------------------------------------------------------+
 */
 
-
 if (! defined( 'ABSPATH' ) ) { die( 'Forbidden' ); }
 
 if (! session_id() ) { session_start(); }
-
 
 /* ================================================================== */
 
@@ -71,7 +69,7 @@ function nfw_activate() {
 		"it is deprecated as of PHP 5.3.0 (see http://php.net/safe-mode)" );
 	}
 
-	// No support for multisite installation :
+	// No support for multisite installation (not yet) :
 	if ( is_multisite() ) {
 		exit( "NinjaFirewall is not compatible with WordPress Multisite installations." );
 	}
@@ -113,7 +111,7 @@ register_deactivation_hook( __FILE__, 'nfw_deactivate' );
 
 function nfw_upgrade() {
 
-	// Only used when upgrading NinjaFirewall :
+	// Only used when upgrading NinjaFirewall and sending alerts:
 
 	global $nfw_options;
 	global $nfw_rules;
@@ -130,6 +128,17 @@ function nfw_upgrade() {
 	if ( ( $nfw_options ) && ( $nfw_options['engine_version'] != NFW_ENGINE_VERSION ) ) {
 		$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
 		$is_update = 1;
+
+		// v1.0.4 update :
+		if ( empty( $nfw_options['alert_email']) ) {
+			$nfw_options['a_0']  = 1; $nfw_options['a_11'] = 1;
+			$nfw_options['a_12'] = 1; $nfw_options['a_13'] = 0;
+			$nfw_options['a_14'] = 0; $nfw_options['a_15'] = 1;
+			$nfw_options['a_16'] = 0; $nfw_options['a_21'] = 1;
+			$nfw_options['a_22'] = 1; $nfw_options['a_23'] = 0;
+			$nfw_options['a_24'] = 0; $nfw_options['a_31'] = 1;
+			$nfw_options['alert_email'] = get_option('admin_email');
+		}
 	}
 
 	// do we need to update rules as well ?
@@ -162,6 +171,10 @@ function nfw_upgrade() {
 		update_option( 'nfw_options', $nfw_options);
 	}
 
+	// E-mail alert ?
+	if ( defined( 'NFW_ALERT' ) ) {
+		check_email_alert();
+	}
 }
 
 add_action('admin_init', 'nfw_upgrade' );
@@ -173,6 +186,15 @@ function nfw_login_hook( $user_login, $user ) {
 	// Check if the user is an admin and if we must whitelist him/her :
 
 	global $nfw_options;
+
+	// Are we supposed to send an alert ?
+	if (! empty($nfw_options['a_0']) ) {
+		// User login:
+		if ( ( ( $nfw_options['a_0'] == 1) && ( $user->roles[0] == 'administrator' )  ) ||
+			( $nfw_options['a_0'] == 2 ) ) {
+			send_login_email( $user_login, $user );
+		}
+	}
 
 	if ( $user->roles[0] == 'administrator' ) {
 		if (! isset( $nfw_options ) ) {
@@ -191,6 +213,30 @@ function nfw_login_hook( $user_login, $user ) {
 
 add_action( 'wp_login', 'nfw_login_hook', 10, 2 );
 
+/* ================================================================== */
+
+function send_login_email( $user_login, $user ) {
+
+	global $nfw_options;
+
+	// Get timezone :
+	get_blog_timezone();
+
+	$subject = '[NinjaFirewall] Alert: WordPress console login';
+	$message = 'Someone just logged in to your WordPress admin console:' . "\n\n".
+				'- User : ' . $user_login . ' (' . $user->roles[0] . ")\n" .
+				'- IP   : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
+				'- Date : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n" .
+				'- URL  : ';
+	if ( is_multisite() ) {
+		$message .= network_home_url() . "\n";
+	} else {
+		$message .= home_url() . "\n";
+	}
+
+	wp_mail( $nfw_options['alert_email'], $subject, $message );
+
+}
 /* ================================================================== */
 
 function nfw_logout_hook() {
@@ -248,7 +294,6 @@ function ninjafirewall_admin_menu() {
 		'webmaster and enclose the following incident ID:<br /><br />[ <b>#%%NUM_INCIDENT%%</b> ]</center>'
 	);
 
-
 	// Setup our admin menus :
 
 	list ( $user_enabled, $hook_enabled, $debug_enabled ) = is_nfw_enabled();
@@ -294,6 +339,11 @@ function ninjafirewall_admin_menu() {
 		'nfsubpolicies', 'nf_sub_policies' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubpolicies' );
 
+	// Alerts menu :
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: E-mail alerts', 'E-mail alerts', 'manage_options',
+		'nfsubalerts', 'nf_sub_alerts' );
+	add_action( 'load-' . $menu_hook, 'help_nfsubalerts' );
+
 	// Firewall log menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Firewall Log', 'Firewall Log', 'manage_options',
 		'nfsublog', 'nf_sub_log' );
@@ -303,7 +353,6 @@ function ninjafirewall_admin_menu() {
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Rules Editor', 'Rules Editor', 'manage_options',
 		'nfsubedit', 'nf_sub_edit' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubedit' );
-
 
 	// About menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: About', 'About...', 'manage_options',
@@ -865,7 +914,7 @@ function chksubmenu() {
 	<h3>HTTP / HTTPS</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300" valign="top">Enable NinjaFirewall for</td>
+			<td width="300" valign="top">Enable NinjaFirewall for...</td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left>
 			<label><input type="radio" name="nfw_options[scan_protocol]" value="3"<?php if ( $scan_protocol == 3 ) {	echo ' checked';	}?>>&nbsp;<code>HTTP</code> and <code>HTTPS/SSL</code> traffic (default)</label>
@@ -1364,7 +1413,7 @@ function chksubmenu() {
 	<h3>WordPress</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">Block direct access to any PHP file located in one of these directories&nbsp;:</td>
+			<td width="300">Block direct access to any PHP file located in one of these directories</td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left>
 				<table class="form-table">
@@ -1732,7 +1781,6 @@ function nf_sub_policies_save() {
 	}
 
 
-
 	// Block the DOCUMENT_ROOT server variable in GET/POST requests (#ID 510) :
 	if ( empty( $_POST['nfw_rules']['block_doc_root']) ) {
 		$nfw_rules[NFW_DOC_ROOT]['on'] = 0;
@@ -1846,6 +1894,222 @@ function nf_sub_policies_default() {
 
 /* ================================================================== */
 
+function nf_sub_alerts() {
+
+	// Alerts menu :
+
+	if (! current_user_can( 'manage_options' ) ) {
+		wp_die( 'You do not have sufficient permissions to access this page.',
+			'', array( 'response' => 403 ) );
+	}
+
+	global $nfw_options;
+	if (! isset( $nfw_options) ) {
+		$nfw_options = get_option( 'nfw_options' );
+	}
+
+	echo '<div class="wrap">
+	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
+	<h2>E-mail alerts</h2>
+	<br />';
+
+	// Saved ?
+	if ( isset( $_POST['nfw_options']) ) {
+		nf_sub_alerts_save();
+		echo '<div class="updated settings-error"><p><strong>Your changes have been saved.</strong></p></div>';
+		$nfw_options = get_option( 'nfw_options' );
+	}
+
+	if (! isset( $nfw_options['a_0'] ) ) {
+		$nfw_options['a_0'] = 1;
+	}
+	?>
+	<form method="post" name="nfwalerts">
+
+	<h3>WordPress admin console</h3>
+	<table class="form-table">
+		<tr>
+			<td width="300" valign="top">Send me an alert whenever...</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left>
+			<label><input type="radio" name="nfw_options[a_0]" value="1"<?php echo $nfw_options['a_0'] == 1 ? ' checked' : '' ?>>&nbsp;an administrator logs in (default)</label>
+			<br />
+			<label><input type="radio" name="nfw_options[a_0]" value="2"<?php echo $nfw_options['a_0'] == 2 ? ' checked' : '' ?>>&nbsp;someone (user, admin, editor...) logs in</label>
+			<br />
+			<label><input type="radio" name="nfw_options[a_0]" value="0"<?php echo $nfw_options['a_0'] == 0 ? ' checked' : '' ?>>&nbsp;no, thanks</label>
+			</td>
+		</tr>
+	</table>
+
+	<br />
+
+	<h3>Plugins</h3>
+	<table class="form-table">
+		<tr>
+			<td width="300" valign="top">Send me an alert whenever someone...</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left>
+			<label><input type="checkbox" name="nfw_options[a_11]" value="1"<?php echo empty($nfw_options['a_11']) ? '' : ' checked' ?>>&nbsp;uploads a plugin (default)</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_12]" value="1"<?php echo empty($nfw_options['a_12']) ? '' : ' checked' ?>>&nbsp;installs a plugin (default)</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_13]" value="1"<?php echo empty($nfw_options['a_13']) ? '' : ' checked' ?>>&nbsp;activates a plugin</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_14]" value="1"<?php echo empty($nfw_options['a_14']) ? '' : ' checked' ?>>&nbsp;updates a plugin</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_15]" value="1"<?php echo empty($nfw_options['a_15']) ? '' : ' checked' ?>>&nbsp;deactivates a plugin (default)</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_16]" value="1"<?php echo empty($nfw_options['a_16']) ? '' : ' checked' ?>>&nbsp;deletes a plugin</label>
+			</td>
+		</tr>
+	</table>
+
+	<br />
+
+	<h3>Themes</h3>
+	<table class="form-table">
+		<tr>
+			<td width="300" valign="top">Send me an alert whenever someone...</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left>
+			<label><input type="checkbox" name="nfw_options[a_21]" value="1"<?php echo empty($nfw_options['a_21']) ? '' : ' checked' ?>>&nbsp;uploads a theme (default)</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_22]" value="1"<?php echo empty($nfw_options['a_22']) ? '' : ' checked' ?>>&nbsp;installs a theme (default)</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_23]" value="1"<?php echo empty($nfw_options['a_23']) ? '' : ' checked' ?>>&nbsp;activates a theme</label>
+			<br />
+			<label><input type="checkbox" name="nfw_options[a_24]" value="1"<?php echo empty($nfw_options['a_24']) ? '' : ' checked' ?>>&nbsp;deletes a theme</label>
+			</td>
+		</tr>
+	</table>
+
+	<br />
+
+	<h3>Core</h3>
+	<table class="form-table">
+		<tr>
+			<td width="300" valign="top">Send me an alert whenever someone...</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left>
+			<label><input type="checkbox" name="nfw_options[a_31]" value="1"<?php echo empty($nfw_options['a_31']) ? '' : ' checked' ?>>&nbsp;updates WordPress (default)</label>
+			</td>
+		</tr>
+	</table>
+
+	<br />
+
+	<h3>Contact email</h3>
+	<table class="form-table">
+		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
+			<td width="300" valign="top">Email address where alerts should be sent to</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left>
+			<input type="text" name="nfw_options[alert_email]" size="45" maxlength="250" value="<?php echo empty( $nfw_options['alert_email']) ? get_option('admin_email') : $nfw_options['alert_email'] ?>">
+			</td>
+		</tr>
+	</table>
+
+	<br />
+	<br />
+	<input class="button-primary" type="submit" name="Save" value="Save E-mail Alerts" />
+
+	</form>
+
+</div>
+<?php
+
+}
+/* ================================================================== */
+
+function nf_sub_alerts_save() {
+
+	// Save e-mail alerts :
+
+	if (! current_user_can( 'manage_options' ) ) {
+		wp_die( 'You do not have sufficient permissions to access this page.',
+			'', array( 'response' => 403 ) );
+	}
+
+	global $nfw_options;
+
+	if (! preg_match('/^[012]$/', $_POST['nfw_options']['a_0']) ) {
+		$nfw_options['a_0'] = 1;
+	} else {
+		$nfw_options['a_0'] = $_POST['nfw_options']['a_0'];
+	}
+
+	if ( empty( $_POST['nfw_options']['a_11']) ) {
+		$nfw_options['a_11'] = 0;
+	} else {
+		$nfw_options['a_11'] = $_POST['nfw_options']['a_11'];
+	}
+	if ( empty( $_POST['nfw_options']['a_12']) ) {
+		$nfw_options['a_12'] = 0;
+	} else {
+		$nfw_options['a_12'] = $_POST['nfw_options']['a_12'];
+	}
+	if ( empty( $_POST['nfw_options']['a_13']) ) {
+		$nfw_options['a_13'] = 0;
+	} else {
+		$nfw_options['a_13'] = $_POST['nfw_options']['a_13'];
+	}
+	if ( empty( $_POST['nfw_options']['a_14']) ) {
+		$nfw_options['a_14'] = 0;
+	} else {
+		$nfw_options['a_14'] = $_POST['nfw_options']['a_14'];
+	}
+	if ( empty( $_POST['nfw_options']['a_15']) ) {
+		$nfw_options['a_15'] = 0;
+	} else {
+		$nfw_options['a_15'] = $_POST['nfw_options']['a_15'];
+	}
+	if ( empty( $_POST['nfw_options']['a_16']) ) {
+		$nfw_options['a_16'] = 0;
+	} else {
+		$nfw_options['a_16'] = $_POST['nfw_options']['a_16'];
+	}
+
+	if ( empty( $_POST['nfw_options']['a_21']) ) {
+		$nfw_options['a_21'] = 0;
+	} else {
+		$nfw_options['a_21'] = $_POST['nfw_options']['a_21'];
+	}
+	if ( empty( $_POST['nfw_options']['a_22']) ) {
+		$nfw_options['a_22'] = 0;
+	} else {
+		$nfw_options['a_22'] = $_POST['nfw_options']['a_22'];
+	}
+	if ( empty( $_POST['nfw_options']['a_23']) ) {
+		$nfw_options['a_23'] = 0;
+	} else {
+		$nfw_options['a_23'] = $_POST['nfw_options']['a_23'];
+	}
+	if ( empty( $_POST['nfw_options']['a_24']) ) {
+		$nfw_options['a_24'] = 0;
+	} else {
+		$nfw_options['a_24'] = $_POST['nfw_options']['a_24'];
+	}
+
+	if ( empty( $_POST['nfw_options']['a_31']) ) {
+		$nfw_options['a_31'] = 0;
+	} else {
+		$nfw_options['a_31'] = $_POST['nfw_options']['a_31'];
+	}
+
+	if (! empty( $_POST['nfw_options']['alert_email']) ) {
+		$nfw_options['alert_email'] = sanitize_email( $_POST['nfw_options']['alert_email'] );
+	}
+	if ( empty( $nfw_options['alert_email'] ) ) {
+		$nfw_options['alert_email'] = get_option('admin_email');
+	}
+
+	// Update options :
+	update_option( 'nfw_options', $nfw_options );
+
+}
+
+/* ================================================================== */
+
 function nf_sub_log() {
 
 	// Firewall Log menu :
@@ -1906,18 +2170,8 @@ function nf_sub_log() {
 		$skip = $count - $max_lines;
 	}
 
-	// Try to get the user timezone from WP configuration...
-	$tzstring = get_option( 'timezone_string' );
-	// ...or from PHP...
-	if (! $tzstring ) {
-		$tzstring = ini_get( 'date.timezone' );
-		// ...or use UTC :
-		if (! $tzstring ) {
-			$tzstring = 'UTC';
-		}
-	}
-	// Set the timezone :
-	date_default_timezone_set( $tzstring );
+	// Get timezone :
+	get_blog_timezone();
 
 	$levels = array( '', 'medium', 'high', 'critical', 'error', 'upload', 'info', 'DEBUG_ON' );
 	echo '
@@ -2013,11 +2267,11 @@ function nf_sub_edit() {
 		}
 	}
 
-	echo '<br /><h3>NinjaFirewall security built-in rules</h3>
+	echo '<br /><h3>NinjaFirewall built-in security rules</h3>
 	<table class="form-table">
 		<tr>
 			<td width="300">
-			<p>Select the rule you want to disable or enable.</p>
+			<p>Select the rule you want to disable or enable</p>
 			</td>
 			<td width="20">&nbsp;</td>
 			<td align="left">
@@ -2025,7 +2279,7 @@ function nf_sub_edit() {
 			<select name="sel_e_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
 				<option value="0">Total rules enabled : ' . count( $enabled_rules ) . '</option>';
 	ksort( $enabled_rules );
-$bla='    ';
+
 	foreach ( $enabled_rules as $key ) {
 		// skip those ones, they can be changed in the Firewall Policies section:
 		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) { continue; }
@@ -2075,7 +2329,7 @@ function nf_sub_about() {
 	echo '
 <script>
 function show_table(table_id) {
-	var av_table = [11, 12, 13];
+	var av_table = [11, 12, 13, 14];
 	for (var i = 0; i < av_table.length; i++) {
 		if ( table_id == av_table[i] ) {
 			document.getElementById(table_id).style.display = "";
@@ -2107,21 +2361,21 @@ function show_table(table_id) {
 
 					<table border="0" class="smallblack" cellspacing="2" cellpadding="10" width="100%">
 						<tr valign=top>
-							<td align=center style="border-right:dotted 0px #FDCD25;">
+							<td align=center style="border-right:dotted 0px #FDCD25;" width="33%">
 								<img src="' . plugins_url( '/images/logo_nm_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjamonitoring.com/" title="NinjaMonitoring: monitor your website for suspicious activities"><b>NinjaMonitoring</b></a>
 								<br />
 								Monitor your website for suspicious activities.
 							</td>
-							<td align=center style="border-right:dotted 0px #FDCD25;">
+							<td align=center style="border-right:dotted 0px #FDCD25;" width="34%">
 								<img src="' . plugins_url( '/images/logo_pro_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjafirewall.com/" title="NinjaFirewall: advanced firewall software for all your PHP applications"><b>NinjaFirewall</b></a>
 								<br />
 								Advanced firewall software for all your PHP applications.
 							</td>
-							<td align=center>
+							<td align=center width="33%">
 								<img src="' . plugins_url( '/images/logo_nr_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjarecovery.com/" title="NinjaRecovery: Incident response, malware removal &amp; hacking recovery"><b>NinjaRecovery</b></a>
@@ -2136,7 +2390,7 @@ function show_table(table_id) {
 		</table>
 		<br />
 		<br />
-		<input class="button-secondary" type="button" value="Changelog" onclick="show_table(12);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-primary" type="button" value="Spread the word about the Ninja !" onclick="show_table(11);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="System Info" onclick="show_table(13);">
+		<input class="button-secondary" type="button" value="Changelog" onclick="show_table(12);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-primary" type="button" value="Spread the word about the Ninja !" onclick="show_table(11);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="System Info" onclick="show_table(13);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="Privacy Policy" onclick="show_table(14);">
 		<br />
 		<br />
 
@@ -2203,7 +2457,16 @@ function show_table(table_id) {
 		}
 	}
 
-	echo '</table>
+	echo '
+		</table>
+		<table id="14" style="display:none;" width="500">
+			<tr>
+				<td>
+					<textarea class="large-text code" cols="60" rows="8">NinTechNet strictly follows the WordPress Plugin Developer guidelines &lt;http://wordpress.org/plugins/about/guidelines/&gt;: NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be used or installed.' . "\n" . 'Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.</textarea>
+				</td>
+			</tr>
+		</table>
+
 	</center>
 </div>';
 
@@ -2231,6 +2494,77 @@ add_filter( 'plugin_action_links', 'ninjafirewall_settings_link', 10, 2);
 
 /* ================================================================== */
 
+function get_blog_timezone() {
+
+	// Try to get the user timezone from WP configuration...
+	$tzstring = get_option( 'timezone_string' );
+	// ...or from PHP...
+	if (! $tzstring ) {
+		$tzstring = ini_get( 'date.timezone' );
+		// ...or use UTC :
+		if (! $tzstring ) {
+			$tzstring = 'UTC';
+		}
+	}
+	// Set the timezone :
+	date_default_timezone_set( $tzstring );
+
+}
+/* ================================================================== */
+
+function check_email_alert() {
+
+	global $nfw_options;
+	global $current_user;
+	$current_user = wp_get_current_user();
+
+	if (! isset( $nfw_options) ) {
+		$nfw_options = get_option( 'nfw_options' );
+	}
+
+	// Check what it is :
+	list( $a_1, $a_2, $a_3 ) = explode( ':', NFW_ALERT . ':' );
+
+	// Shall we alert the admin ?
+	if (! empty($nfw_options['a_' . $a_1 . $a_2]) ) {
+		$alert_array = array(
+			'1' => array (
+				'0' => 'Plugin', '1' => 'uploaded',	'2' => 'installed', '3' => 'activated',
+				'4' => 'updated', '5' => 'deactivated', '6' => 'deleted', 'label' => 'Name'
+			),
+			'2' => array (
+				'0' => 'Theme', '1' => 'uploaded', '2' => 'installed', '3' => 'activated',
+				'4' => 'deleted', 'label' => 'Name'
+			),
+			'3' => array (
+				'0' => 'WordPress', '1' => 'upgraded',	'label' => 'Version'
+			)
+		);
+
+		// Get timezone :
+		get_blog_timezone();
+
+		if ( substr_count($a_3, ',') ) {
+			$alert_array[$a_1][0] .= 's';
+			$alert_array[$a_1]['label'] .= 's';
+		}
+		$subject = '[NinjaFirewall] Alert: ' . $alert_array[$a_1][0] . ' ' . $alert_array[$a_1][$a_2];
+		$message = 'NinjaFirewall has detected the following activity on your account:' . "\n\n".
+			'- ' . $alert_array[$a_1][0] . ' ' . $alert_array[$a_1][$a_2] . "\n" .
+			'- ' . $alert_array[$a_1]['label'] . ' : ' . $a_3 . "\n\n" .
+			'- User : ' . $current_user->user_login . ' (' . $current_user->roles[0] . ")\n" .
+			'- IP   : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
+			'- Date : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n" .
+			'- URL  : ';
+		if ( is_multisite() ) {
+			$message .= network_home_url() . "\n";
+		} else {
+			$message .= home_url() . "\n";
+		}
+		wp_mail( $nfw_options['alert_email'], $subject, $message );
+	}
+}
+/* ================================================================== */
 
 // EOF //
 ?>

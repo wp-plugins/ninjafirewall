@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: firewall, security, protection, malware, virus, hacking, attack, admin
 Requires at least: 3.3.0
 Tested up to: 3.6
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,11 +26,10 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Blocks direct access to PHP scripts located inside specific directories
 * Whitelist option for WordPress administrator(s), localhost and private IP address spaces
 * Configurable HTTP return code and message
+* E-mail alerts on specific events (user login, plugin/theme installation, update, activation, deactivation, deletion)
+* Rules editor to enable/disable built-in security rules
 * Activity log and statistics
 * Debugging mode
-
-[NinjaFirewall (WP edition)](http://ninjafirewall.com/ninjafirewall_wp.html "NinjaFirewall") is 100% free, 100% open source and 100% fully functional: no trialware, no registration or activation key needed :)
-
 
 = Requirements =
 
@@ -38,6 +37,12 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * PHP 5.3 or higher
 * Apache / Nginx / LiteSpeed
 * Unix-like OS (Linux, *BSD) only
+
+= Privacy Policy =
+
+[NinTechNet](http://nintechnet.com/ "NinTechNet") strictly follows the [WordPress Plugin Developer guidelines](http://wordpress.org/plugins/about/guidelines/ ""): our software, [NinjaFirewall (WP edition)](http://ninjafirewall.com/ninjafirewall_wp.html "NinjaFirewall"), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home".
+It does not require a registration process or an activation key to be used or installed.
+Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.
 
 == Installation ==
 
@@ -57,6 +62,10 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 == Upgrade Notice ==
 
+= 1.0.4 =
+* Added an `E-mail Alerts` configuration page to send alerts on specific events (users login, themes/plugins installation, activation, deletion etc).
+* Added `Privacy Policy` to the About page and to the installer.
+
 = 1.0.3 =
 * Added a `Rules Editor` menu to enable/disable built-in rules individually.
 * Fixed installation issue with Listespeed HTTP server when using Apache-style configuration directives (`php_value`).
@@ -75,6 +84,10 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Initial release.
 
 == Changelog ==
+
+= 1.0.4 =
+* Added an `E-mail Alerts` configuration page to send alerts on specific events (users login, themes/plugins installation, activation, deletion etc).
+* Added `Privacy Policy` to the About page and to the installer.
 
 = 1.0.3 =
 * Added a `Rules Editor` menu to enable/disable built-in rules individually.

@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-06-21 13:55:50                                       |
+ | REVISION: 2013-08-28 01:39:44                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -23,7 +23,6 @@
 */
 
 if ( $_SERVER['SCRIPT_FILENAME'] == __FILE__ ) { die('Forbidden'); }
-
 
 // Set to '0' if you don't want NinjaFirewall to output error
 // and warning messages (not recommended, though) :
@@ -144,6 +143,87 @@ if (! empty($nfw_options['disallow_edit']) ) {
 // Disable plugin and theme update/installation ?
 if (! empty($nfw_options['disallow_mods']) ) {
 	define('DISALLOW_FILE_MODS', true);
+}
+
+// E-mail alerts
+$a_msg = '';
+// plugins.php
+if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
+	if ( isset( $_REQUEST['action2'] )) {
+		if ( (! isset( $_REQUEST['action'] )) || ( $_REQUEST['action'] == '-1') ) {
+			$_REQUEST['action'] = $_REQUEST['action2'];
+		}
+		$_REQUEST['action2'] = '-1';
+	}
+	if ( isset( $_REQUEST['action'] )  ) {
+		if ( $_REQUEST['action'] == 'update-selected' ) {
+			if (! empty( $_POST['checked'] ) ) {
+				$a_msg = '1:4:' . @implode(", ", $_POST['checked']);
+			}
+		} elseif ( $_REQUEST['action'] == 'activate' ) {
+			$a_msg = '1:3:' . @$_REQUEST['plugin'];
+		} elseif ( $_REQUEST['action'] == 'activate-selected' ) {
+			if (! empty( $_POST['checked'] ) ) {
+				$a_msg = '1:3:' . @implode(", ", $_POST['checked']);
+			}
+		} elseif ( $_REQUEST['action'] == 'deactivate' ) {
+			$a_msg = '1:5:' . @$_REQUEST['plugin'];
+		} elseif ( ( $_REQUEST['action'] == 'deactivate-selected' ) ){
+			if (! empty( $_POST['checked'] ) ) {
+				$a_msg = '1:5:' . @implode(", ", $_POST['checked']);
+			}
+		} elseif ( ( $_REQUEST['action'] == 'delete-selected' ) &&
+			( isset($_REQUEST['verify-delete'])) ) {
+			if (! empty( $_POST['checked'] ) ) {
+				$a_msg = '1:6:' . @implode(", ", $_POST['checked']);
+			}
+		}
+	}
+// themes.php
+} elseif ( strpos($_SERVER['SCRIPT_NAME'], '/themes.php' ) !== FALSE ) {
+	if ( isset( $_GET['action'] )  ) {
+		if ( $_GET['action'] == 'activate' ) {
+			$a_msg = '2:3:' . @$_GET['stylesheet'];
+		} elseif ( $_GET['action'] == 'delete' ) {
+			$a_msg = '2:4:' . @$_GET['stylesheet'];
+		}
+	}
+// update.php
+} elseif ( strpos($_SERVER['SCRIPT_NAME'], '/update.php' ) !== FALSE ) {
+	if ( isset( $_GET['action'] )  ) {
+		if ( $_REQUEST['action'] == 'update-selected' ) {
+			if (! empty( $_POST['checked'] ) ) {
+				$a_msg = '1:4:' . @implode(", ", $_POST['checked']);
+			}
+		} elseif ( $_GET['action'] == 'upgrade-plugin' ) {
+			$a_msg = '1:4:' . @$_REQUEST['plugin'];
+		} elseif ( $_GET['action'] == 'activate-plugin' ) {
+			$a_msg = '1:3:' . @$_GET['plugins'];
+		} elseif ( $_GET['action'] == 'install-plugin' ) {
+			$a_msg = '1:2:' . @$_REQUEST['plugin'];
+		} elseif ( $_GET['action'] == 'upload-plugin' ) {
+			$a_msg = '1:1:' . @$_FILES['pluginzip']['name'];
+		} elseif ( $_GET['action'] == 'install-theme' ) {
+			$a_msg = '2:2:' . @$_REQUEST['theme'];
+		} elseif ( $_GET['action'] == 'upload-theme' ) {
+			$a_msg = '2:1:' . @$_FILES['themezip']['name'];
+		}
+	}
+// update-core.php
+} elseif ( strpos($_SERVER['SCRIPT_NAME'], '/update-core.php' ) !== FALSE ) {
+	if ( isset( $_GET['action'] )  ) {
+		if ( $_GET['action'] == 'do-plugin-upgrade' ) {
+			if (! empty( $_POST['checked'] ) ) {
+				$a_msg = '1:4:' . @implode(", ", $_POST['checked']);
+			}
+		} elseif ( $_GET['action'] == 'do-core-upgrade' ) {
+			$a_msg = '3:1:' . @$_POST['version'];
+		}
+	}
+}
+if ( $a_msg ) {
+	// Enable alerts flag :
+	define('NFW_ALERT', $a_msg);
 }
 
 // Do not scan/filter WordPress admin (if logged in) ?

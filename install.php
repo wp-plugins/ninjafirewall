@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-08-11 12:51:12                                       |
+ | REVISION: 2013-08-28 01:40:32                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -40,7 +40,6 @@ return;
 function nfw_install_1() {
 
 ?>
-
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(<?php echo plugins_url() ?>/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
 	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
@@ -48,7 +47,7 @@ function nfw_install_1() {
 	<br />
 	Thank you for using NinjaFirewall (<font color=#21759B>WP</font> edition)&nbsp;!
 	<br /><br />
-	This installer will help you to make the setup process as quick and easy as possible. But before doing so, please read carefully the following:
+	This installer will help you to make the setup process as quick and easy as possible. But before doing so, please read carefully the following lines:
 	<br /><br />
 	Although NinjaFirewall looks like a regular plugin, it is not. It can be installed and configured from WordPress admin console, but it is a stand-alone web application firewall that sits in front of WordPress. That means that it will hook, scan, reject and/or sanitise any HTTP/HTTPS request sent to a PHP script before it reaches WordPress. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers backdoors &amp; shell scripts will be filtered by NinjaFirewall.
 	<br /><br />
@@ -67,6 +66,9 @@ function nfw_install_1() {
 		<input class="button-primary" type="submit" name="Save" value="Enough chitchat, let's go ! &gt;&gt;" />
 		<input type="hidden" name="nfw_act" value="1" />
 	</form>
+	<br />
+	<h3>Privacy Policy</h3>
+	<a href="http://nintechnet.com/" title="nintechnet.com">NinTechNet</a> strictly follows the WordPress <a href="http://wordpress.org/plugins/about/guidelines/">Plugin Developer guidelines</a>&nbsp;: our software, NinjaFirewall (WP edition), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be used or installed.<br />Because <strong>we do not collect any user data</strong>, we do not even know that you are using (and hopefully enjoying!) our product.<br />&nbsp;
 </div>
 <?php
 
@@ -595,6 +597,20 @@ function nfw_default_conf() {
 		'disallow_edit'	=> 1,
 		'disallow_mods'	=> 0,
 		'wl_admin'			=> 1,
+		// v1.0.4
+		'a_0' 				=> 1,
+		'a_11' 				=> 1,
+		'a_12' 				=> 1,
+		'a_13' 				=> 0,
+		'a_14' 				=> 0,
+		'a_15' 				=> 1,
+		'a_16' 				=> 0,
+		'a_21' 				=> 1,
+		'a_22' 				=> 1,
+		'a_23' 				=> 0,
+		'a_24' 				=> 0,
+		'a_31' 				=> 1,
+		'alert_email'	 	=> get_option('admin_email')
 	);
 
 	// save new options but do not overwrite existing ones :
@@ -606,8 +622,6 @@ function nfw_default_conf() {
 	// Update engine and rules versions :
 	$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
 	$nfw_options['rules_version']  = NFW_RULES_VERSION;
-
-
 
 	// Get current rules if this is an update :
 	$nfw_rules = get_option( 'nfw_rules' );
