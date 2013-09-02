@@ -31,6 +31,9 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Activity log and statistics
 * Debugging mode
 
+= Multi-site beta version =
+A multi-site compatible beta version is available for testing purposes. Please see the [Support forum](http://wordpress.org/support/plugin/ninjafirewall "").
+
 = Requirements =
 
 * WordPress 3.3 or higher (single-user version only)
