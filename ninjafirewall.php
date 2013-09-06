@@ -141,7 +141,7 @@ function nfw_upgrade() {
 			$nfw_options['alert_email'] = get_option('admin_email');
 		}
 		// v1.1.0 update :
-		if (! isset( $nfw_options['post_b64'] ) {
+		if (! isset( $nfw_options['post_b64'] ) ) {
 			$nfw_options['alert_sa_only']  = 2;
 			$nfw_options['nt_show_status'] = 1;
 			$nfw_options['post_b64']       = 1;
