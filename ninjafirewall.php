@@ -3,10 +3,11 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true web application firewall for WordPress.
-Version: 1.0.4
+Version: 1.1.0
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
+Network: true
 */
 
 /*
@@ -18,10 +19,10 @@ License: GPLv2 or later
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-08-28 01:40:04                                       |
+ | REVISION: 2013-09-05 15:17:29                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.0.4' );
+define( 'NFW_ENGINE_VERSION', '1.1.0' );
 define( 'NFW_RULES_VERSION',  '20130621' );
  /*
  +---------------------------------------------------------------------+
@@ -69,9 +70,9 @@ function nfw_activate() {
 		"it is deprecated as of PHP 5.3.0 (see http://php.net/safe-mode)" );
 	}
 
-	// No support for multisite installation (not yet) :
-	if ( is_multisite() ) {
-		exit( "NinjaFirewall is not compatible with WordPress Multisite installations." );
+	// Multisite installation requires superadmin privileges :
+	if ( ( is_multisite() ) && (! current_user_can( 'manage_network' ) ) ) {
+		exit( "You are not allowed to activate NinjaFirewall");
 	}
 
 	// We don't do Windows :
@@ -139,6 +140,12 @@ function nfw_upgrade() {
 			$nfw_options['a_24'] = 0; $nfw_options['a_31'] = 1;
 			$nfw_options['alert_email'] = get_option('admin_email');
 		}
+		// v1.1.0 update :
+		if (! isset( $nfw_options['post_b64'] ) {
+			$nfw_options['alert_sa_only']  = 2;
+			$nfw_options['nt_show_status'] = 1;
+			$nfw_options['post_b64']       = 1;
+		}
 	}
 
 	// do we need to update rules as well ?
@@ -186,20 +193,33 @@ function nfw_login_hook( $user_login, $user ) {
 	// Check if the user is an admin and if we must whitelist him/her :
 
 	global $nfw_options;
+	if (! isset( $nfw_options ) ) {
+		$nfw_options = get_option( 'nfw_options' );
+	}
+
+	if ( empty( $user->roles[0] ) ) {
+		// This can occur in multisite mode, when the Super Admin logs in
+		// to the admin console of a child site but is not in the users
+		// list of that site :
+		$whoami = 'not in users list';
+		$admin_flag = 1;
+	} elseif ( $user->roles[0] == 'administrator' ) {
+		$whoami = 'administrator';
+		$admin_flag = 1;
+	} else {
+		$whoami = $user->roles[0];
+		$admin_flag = 0;
+	}
 
 	// Are we supposed to send an alert ?
 	if (! empty($nfw_options['a_0']) ) {
 		// User login:
-		if ( ( ( $nfw_options['a_0'] == 1) && ( $user->roles[0] == 'administrator' )  ) ||
-			( $nfw_options['a_0'] == 2 ) ) {
-			send_login_email( $user_login, $user );
+		if ( ( ( $nfw_options['a_0'] == 1) && ( $admin_flag )  ) ||	( $nfw_options['a_0'] == 2 ) ) {
+			send_login_email( $user_login, $whoami );
 		}
 	}
 
-	if ( $user->roles[0] == 'administrator' ) {
-		if (! isset( $nfw_options ) ) {
-			$nfw_options = get_option( 'nfw_options' );
-		}
+	if ( $admin_flag ) {
 		if (! empty( $nfw_options['wl_admin']) ) {
 			// Set the goodguy flag :
 			$_SESSION['nfw_goodguy'] = true;
@@ -215,26 +235,26 @@ add_action( 'wp_login', 'nfw_login_hook', 10, 2 );
 
 /* ================================================================== */
 
-function send_login_email( $user_login, $user ) {
+function send_login_email( $user_login, $whoami ) {
 
 	global $nfw_options;
+
+	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 1 ) ) {
+		$recipient = $nfw_options['alert_email'];
+	} else {
+		$recipient = get_option('admin_email');
+	}
 
 	// Get timezone :
 	get_blog_timezone();
 
 	$subject = '[NinjaFirewall] Alert: WordPress console login';
 	$message = 'Someone just logged in to your WordPress admin console:' . "\n\n".
-				'- User : ' . $user_login . ' (' . $user->roles[0] . ")\n" .
+				'- User : ' . $user_login . ' (' . $whoami . ")\n" .
 				'- IP   : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
 				'- Date : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n" .
-				'- URL  : ';
-	if ( is_multisite() ) {
-		$message .= network_home_url() . "\n";
-	} else {
-		$message .= home_url() . "\n";
-	}
-
-	wp_mail( $nfw_options['alert_email'], $subject, $message );
+				'- URL  : ' . site_url();
+	wp_mail( $recipient, $subject, $message );
 
 }
 /* ================================================================== */
@@ -280,6 +300,10 @@ function is_nfw_enabled() {
 /* ================================================================== */
 
 function ninjafirewall_admin_menu() {
+
+	if ( ( is_multisite() ) && (! current_user_can( 'manage_network' ) ) ) {
+		return;
+	}
 
 	// Some constants first :
 	define( 'NFW_NULL_BYTE', 2);
@@ -339,6 +363,11 @@ function ninjafirewall_admin_menu() {
 		'nfsubpolicies', 'nf_sub_policies' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubpolicies' );
 
+	// Network menu (multisite only) :
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Network', 'Network', 'manage_network',
+		'nfsubnetwork', 'nf_sub_network' );
+	add_action( 'load-' . $menu_hook, 'help_nfsubnetwork' );
+
 	// Alerts menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: E-mail alerts', 'E-mail alerts', 'manage_options',
 		'nfsubalerts', 'nf_sub_alerts' );
@@ -361,7 +390,66 @@ function ninjafirewall_admin_menu() {
 
 }
 
-add_action( 'admin_menu', 'ninjafirewall_admin_menu' );
+if (! is_multisite() )  {
+	add_action( 'admin_menu', 'ninjafirewall_admin_menu' );
+} else {
+	// In multisite mode, menu is only available to the Super Admin:
+	add_action( 'network_admin_menu', 'ninjafirewall_admin_menu' );
+}
+
+/* ================================================================== */
+
+function nf_admin_bar_status() {
+
+	// Display the status icon to administrators (multi-site mode only) :
+	if (! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	// Check whether the option is enabled or not :
+	global $nfw_options;
+	if (! isset( $nfw_options) ) {
+		$nfw_options = get_option( 'nfw_options' );
+	}
+	if ( $nfw_options['nt_show_status'] != 1 ) {
+		return;
+	}
+
+	// Obviously, we don't put any icon if NinjaFirewall isn't running
+	// or is in debugging mode :
+	list ( $user_enabled, $hook_enabled, $debug_enabled ) = is_nfw_enabled();
+	if ( (! $user_enabled) || (! $hook_enabled ) || ( $debug_enabled ) ) {
+		return;
+	}
+
+	global $wp_admin_bar;
+	$wp_admin_bar->add_menu( array(
+		'id'    => 'nfw_ntw1',
+		'title' => __( '<img src="' . plugins_url() . '/ninjafirewall/images/ninjafirewall_20.png" ' .
+				'style="vertical-align:middle;margin-right:5px" />'),
+	) );
+
+	// Add sub menu link for Super Admin only :
+	if ( current_user_can( 'manage_network' ) ) {
+		$wp_admin_bar->add_menu( array(
+			'parent' => 'nfw_ntw1',
+			'id'     => 'nfw_ntw2',
+			'title'  => __( 'NinjaFirewall Settings'),
+			'href'   => __( network_admin_url() . 'admin.php?page=NinjaFirewall'),
+		) );
+	// else, show status :
+	} else {
+		$wp_admin_bar->add_menu( array(
+			'parent' => 'nfw_ntw1',
+			'id'     => 'nfw_ntw2',
+			'title'  => __( 'NinjaFirewall is enabled'),
+		) );
+	}
+}
+
+if ( is_multisite() )  {
+	add_action('admin_bar_menu', 'nf_admin_bar_status', 95);
+}
 
 /* ================================================================== */
 
@@ -420,7 +508,7 @@ function nf_menu_main() {
 	}
 	// first run ?
 	if (  ( defined( 'NFW_IT_WORKS' )) || (! empty( $_GET['nfw_firstrun']) ) ) {
-		echo '<br><div class="updated settings-error"><p><strong>Congratulations&nbsp;!</strong> NinjaFirewall is up and running. Use the menus in the left frame to configure it according to your needs.<br />If you need help, click on the contextual <strong>Help</strong> menu tab located in the upper right corner of each page.</p></div>';
+		echo '<br><div class="updated settings-error"><p><strong>Congratulations&nbsp;!</strong> NinjaFirewall is up and running. Use the menu in the left frame to configure it according to your needs.<br />If you need help, click on the contextual <strong>Help</strong> menu tab located in the upper right corner of each page.</p></div>';
 	}
 	?>
 	<br />
@@ -1000,6 +1088,11 @@ function chksubmenu() {
 	} else {
 		$post_sanitise = 1;
 	}
+	if ( empty( $nfw_options['post_b64']) ) {
+		$post_b64 = 0;
+	} else {
+		$post_b64 = 1;
+	}
 	?>
 	<h3>POST requests</h3>
 	<table class="form-table">
@@ -1020,7 +1113,17 @@ function chksubmenu() {
 				<label><input type="radio" name="nfw_options[post_sanitise]" value="1"<?php if ( $post_sanitise == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
 			</td>
 			<td align=left>
-				<label><input type="radio" name="nfw_options[post_sanitise]" value="0"<?php if ( $post_sanitise == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Warning : do not enable this option if you do not know what you are doing&nbsp;!</span>
+				<label><input type="radio" name="nfw_options[post_sanitise]" value="0"<?php if ( $post_sanitise == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Do not enable this option unless you know what you are doing!</span>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td width="300">Decode base64-encoded <code>POST</code> requests</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left width="120">
+				<label><input type="radio" name="nfw_options[post_b64]" value="1"<?php if ( $post_b64 == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			</td>
+			<td align=left>
+				<label><input type="radio" name="nfw_options[post_b64]" value="0"<?php if ( $post_b64 == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1160,7 +1263,7 @@ function chksubmenu() {
 				<label><input type="radio" name="nfw_options[referer_post]" value="1"<?php if ( $referer_post == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
 			</td>
 			<td align=left>
-				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php if ( $referer_post == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Warning : keep this option disabled if you are using scripts like Paypal IPN etc.</span>
+				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php if ( $referer_post == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Keep this option disabled if you are using scripts like Paypal IPN etc.</span>
 			</td>
 		</tr>
 	</table>
@@ -1581,10 +1684,17 @@ function nf_sub_policies_save() {
 	}
 	// Sanitise POST requests ?
 	if ( empty( $_POST['nfw_options']['post_sanitise']) ) {
+		// Default: no
 		$nfw_options['post_sanitise'] = 0;
 	} else {
-		// Default: no
 		$nfw_options['post_sanitise'] = 1;
+	}
+	// Decode base64 values in POST requests ?
+	if ( empty( $_POST['nfw_options']['post_b64']) ) {
+		$nfw_options['post_b64'] = 0;
+	} else {
+		// Default: yes
+		$nfw_options['post_b64'] = 1;
 	}
 
 
@@ -1866,7 +1976,7 @@ function nf_sub_policies_default() {
 	$nfw_options['force_ssl'] 			= 0;
 	$nfw_options['disallow_edit'] 	= 1;
 	$nfw_options['disallow_mods'] 	= 0;
-
+	$nfw_options['post_b64']			= 1;
 	$nfw_options['wl_admin']			= 1;
 	$_SESSION['nfw_goodguy'] 			= true;
 
@@ -1890,6 +2000,71 @@ function nf_sub_policies_default() {
 	update_option( 'nfw_options', $nfw_options);
 	update_option( 'nfw_rules', $nfw_rules);
 
+}
+
+/* ================================================================== */
+
+function nf_sub_network() {
+
+	// Network menu (multi-site only) :
+
+	if (! current_user_can( 'manage_network' ) ) {
+		wp_die( 'You do not have sufficient permissions to access this page.',
+			'', array( 'response' => 403 ) );
+	}
+
+	global $nfw_options;
+	if (! isset( $nfw_options) ) {
+		$nfw_options = get_option( 'nfw_options' );
+	}
+
+	echo '
+<div class="wrap">
+	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
+	<h2>Network</h2>
+	<br />';
+	if (! is_multisite() ) {
+		echo '<div class="updated settings-error"><p>You do not have a multisite network.</p></div></div>';
+		return;
+	}
+
+	// Saved ?
+	if ( isset( $_POST['nfw_options']) ) {
+		if ( $_POST['nfw_options']['nt_show_status'] == 2 ) {
+			$nfw_options['nt_show_status'] = 2;
+		} else {
+			$nfw_options['nt_show_status'] = 1;
+		}
+		// Update options :
+		update_option( 'nfw_options', $nfw_options );
+		echo '<div class="updated settings-error"><p><strong>Your changes have been saved.</strong></p></div>';
+		$nfw_options = get_option( 'nfw_options' );
+	}
+
+	if ( empty($nfw_options['nt_show_status']) ) {
+		$nfw_options['nt_show_status'] = 1;
+	}
+?>
+<form method="post" name="nfwnetwork">
+<h3>NinjaFirewall Status</h3>
+	<table class="form-table">
+		<tr>
+			<td width="300" valign="top">Display NinjaFirewall status icon in the admin bar of all sites in the network</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td width="120" align=left>
+			<label><input type="radio" name="nfw_options[nt_show_status]" value="1"<?php echo $nfw_options['nt_show_status'] != 2 ? ' checked' : '' ?>>&nbsp;Yes (default)</label>
+			<td align=left>
+			<label><input type="radio" name="nfw_options[nt_show_status]" value="2"<?php echo $nfw_options['nt_show_status'] == 2 ? ' checked' : '' ?>>&nbsp;No</label>
+			</td>
+		</tr>
+	</table>
+
+	<br />
+	<br />
+	<input class="button-primary" type="submit" name="Save" value="Save Network options" />
+</form>
+</div>
+<?php
 }
 
 /* ================================================================== */
@@ -1998,6 +2173,9 @@ function nf_sub_alerts() {
 
 	<br />
 
+	<?php
+	if (! is_multisite() ) {
+	?>
 	<h3>Contact email</h3>
 	<table class="form-table">
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
@@ -2005,9 +2183,34 @@ function nf_sub_alerts() {
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left>
 			<input type="text" name="nfw_options[alert_email]" size="45" maxlength="250" value="<?php echo empty( $nfw_options['alert_email']) ? get_option('admin_email') : $nfw_options['alert_email'] ?>">
+			<input type="hidden" name="nfw_options[alert_sa_only]" value="2">
 			</td>
 		</tr>
 	</table>
+
+	<?php
+	} else {
+		// Select which admin(s) will recevied alerts in multi-site mode :
+		if (! isset( $nfw_options['alert_sa_only'] ) ) {
+			$nfw_options['alert_sa_only'] = 2;
+		}
+	?>
+	<h3>Contact email</h3>
+	<table class="form-table">
+		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
+			<td width="300" valign="top">Where email alerts should be sent ?</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left>
+			<label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php echo $nfw_options['alert_sa_only'] != 2 ? ' checked' : '' ?>>&nbsp;only to me, the Super Admin (<?php echo get_option('admin_email'); ?>)</label>
+			<br />
+			<label><input type="radio" name="nfw_options[alert_sa_only]" value="2"<?php echo $nfw_options['alert_sa_only'] == 2 ? ' checked' : '' ?>>&nbsp;to the administrator of the site where originated the alert (default)</label>
+			<input type="hidden" name="nfw_options[alert_email]" value="<?php echo get_option('admin_email'); ?>">
+			</td>
+		</tr>
+	</table>
+	<?php
+	}
+	?>
 
 	<br />
 	<br />
@@ -2036,6 +2239,12 @@ function nf_sub_alerts_save() {
 		$nfw_options['a_0'] = 1;
 	} else {
 		$nfw_options['a_0'] = $_POST['nfw_options']['a_0'];
+	}
+
+	if (! preg_match('/^[12]$/', $_POST['nfw_options']['alert_sa_only']) ) {
+		$nfw_options['alert_sa_only'] = 2;
+	} else {
+		$nfw_options['alert_sa_only'] = $_POST['nfw_options']['alert_sa_only'];
 	}
 
 	if ( empty( $_POST['nfw_options']['a_11']) ) {
@@ -2178,22 +2387,45 @@ function nf_sub_log() {
 	<table class="form-table">
 		<tr>
 			<td width="100%">
-				<textarea style="line-height:15px;width:100%;height:320px;font-family:\'Courier New\',Courier,monospace;font-size:12px;padding:4px;" wrap="off">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCIDENT&nbsp;&nbsp;LEVEL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RULE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REQUEST' . "\n";
+				<textarea style="line-height:15px;width:100%;height:320px;font-family:\'Courier New\',Courier,' .
+				'monospace;font-size:12px;padding:4px;" wrap="off">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
+				'DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCIDENT&nbsp;&nbsp;LEVEL&nbsp;&nbsp;' .
+				'&nbsp;&nbsp;&nbsp;RULE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
+				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REQUEST' . "\n";
 
 	$fh = fopen( $log, 'r' );
-	while (! feof( $fh ) ) {
-		$line = fgets( $fh );
-		if ( $skip <= 0 ) {
-			if ( preg_match( '/^\[(\d{10})\]\s+.+?\[(#\d{7})\]\s+\[(\d+)\]\s+\[(\d)\]\s+\[([\d.]+?)\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+)\]$/', $line, $match ) ) {
-				if ( empty( $match[3]) ) { $match[3] = '-'; }
-				$res = date( 'd/M/y H:i:s', $match[1] ) . '  ' . $match[2] . '  ' . str_pad( $levels[$match[4]], 8 , ' ', STR_PAD_RIGHT) .'  ' .
-				str_pad( $match[3], 4 , ' ', STR_PAD_LEFT) . '  ' . str_pad( $match[5], 15, ' ', STR_PAD_RIGHT) . '  ' .
-				$match[6] . ' ' . $match[7] . ' - ' .	$match[8] . ' - [' . $match[9] . "]\n";
-				echo htmlentities( $res );
+	if (! is_multisite() ) {
+		while (! feof( $fh ) ) {
+			$line = fgets( $fh );
+			if ( $skip <= 0 ) {
+				if ( preg_match( '/^\[(\d{10})\]\s+.+?\[(#\d{7})\]\s+\[(\d+)\]\s+\[(\d)\]\s+\[([\d.]+?)\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+)\]$/', $line, $match ) ) {
+					if ( empty( $match[3]) ) { $match[3] = '-'; }
+					$res = date( 'd/M/y H:i:s', $match[1] ) . '  ' . $match[2] . '  ' . str_pad( $levels[$match[4]], 8 , ' ', STR_PAD_RIGHT) .'  ' .
+					str_pad( $match[3], 4 , ' ', STR_PAD_LEFT) . '  ' . str_pad( $match[5], 15, ' ', STR_PAD_RIGHT) . '  ' .
+					$match[6] . ' ' . $match[7] . ' - ' .	$match[8] . ' - [' . $match[9] . "]\n";
+					echo htmlentities( $res );
+				}
 			}
+			$skip--;
 		}
-		$skip--;
+	} else {
+		// Fetch the domain name and append it to the log line
+		// if we are in multi-site mode :
+		while (! feof( $fh ) ) {
+			$line = fgets( $fh );
+			if ( $skip <= 0 ) {
+				if ( preg_match( '/^\[(\d{10})\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(#\d{7})\]\s+\[(\d+)\]\s+\[(\d)\]\s+\[([\d.]+?)\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+)\]$/', $line, $match ) ) {
+					if ( empty( $match[4]) ) { $match[4] = '-'; }
+					$res = date( 'd/M/y H:i:s', $match[1] ) . '  ' . $match[3] . '  ' . str_pad( $levels[$match[5]], 8 , ' ', STR_PAD_RIGHT) .'  ' .
+					str_pad( $match[4], 4 , ' ', STR_PAD_LEFT) . '  ' . str_pad( $match[6], 15, ' ', STR_PAD_RIGHT) . '  ' .
+					$match[7] . ' ' . $match[8] . ' - ' .	$match[9] . ' - [' . $match[10] . '] - ' . $match[2] ."\n";
+					echo htmlentities( $res );
+				}
+			}
+			$skip--;
+		}
 	}
+
 	fclose( $fh );
 
 	$log_stat = stat( $log );
@@ -2515,6 +2747,13 @@ function get_blog_timezone() {
 function check_email_alert() {
 
 	global $nfw_options;
+
+	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 1 ) ) {
+		$recipient = $nfw_options['alert_email'];
+	} else {
+		$recipient = get_option('admin_email');
+	}
+
 	global $current_user;
 	$current_user = wp_get_current_user();
 
@@ -2555,13 +2794,8 @@ function check_email_alert() {
 			'- User : ' . $current_user->user_login . ' (' . $current_user->roles[0] . ")\n" .
 			'- IP   : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
 			'- Date : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n" .
-			'- URL  : ';
-		if ( is_multisite() ) {
-			$message .= network_home_url() . "\n";
-		} else {
-			$message .= home_url() . "\n";
-		}
-		wp_mail( $nfw_options['alert_email'], $subject, $message );
+			'- URL  : ' . site_url();
+		wp_mail( $recipient, $subject, $message );
 	}
 }
 /* ================================================================== */

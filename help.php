@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-08-28 01:40:22                                    |
+ | REVISION: 2013-09-05 15:16:57                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -119,6 +119,7 @@ function help_nfsubpolicies() {
 
 		<strong>POST requests</strong>
 		<li>whether to scan and/or sanitise <code>POST</code> requests.</li>
+		<li>Decode base64-encoded <code>POST</code> requests:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for <code>POST</code> requests.</span></li>
 
 		<strong>Cookies</strong>
 		<li>whether to scan and/or sanitise <code>Cookies</code> requests.</li>
@@ -161,6 +162,17 @@ function help_nfsubpolicies() {
 		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall. This applies to all Firewall Policies listed below, except <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options which, if enabled, are always enforced.<br /><span>'
 	) );
 
+}
+/* ================================================================== */
+
+function help_nfsubnetwork() {
+
+	// Network (multisite version only) :
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'network01',
+		'title'     => 'Network',
+		'content'   => '<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.'
+	) );
 }
 /* ================================================================== */
 
