@@ -1,9 +1,9 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet
-Tags: firewall, security, protection, malware, virus, hacking, attack, admin
+Tags: firewall, security, protection, malware, virus, hacking, attack, trojan, backdoor, WAF
 Requires at least: 3.3.0
 Tested up to: 3.6
-Stable tag: 1.0.4
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,13 +16,14 @@ NinjaFirewall (WP edition) is a true web application firewall. Although it can b
 It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP script before it reaches WordPress. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers shell scripts and backdoors will be filtered by NinjaFirewall.
 
 * Full standalone web application firewall
+* Multi-site support
 * Protects against RFI, LFI, XSS, code execution, SQL injections, brute-force scanners, shell scripts, backdoors and many other threats
 * Scans and/or sanitises GET / POST requests, HTTP / HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
 * Sanitises variables names and values
+* Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
 * Blocks/allows uploads, sanitises uploaded file names
 * Blocks suspicious bots and scanners
 * Hides PHP error and notice messages
-* Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers)
 * Blocks direct access to PHP scripts located inside specific directories
 * Whitelist option for WordPress administrator(s), localhost and private IP address spaces
 * Configurable HTTP return code and message
@@ -33,7 +34,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 = Requirements =
 
-* WordPress 3.3 or higher (single-user version only)
+* WordPress 3.3 or higher
 * PHP 5.3 or higher
 * Apache / Nginx / LiteSpeed
 * Unix-like OS (Linux, *BSD) only
@@ -62,6 +63,10 @@ Because we do not collect any user data, we do not even know that you are using 
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+* Added multi-site network support.
+* Added an option to decode and scan base64 encoded values in POST requests (Firewall Policies page).
+
 = 1.0.4 =
 * Added an `E-mail Alerts` configuration page to send alerts on specific events (users login, themes/plugins installation, activation, deletion etc).
 * Added `Privacy Policy` to the About page and to the installer.
@@ -84,6 +89,10 @@ Because we do not collect any user data, we do not even know that you are using 
 * Initial release.
 
 == Changelog ==
+
+= 1.1.0 =
+* Added multi-site network support.
+* Added an option to decode and scan base64 encoded values in POST requests (Firewall Policies page).
 
 = 1.0.4 =
 * Added an `E-mail Alerts` configuration page to send alerts on specific events (users login, themes/plugins installation, activation, deletion etc).

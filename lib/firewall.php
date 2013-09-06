@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-08-28 01:39:44                                       |
+ | REVISION: 2013-09-05 01:10:23                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -394,6 +394,7 @@ function nfw_check_upload() {
 function nfw_check_request( $nfw_rules ) {
 
 	global $nfw_options;
+	$b64_post = array();
 
 	foreach ($nfw_rules as $rules_id => $rules_values) {
 		// Ignored disabled rules :
@@ -409,6 +410,11 @@ function nfw_check_request( $nfw_rules ) {
 						$res = nfw_flatten( "\n", $reqvalue );
 						$reqvalue = $res;
 						$rules_values['what'] = '(?m:'. $rules_values['what'] .')';
+					} else {
+						if ( (! empty($nfw_options['post_b64'])) && ($where == 'POST') && ($reqvalue) && (! isset( $b64_post[$reqkey])) ) {
+							$b64_post[$reqkey] = 1;
+							check_b64($reqkey, $reqvalue);
+						}
 					}
 					if (! $reqvalue) { continue; }
 					if ( preg_match('`'. $rules_values['what'] .'`', $reqvalue) ) {
@@ -460,6 +466,22 @@ function nfw_flatten( $glue, $pieces ) {
       }
    }
    return implode($glue, $ret);
+}
+
+/* ================================================================== */
+
+function check_b64( $reqkey, $string ) {
+
+	// clean-up the string before testing it :
+	$string = preg_replace( '`[^A-Za-z0-9+/=]`', '', $string);
+	if ( (! $string) || (strlen($string) % 4 != 0) ) { return; }
+
+	if ( base64_encode( $decoded = base64_decode($string) ) === $string ) {
+		if ( preg_match( '`\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|chmod|curl_exec|(?:ex|im)plode|error_reporting|eval|file(?:_get_contents)?|f(?:open|write|close)|fsockopen|function_exists|gzinflate|md5|move_uploaded_file|ob_start|passthru|preg_replace|phpinfo|stripslashes|strrev|(?:shell_)?exec|system|unlink)\s*\(|\becho\s*[\'"]|<\s*(?i:applet|div|embed|i?frame(?:set)?|img|meta|marquee|object|script|textarea)\b|\b(?i:(?:ht|f)tps?|php)://`', $decoded) ) {
+			nfw_log('base64-encoded injection', 'POST:' . $reqkey . ' = ' . $string, '3', 0);
+			nfw_block();
+		}
+	}
 }
 
 /* ================================================================== */
