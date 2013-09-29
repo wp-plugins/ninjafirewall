@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-08-28 01:40:32                                       |
+ | REVISION: 2013-09-28 23:53:33                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -23,6 +23,10 @@
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
+
+if ( ( is_multisite() ) && (! current_user_can( 'manage_network' ) ) ) {
+	return;
+}
 
 if ( empty( $_POST['nfw_act'] ) ) {
 	nfw_install_1();
@@ -68,7 +72,12 @@ function nfw_install_1() {
 	</form>
 	<br />
 	<h3>Privacy Policy</h3>
-	<a href="http://nintechnet.com/" title="nintechnet.com">NinTechNet</a> strictly follows the WordPress <a href="http://wordpress.org/plugins/about/guidelines/">Plugin Developer guidelines</a>&nbsp;: our software, NinjaFirewall (WP edition), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be used or installed.<br />Because <strong>we do not collect any user data</strong>, we do not even know that you are using (and hopefully enjoying!) our product.<br />&nbsp;
+	<a href="http://nintechnet.com/" title="nintechnet.com">NinTechNet</a> strictly follows the WordPress <a href="http://wordpress.org/plugins/about/guidelines/">Plugin Developer guidelines</a>&nbsp;: our software, NinjaFirewall (WP edition), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be used or installed.<br />Because <strong>we do not collect any user data</strong>, we do not even know that you are using (and hopefully enjoying!) our product.
+	<br />
+	<h3>License</h3>
+	This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+	<br />
+	This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details (LICENSE.TXT).<br />&nbsp;
 </div>
 <?php
 
@@ -91,7 +100,7 @@ function nfw_install_2( $err ) {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>NinjaFirewall (<font color=#21759B>WordPress</font> edition)</h2>
+	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
 	<br />
 	<br />';
 
@@ -106,13 +115,19 @@ function nfw_install_2( $err ) {
 		echo '<div class="error settings-error"><p><strong>Error :</strong> ' . $err . '</p></div>';
 	}
 
-	echo 'In order to hook and protect all PHP files, NinjaFirewall needs to add some specific directives to system files located inside WordPress root directory. Those files will have to be created, or, if they exist, to be edited. If your WordPress root directory is writable, I will make those changes for you, otherwise, you will need to do it yourself (using your FTP client or any suitable admin panel).<br />
+	echo 'In order to hook and protect all PHP files, NinjaFirewall needs to add some specific directives to system files located inside WordPress root directory. Those files will have to be created, or, if they exist, to be edited. If your WordPress root directory is writable, I will make those changes for you, otherwise, you will need to do it yourself (using your FTP client or any suitable admin panel).
+	<br />
 	<br />
 	<strong>Checking your system configuration :</strong>
 	<br />
 	<br />
 
 	<form method="post" name="nfw_install03">';
+
+	// Multisite ?
+	if ( is_multisite() ) {
+		echo '<li>Multisite network detected : NinjaFirewall will protect all sites from your network but its configuration interface will be <strong>accessible only to the Super Admin</strong> from the network main site.</li>';
+	}
 
 	// If mod_php is running, we won't need any PHP INI file :
 	if ( preg_match( '/apache/i', PHP_SAPI ) ) {
@@ -270,7 +285,7 @@ function nfw_install_2( $err ) {
 		} else {
 			// There is no PHP INI we need to create one :
 			if ( is_writable( ABSPATH ) ) {
-				echo '<li>I need to create a PHP INI file inside your WordPress main directory (<code>' . ABSPATH . '</code>). Usually, such a file is named <code>php.ini</code> but some hosting companies may use <code>php5.ini</code> or <code>.user.ini</code> files instead. Please select which PHP INI file you want me to create&nbsp;:</li>
+				echo '<li>I need to create a PHP INI file inside your WordPress main directory (<code>' . ABSPATH . '</code>). Usually, such a file is named <code>php.ini</code> but some hosting companies may use <code>php5.ini</code> (e.g. GoDaddy) or <code>.user.ini</code> files instead. Please select which PHP INI file you want me to create&nbsp;:</li>
 				<label><input type="radio" name="phpini_user" value="php.ini" checked onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php.ini</code> (default)</label>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<label><input type="radio" name="phpini_user" value="php5.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php5.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php5.ini</code></label>
@@ -356,7 +371,11 @@ function nfw_install_2( $err ) {
 
 		echo '<pre style="background-color:#EAEAEA;border: 1px solid #cccccc;padding:5px;overflow: auto;">' .
 			'<font color="red">' . HTACCESS_BEGIN . "\n" . htmlentities( HTACCESS_CGI_01 ) . ABSPATH .
-			'<font id="phpiniuser">php.ini</font>' . htmlentities( HTACCESS_CGI_02 ) . "\n";
+			'<font id="phpiniuser">';
+			if ( $phpini_user ) { echo $phpini_user; }
+			elseif ( $phpini ) { echo $phpini; }
+			else { echo 'php.ini'; }
+			echo '</font>' . htmlentities( HTACCESS_CGI_02 ) . "\n";
 		// For Litespeed server, if running in mod_php-like mode:
 		if ( preg_match( '/litespeed/i', PHP_SAPI ) ) {
 			echo htmlentities( HTACCESS_MODPHP ) . "\n";
@@ -371,7 +390,7 @@ function nfw_install_2( $err ) {
 
 	} // PHP as CGI
 
-	echo '<img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;If, after applying changes, there was an HTTP error and your site was not reachable, use your FTP client to download the above files, undo all changes and try again.
+	echo '<br />If, after applying changes, there was an HTTP error and your site was not reachable, use your FTP client to download the above files, undo all changes and try again.
 		<br />
 		<br />
 		<input type="hidden" name="nfw_conf_arr[abspath_writable]" value="' . $abspath_writable . '">
@@ -516,7 +535,7 @@ function nfw_install_3() {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>NinjaFirewall (<font color=#21759B>WordPress</font> edition)</h2>
+	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
 	<br />
 	<br />';
 
@@ -610,7 +629,11 @@ function nfw_default_conf() {
 		'a_23' 				=> 0,
 		'a_24' 				=> 0,
 		'a_31' 				=> 1,
-		'alert_email'	 	=> get_option('admin_email')
+		'alert_email'	 	=> get_option('admin_email'),
+		// v1.1.0 :
+		'alert_sa_only'	=> 2,
+		'nt_show_status'	=> 1,
+		'post_b64'			=> 1
 	);
 
 	// save new options but do not overwrite existing ones :

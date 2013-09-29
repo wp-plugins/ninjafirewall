@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-08-28 01:39:44                                       |
+ | REVISION: 2013-09-28 23:39:13                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -24,13 +24,17 @@
 
 if ( $_SERVER['SCRIPT_FILENAME'] == __FILE__ ) { die('Forbidden'); }
 
-// Set to '0' if you don't want NinjaFirewall to output error
-// and warning messages (not recommended, though) :
-$nfw_warn = 1;
-
 // Used for benchmarks purpose :
 $nfw_starttime = microtime(true);
 
+// Brute-force attacks detection :
+if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
+	nfw_bfd();
+}
+
+// Set to '0' if you don't want NinjaFirewall to output error
+// and warning messages (not recommended, though) :
+$nfw_warn = 1;
 
 // We need to get access to the database but we cannot include/require()
 // either wp-load.php or wp-config.php, because that would load the core
@@ -38,7 +42,7 @@ $nfw_starttime = microtime(true);
 // stand-alone firewall, not like a lame security plugin: we must hook
 // every single PHP request **before** WordPress.
 // Therefore, we must find, open and parse the wp-config.php file:
-$wp_config = substr(__FILE__, 0, -50) . '/wp-config.php';
+$wp_config = dirname( strstr(__FILE__, '/plugins/ninjafirewall/lib', true) ) . '/wp-config.php';
 if (! file_exists($wp_config) ) {
 	// Warn and return:
 	if ( $nfw_warn ) {
@@ -394,6 +398,7 @@ function nfw_check_upload() {
 function nfw_check_request( $nfw_rules ) {
 
 	global $nfw_options;
+	$b64_post = array();
 
 	foreach ($nfw_rules as $rules_id => $rules_values) {
 		// Ignored disabled rules :
@@ -409,6 +414,11 @@ function nfw_check_request( $nfw_rules ) {
 						$res = nfw_flatten( "\n", $reqvalue );
 						$reqvalue = $res;
 						$rules_values['what'] = '(?m:'. $rules_values['what'] .')';
+					} else {
+						if ( (! empty($nfw_options['post_b64'])) && ($where == 'POST') && ($reqvalue) && (! isset( $b64_post[$reqkey])) ) {
+							$b64_post[$reqkey] = 1;
+							check_b64($reqkey, $reqvalue);
+						}
 					}
 					if (! $reqvalue) { continue; }
 					if ( preg_match('`'. $rules_values['what'] .'`', $reqvalue) ) {
@@ -460,6 +470,22 @@ function nfw_flatten( $glue, $pieces ) {
       }
    }
    return implode($glue, $ret);
+}
+
+/* ================================================================== */
+
+function check_b64( $reqkey, $string ) {
+
+	// clean-up the string before testing it :
+	$string = preg_replace( '`[^A-Za-z0-9+/=]`', '', $string);
+	if ( (! $string) || (strlen($string) % 4 != 0) ) { return; }
+
+	if ( base64_encode( $decoded = base64_decode($string) ) === $string ) {
+		if ( preg_match( '`\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|chmod|curl_exec|(?:ex|im)plode|error_reporting|eval|file(?:_get_contents)?|f(?:open|write|close)|fsockopen|function_exists|gzinflate|md5|move_uploaded_file|ob_start|passthru|preg_replace|phpinfo|stripslashes|strrev|(?:shell_)?exec|system|unlink)\s*\(|\becho\s*[\'"]|<\s*(?i:applet|div|embed|i?frame(?:set)?|img|meta|marquee|object|script|textarea)\b|\b(?i:(?:ht|f)tps?|php)://`', $decoded) ) {
+			nfw_log('base64-encoded injection', 'POST:' . $reqkey . ' = ' . $string, '3', 0);
+			nfw_block();
+		}
+	}
 }
 
 /* ================================================================== */
@@ -599,8 +625,8 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	$res = '';
 	$string = str_split($logdata);
 	foreach ( $string as $char ) {
-		// ASCII control code ?
-		if ( ord($char) < 32 ) {
+		// Allow only ASCII printable characters :
+		if ( ( ord($char) < 32 ) || ( ord($char) > 127 ) ) {
 			$res .= '%' . bin2hex($char);
 		} else {
 			$res .= $char;
@@ -632,6 +658,100 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
       '[' . $res . ']' . "\n"
    );
    fclose($fh);
+}
+
+/* ================================================================== */
+
+function nfw_bfd() {
+
+	$bf_conf_dir = substr( __FILE__, 0, -16) . 'log';
+
+	// Is brute-force protection enabled ?
+	if (! file_exists($bf_conf_dir . '/nfwbfd.php') ) {
+		return;
+	}
+
+	$now = time();
+	// Get config :
+	require_once($bf_conf_dir . '/nfwbfd.php');
+
+	// Has protection already been triggered ?
+	if ( file_exists($bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand) ) {
+		// Ensure the banning period is not over :
+		$fstat = stat( $bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand );
+		if ( ($now - $fstat['mtime']) < $bf_bantime * 60 ) {
+			// User authentication required :
+			nfw_check_auth($auth_name, $auth_pass);
+			return;
+		} else {
+			// Reset counter :
+			unlink($bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand);
+		}
+	}
+
+	// Are we supposed to handle that HTTP request (GET or POST or both) ?
+	if ( strpos($bf_request, $_SERVER['REQUEST_METHOD']) === false ) {
+		return;
+	}
+
+	// If this is an attempt to log in, ensure all variables, values and
+	// cookies are okay, otherwise we don't even forward it to WordPress
+	// and reject it right away :
+	if ( ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_REQUEST['action'])) ) {
+		if ( (empty($_POST['log'])) || (empty($_POST['pwd'])) || (empty($_POST['wp-submit'])) ||
+			(empty($_POST['redirect_to'])) || (empty($_POST['testcookie'])) ||
+			(empty($_COOKIE['wordpress_test_cookie'])) ) {
+			// Record it :
+			@file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND);
+			// Force HTTP authentication :
+			nfw_check_auth($auth_name, $auth_pass);
+			return;
+
+		}
+	}
+
+	// Read our log, if any :
+	if ( file_exists($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
+		$tmp_log = file( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		if ( count( $tmp_log) >= $bf_attempt ) {
+			if ( ($tmp_log[count($tmp_log) - 1] - $tmp_log[count($tmp_log) - $bf_attempt]) <= $bf_maxtime ) {
+				// Threshold has been reached, lock down access to the page :
+				$bfdh = fopen( $bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand, 'w');
+				fclose( $bfdh );
+				// Clear the log :
+				unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
+				nfw_log('Brute-force attack detected', 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 6, 0);
+				// Force HTTP authentication :
+				nfw_check_auth($auth_name, $auth_pass);
+				return;
+
+			}
+		}
+		// If the logfile is too old, flush it :
+		$fstat = stat( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
+		if ( ($now - $fstat['mtime']) > $bf_bantime * 60 ) {
+			unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
+		}
+	}
+
+	// Let it go, but record the request :
+	file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND );
+
+}
+/* ================================================================== */
+
+function nfw_check_auth($auth_name, $auth_pass) {
+
+	if ( (! empty($_SERVER['PHP_AUTH_USER'])) && (! empty($_SERVER['PHP_AUTH_PW'])) ) {
+		// Allow authenticated users only :
+		if ( ($_SERVER['PHP_AUTH_USER'] == $auth_name) && (sha1($_SERVER['PHP_AUTH_PW']) == $auth_pass) ) {
+			return;
+		}
+	}
+	header('WWW-Authenticate: Basic realm="Access temporarily restricted"');
+	header('HTTP/1.0 401 Unauthorized');
+	echo '401 Access temporarily restricted';
+	exit;
 }
 
 /* ================================================================== */
