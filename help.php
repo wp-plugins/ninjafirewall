@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-09-05 15:16:57                                    |
+ | REVISION: 2013-09-28 19:38:15                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -184,6 +184,24 @@ function help_nfsubalerts() {
 		'id'        => 'log01',
 		'title'     => 'E-mail alerts',
 		'content'   => '<br />NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.'
+	) );
+}
+/* ================================================================== */
+
+function help_nfsublogin() {
+
+	// Login protection menu help :
+
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'login01',
+		'title'     => 'Login protection',
+		'content'   => '<p>By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from thousands of different IPs.</p>
+		<p>When too many login attempts are detected, it password-protects the login page (wp-login.php) immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).</p>
+		<li>Enable protection:<span class="description"> whether to enable or disable the protection.</span></li>
+		<li>Protect the login page against:<span class="description"> select the type of requests (<code>GET</code> and/or <code>POST</code>) to monitor.</span></li>
+		<li>Password-protect the login page:<span class="description"> enter the suitable threshold that will trigger the protection.</span></li>
+		<li>HTTP authentication:<span class="description"> enter the user name and password that you want to use to bypass the protection during an attack.</span>
+		<p><img src="http://www.testsite.com/sites/wordpress/wp-content/plugins/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the login protection from this page too.</span></p></li>'
 	) );
 }
 /* ================================================================== */

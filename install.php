@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-09-05 15:17:11                                       |
+ | REVISION: 2013-09-28 23:53:33                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -285,7 +285,7 @@ function nfw_install_2( $err ) {
 		} else {
 			// There is no PHP INI we need to create one :
 			if ( is_writable( ABSPATH ) ) {
-				echo '<li>I need to create a PHP INI file inside your WordPress main directory (<code>' . ABSPATH . '</code>). Usually, such a file is named <code>php.ini</code> but some hosting companies may use <code>php5.ini</code> or <code>.user.ini</code> files instead. Please select which PHP INI file you want me to create&nbsp;:</li>
+				echo '<li>I need to create a PHP INI file inside your WordPress main directory (<code>' . ABSPATH . '</code>). Usually, such a file is named <code>php.ini</code> but some hosting companies may use <code>php5.ini</code> (e.g. GoDaddy) or <code>.user.ini</code> files instead. Please select which PHP INI file you want me to create&nbsp;:</li>
 				<label><input type="radio" name="phpini_user" value="php.ini" checked onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php.ini</code> (default)</label>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<label><input type="radio" name="phpini_user" value="php5.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php5.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php5.ini</code></label>
