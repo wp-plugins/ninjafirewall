@@ -53,7 +53,7 @@ Monitored events:
 = Low Footprint Firewall =
 
 NinjaFirewall is very fast, optimised, compact, and requires very low system resource.
-Don't believe us? See for yourself: download and install [GoDaddy's P3 (Plugin Performance Profiler)](http://wordpress.org/plugins/p3-profiler/ "") and compare NinjaFirewall performances with other security plugins :)
+Don't believe us? See for yourself: download and install [GoDaddy's P3 Plugin Performance Profiler](http://wordpress.org/plugins/p3-profiler/ "") and compare NinjaFirewall performances with other security plugins.
 
 = Contextual Help =
 
@@ -71,7 +71,7 @@ Because we do not collect any user data, we do not even know that you are using 
 * WordPress 3.3 or higher
 * PHP 5.3 or higher
 * Apache / Nginx / LiteSpeed
-* Unix-like OS (Linux, *BSD) only
+* Unix-like OS (Linux, BSD) only
 
 
 == Installation ==
