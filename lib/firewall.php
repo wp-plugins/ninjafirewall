@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-09-28 23:39:13                                       |
+ | REVISION: 2013-10-17 14:32:36                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -21,7 +21,6 @@
  | GNU General Public License for more details.                        |
  +---------------------------------------------------------------------+
 */
-
 if ( $_SERVER['SCRIPT_FILENAME'] == __FILE__ ) { die('Forbidden'); }
 
 // Used for benchmarks purpose :
@@ -32,10 +31,6 @@ if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
 	nfw_bfd();
 }
 
-// Set to '0' if you don't want NinjaFirewall to output error
-// and warning messages (not recommended, though) :
-$nfw_warn = 1;
-
 // We need to get access to the database but we cannot include/require()
 // either wp-load.php or wp-config.php, because that would load the core
 // part of WordPress. Remember, we are supposed to act like a real and
@@ -44,20 +39,12 @@ $nfw_warn = 1;
 // Therefore, we must find, open and parse the wp-config.php file:
 $wp_config = dirname( strstr(__FILE__, '/plugins/ninjafirewall/lib', true) ) . '/wp-config.php';
 if (! file_exists($wp_config) ) {
-	// Warn and return:
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot find WordPress '.
-		'configuration file.</strong></span>';
-	}
+	// set the error flag and return :
+	define( 'NFW_STATUS', 1 );
 	return;
 }
 if (! $fh = fopen($wp_config, 'r') ) {
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot read WordPress '.
-		'configuration file.</strong></span>';
-	}
+	define( 'NFW_STATUS', 2 );
 	return;
 }
 // Fetch WP configuration:
@@ -78,11 +65,7 @@ while (! feof($fh)) {
 fclose($fh);
 
 if ( (! isset($DB_NAME)) || (! isset($DB_USER)) || (! isset($DB_PASSWORD)) ||	(! isset($DB_HOST)) || (! isset($table_prefix)) ) {
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot retrieve WordPress '.
-		'database credentials.</strong></span>';
-	}
+	define( 'NFW_STATUS', 3 );
 	return;
 }
 
@@ -90,15 +73,11 @@ if ( (! isset($DB_NAME)) || (! isset($DB_USER)) || (! isset($DB_PASSWORD)) ||	(!
 @$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASSWORD, $DB_NAME);
 
 // We don't want any PHP script (incl. potential backdoor/shell scripts
-// left on the server) to inherit the DB credentials from us, do we?
+// left on the server) to inherit the DB credentials from us, do we ?
 $DB_HOST = $DB_USER = $DB_PASSWORD = $DB_NAME = '';
 
-if (mysqli_connect_error() ) {
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot connect to WordPress '.
-		'database.</strong></span>';
-	}
+if ( mysqli_connect_error() ) {
+	define( 'NFW_STATUS', 4 );
 	$table_prefix = '';
 	return;
 }
@@ -106,21 +85,13 @@ $table_prefix = @$mysqli->real_escape_string($table_prefix);
 
 // Fetch our user options table:
 if (! $result = @$mysqli->query('SELECT * FROM `' . $table_prefix . 'options` WHERE `option_name` = \'nfw_options\'')) {
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot retrieve user '.
-		'options #1.</strong></span>';
-	}
+	define( 'NFW_STATUS', 5 );
 	$table_prefix = '';
 	$mysqli->close();
 	return;
 }
 if (! $options = @$result->fetch_object() ) {
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot retrieve user '.
-		'options #2.</strong></span>';
-	}
+	define( 'NFW_STATUS', 6 );
 	$table_prefix = '';
 	$mysqli->close();
 	return;
@@ -133,6 +104,7 @@ $nfw_options = unserialize($options->option_value);
 if ( empty($nfw_options['enabled']) ) {
 	$table_prefix = '';
 	$mysqli->close();
+	define( 'NFW_STATUS', 20 );
 	return;
 }
 
@@ -239,6 +211,7 @@ if ( (! empty($nfw_options['wl_admin']) ) && (! empty($_SESSION['nfw_goodguy']) 
 	if (! empty( $_POST['nfw_test'] ) ) {
 		define( 'NFW_IT_WORKS', true );
 	}
+	define( 'NFW_STATUS', 20 );
 	return;
 }
 
@@ -252,6 +225,7 @@ if (! empty($nfw_options['php_errors']) ) {
 if ( (! empty($nfw_options['allow_local_ip']) ) && (preg_match("/^(?:::ffff:)?(?:10|172\.(?:1[6-9]|2[0-9]|3[0-1])|192\.168)\./", $_SERVER['REMOTE_ADDR'])) ) {
 	$table_prefix = '';
 	$mysqli->close();
+	define( 'NFW_STATUS', 20 );
 	return;
 }
 
@@ -265,18 +239,26 @@ if ( (! empty($nfw_options['no_host_ip'])) && (preg_match('/^[\d.:]+$/', $_SERVE
 if ( (@$nfw_options['scan_protocol'] == 1) && ($_SERVER['SERVER_PORT'] == 443) ) {
 	$table_prefix = '';
 	$mysqli->close();
+	define( 'NFW_STATUS', 20 );
 	return;
 }
 // ...or HTTPS only ?
 if ( (@$nfw_options['scan_protocol'] == 2) && ($_SERVER['SERVER_PORT'] != 443) ) {
 	$table_prefix = '';
 	$mysqli->close();
+	define( 'NFW_STATUS', 20 );
 	return;
 }
 
 // block POST without Referer header ?
 if ( (! empty($nfw_options['referer_post']) ) && ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_SERVER['HTTP_REFERER'])) ) {
 	nfw_log('POST method without Referer header', $_SERVER['REQUEST_METHOD'], 1, 0);
+   nfw_block();
+}
+
+// Block access to WordPress XML-RPC API ?
+if ( (! empty($nfw_options['no_xmlrpc'])) && (strpos($_SERVER['SCRIPT_NAME'], $nfw_options['no_xmlrpc']) !== FALSE) ) {
+	nfw_log('Access to WordPress XML-RPC API', $_SERVER['SCRIPT_NAME'], 2, 0);
    nfw_block();
 }
 
@@ -297,11 +279,7 @@ nfw_check_upload();
 
 // Fetch our rules table :
 if (! $result = @$mysqli->query('SELECT * FROM `' . $table_prefix . 'options` WHERE `option_name` = \'nfw_rules\'')) {
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot retrieve user '.
-		'rules #1.</strong></span>';
-	}
+	define( 'NFW_STATUS', 7 );
 	$table_prefix = '';
 	$mysqli->close();
 	return;
@@ -310,11 +288,7 @@ if (! $result = @$mysqli->query('SELECT * FROM `' . $table_prefix . 'options` WH
 $table_prefix = '';
 
 if (! $rules = @$result->fetch_object() ) {
-	if ( $nfw_warn ) {
-		echo '<span style="background:#ffffff;border:1px dotted red;padding:2px">'.
-		'<strong><font color=red>ERROR:</font> NinjaFirewall cannot retrieve user '.
-		'rules #2.</strong></span>';
-	}
+	define( 'NFW_STATUS', 8 );
 	$mysqli->close();
 	return;
 }
@@ -350,7 +324,7 @@ if ( (! empty($nfw_options['php_self']) ) && (! empty($_SERVER['PHP_SELF'])) ) {
 }
 
 @$mysqli->close();
-
+define( 'NFW_STATUS', 20 );
 // That's all !
 return;
 
@@ -599,7 +573,6 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 
 	global $nfw_options;
 	global $num_incident;
-	global $nfw_warn;
 	global $nfw_starttime;
 
 	// Info/sanitise ? Don't block and do not issue any incident number :
@@ -626,7 +599,7 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	$string = str_split($logdata);
 	foreach ( $string as $char ) {
 		// Allow only ASCII printable characters :
-		if ( ( ord($char) < 32 ) || ( ord($char) > 127 ) ) {
+		if ( ( ord($char) < 32 ) || ( ord($char) > 126 ) ) {
 			$res .= '%' . bin2hex($char);
 		} else {
 			$res .= $char;
@@ -641,10 +614,6 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 
 	$log_file = substr(__FILE__, 0, -16) . 'log/firewall_' . date('Y-m') . '.log';
 	if (! $fh = fopen($log_file, 'a') ) {
-		if ( $nfw_warn ) {
-			echo '<span style="background:#ffffff;border:1px dotted red;padding:2px"><strong>' .
-			'<font color=red>ERROR:</font> NinjaFirewall cannot write to its logfile</strong></span>';
-		}
 		return;
 	}
 
@@ -699,8 +668,7 @@ function nfw_bfd() {
 	// and reject it right away :
 	if ( ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_REQUEST['action'])) ) {
 		if ( (empty($_POST['log'])) || (empty($_POST['pwd'])) || (empty($_POST['wp-submit'])) ||
-			(empty($_POST['redirect_to'])) || (empty($_POST['testcookie'])) ||
-			(empty($_COOKIE['wordpress_test_cookie'])) ) {
+			(empty($_POST['testcookie'])) || (empty($_COOKIE['wordpress_test_cookie'])) ) {
 			// Record it :
 			@file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND);
 			// Force HTTP authentication :
