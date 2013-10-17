@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true web application firewall for WordPress.
-Version: 1.1.1
+Version: 1.1.2
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-09-29 00:41:35                                       |
+ | REVISION: 2013-10-17 14:32:06                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.1' );
-define( 'NFW_RULES_VERSION',  '20130621' );
+define( 'NFW_ENGINE_VERSION', '1.1.2' );
+define( 'NFW_RULES_VERSION',  '20131017' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -100,7 +100,10 @@ function nfw_deactivate() {
 
 	// Disable the firewall (NinjaFirewall will keep running
 	// in the background but will not do anything) :
-	$nfw_options = get_option( 'nfw_options' );
+	global $nfw_options;
+	if (! isset( $nfw_options ) ) {
+		$nfw_options = get_option( 'nfw_options' );
+	}
 	$nfw_options['enabled'] = 0;
 	update_option( 'nfw_options', $nfw_options);
 
@@ -161,6 +164,10 @@ function nfw_upgrade() {
 				fclose( $fh );
 			}
 		}
+		// v1.1.2
+		if (! isset( $nfw_options['no_xmlrpc'] ) ) {
+			$nfw_options['no_xmlrpc'] = 0;
+		}
 	}
 
 	// do we need to update rules as well ?
@@ -172,7 +179,8 @@ function nfw_upgrade() {
 
 		foreach ( $nfw_rules_new as $new_key => $new_value ) {
 			foreach ( $new_value as $key => $value ) {
-				// if that rule exists already, we keep its 'on' flag value :
+				// if that rule exists already, we keep its 'on' flag value
+				// as it may have been changed by the user with the rules editor :
 				if ( ( isset( $nfw_rules[$new_key]['on'] ) ) && ( $key == 'on' ) ) {
 					$nfw_rules_new[$new_key]['on'] = $nfw_rules[$new_key]['on'];
 				}
@@ -457,13 +465,15 @@ function nf_admin_bar_status() {
 			'title'  => __( 'NinjaFirewall Settings'),
 			'href'   => __( network_admin_url() . 'admin.php?page=NinjaFirewall'),
 		) );
-	// else, show status :
+	// else, show status only (unless error) :
 	} else {
-		$wp_admin_bar->add_menu( array(
-			'parent' => 'nfw_ntw1',
-			'id'     => 'nfw_ntw2',
-			'title'  => __( 'NinjaFirewall is enabled'),
-		) );
+		if ( defined('NFW_STATUS') ) {
+			$wp_admin_bar->add_menu( array(
+				'parent' => 'nfw_ntw1',
+				'id'     => 'nfw_ntw2',
+				'title'  => __( 'NinjaFirewall is enabled'),
+			) );
+		}
 	}
 }
 
@@ -484,6 +494,49 @@ function nf_menu_install() {
 
 	require_once( plugin_dir_path(__FILE__) . 'install.php' );
 }
+
+/* ================================================================== */
+
+function nf_admin_notice(){
+
+	// display a big red warning if the firewall returned an error :
+
+	// we don't display any fatal error message to users :
+	if (! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	list ( $user_enabled, $hook_enabled, $debug_enabled ) = is_nfw_enabled();
+	if ( (! $user_enabled) || (! $hook_enabled ) || ( $debug_enabled ) ) {
+		// we will assume that NinjaFirewall it is not installed yet :
+		return;
+	}
+
+	if ( defined('NFW_STATUS') ) {
+		if ( NFW_STATUS == 20 ) {
+			// OK
+			return;
+		}
+		$err_fw = array(
+			1	=> 'cannot find WordPress configuration file',
+			2	=>	'cannot read WordPress configuration file',
+			3	=>	'cannot retrieve WordPress database credentials',
+			4	=>	'cannot connect to WordPress database',
+			5	=>	'cannot retrieve user options from database (#1)',
+			6	=>	'cannot retrieve user options from database (#2)',
+			7	=>	'cannot retrieve user rules from database (#1)',
+			8	=>	'cannot retrieve user rules from database (#2)'
+		);
+		$err = $err_fw[NFW_STATUS];
+	} else {
+		// something wrong, here :
+		$err = 'communication with the firewall failed';
+	}
+	echo '<div class="error"><p><strong>NinjaFirewall fatal error :</strong> ' . $err .
+		'. Please review your installation. Your site is <strong>not</strong> protected.</p></div>';
+}
+
+add_action('all_admin_notices', 'nf_admin_notice');
 
 /* ================================================================== */
 
@@ -515,7 +568,6 @@ function nf_menu_main() {
 		$txt2 = 'Disabled';
 		$warn_msg = 2;
 	}
-
 ?>
 
 <div class="wrap">
@@ -527,7 +579,7 @@ function nf_menu_main() {
 		echo '<div class="error settings-error"><p><strong>Warning :</strong> you are at risk ! Your site is not protected as long as the problems below aren\'t solved.</p></div>';
 	}
 	// first run ?
-	if (  ( defined( 'NFW_IT_WORKS' )) || (! empty( $_GET['nfw_firstrun']) ) ) {
+	if ( ( defined( 'NFW_IT_WORKS' )) || (! empty( $_GET['nfw_firstrun']) ) ) {
 		echo '<br><div class="updated settings-error"><p><strong>Congratulations&nbsp;!</strong> NinjaFirewall is up and running. Use the menu in the left frame to configure it according to your needs.<br />If you need help, click on the contextual <strong>Help</strong> menu tab located in the upper right corner of each page.</p></div>';
 	}
 	?>
@@ -1512,6 +1564,11 @@ function chksubmenu() {
 	} else {
 		$wp_cache = 0;
 	}
+	if ( empty( $nfw_options['no_xmlrpc']) ) {
+		$no_xmlrpc = 0;
+	} else {
+		$no_xmlrpc = 1;
+	}
 	if ( empty( $nfw_options['no_post_themes']) ) {
 		$no_post_themes = 0;
 	} else {
@@ -1552,7 +1609,7 @@ function chksubmenu() {
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
 						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_upl]" id="wp_03"<?php if ( $wp_upl == 1 ) { echo ' checked'; }?>></td>
-						<td><label for="wp_03"><code>/wp-content/upload/*</code></label></td>
+						<td><label for="wp_03"><code>/<?php echo basename(WP_CONTENT_DIR); ?>/upload/*</code></label></td>
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
 						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_cache]" id="wp_04"<?php if ( $wp_cache == 1 ) { echo ' checked'; }?>></td>
@@ -1565,7 +1622,17 @@ function chksubmenu() {
 	</table>
 	<table class="form-table">
 		<tr>
-			<td width="300">Block <code>POST</code> requests in the themes folder <code>/wp-content/themes</code></td>
+			<td width="300">Block access to WordPress XML-RPC API (<code>xmlrpc.php</code>)</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left width="120">
+				<label><input type="radio" name="nfw_options[no_xmlrpc]" value="1"<?php if ( $no_xmlrpc == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
+			</td>
+			<td align=left>
+				<label><input type="radio" name="nfw_options[no_xmlrpc]" value="0"<?php if ( $no_xmlrpc == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label>
+			</td>
+		</tr>
+		<tr>
+			<td width="300">Block <code>POST</code> requests in the themes folder <code>/<?php echo basename(WP_CONTENT_DIR); ?>/themes</code></td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left width="120">
 				<label><input type="radio" name="nfw_options[no_post_themes]" value="1"<?php if ( $no_post_themes == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
@@ -1830,7 +1897,7 @@ function nf_sub_policies_save() {
 		$tmp .= '/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|';
 	}
 	if ( isset( $_POST['nfw_options']['wp_upl']) ) {
-		$tmp .= '/wp-content/uploads/|';
+		$tmp .= '/' . basename(WP_CONTENT_DIR) .'/uploads/|';
 	}
 	if ( isset( $_POST['nfw_options']['wp_cache']) ) {
 		$tmp .= '/cache/|';
@@ -1839,13 +1906,20 @@ function nf_sub_policies_save() {
 		$nfw_options['wp_dir'] = rtrim( $tmp, '|' );
 	}
 
+	// Block WordPress XML-RPC API ?
+	if ( empty( $_POST['nfw_options']['no_xmlrpc']) ) {
+		// Default : no
+		$nfw_options['no_xmlrpc'] = 0;
+	} else {
+		$nfw_options['no_xmlrpc'] = 'xmlrpc.php';
+	}
 
 	// Block POST requests in the themes folder ?
 	if ( empty( $_POST['nfw_options']['no_post_themes']) ) {
 		// Default : no
 		$nfw_options['no_post_themes'] = 0;
 	} else {
-		$nfw_options['no_post_themes'] = '/wp-content/themes/';
+		$nfw_options['no_post_themes'] = '/'. basename(WP_CONTENT_DIR) .'/themes/';
 	}
 
 	// Force SSL for admin and logins ?
@@ -1993,7 +2067,8 @@ function nf_sub_policies_default() {
 	$nfw_options['php_path_i']			= 1;
 	$nfw_options['wp_dir'] 				= '/wp-admin/(?:css|images|includes|js)/|' .
 		'/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
-		'/wp-content/uploads/|/cache/';
+		'/'. basename(WP_CONTENT_DIR) .'/uploads/|/cache/';
+	$nfw_options['no_xmlrpc']			= 0;
 	$nfw_options['no_post_themes']	= 0;
 	$nfw_options['force_ssl'] 			= 0;
 	$nfw_options['disallow_edit'] 	= 1;
@@ -2998,7 +3073,7 @@ function show_table(table_id) {
 		<table id="14" style="display:none;" width="500">
 			<tr>
 				<td>
-					<textarea class="large-text code" cols="60" rows="8">NinTechNet strictly follows the WordPress Plugin Developer guidelines &lt;http://wordpress.org/plugins/about/guidelines/&gt;: NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be used or installed.' . "\n" . 'Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.</textarea>
+					<textarea class="large-text code" cols="60" rows="8">NinTechNet strictly follows the WordPress Plugin Developer guidelines &lt;http://wordpress.org/plugins/about/guidelines/&gt;: NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.' . "\n" . 'Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.</textarea>
 				</td>
 			</tr>
 		</table>

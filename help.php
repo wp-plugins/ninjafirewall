@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-09-28 19:38:15                                    |
+ | REVISION: 2013-10-17 14:32:56                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -99,7 +99,7 @@ function help_nfsubpolicies() {
 		'title'     => 'Scan &amp; Sanitise',
 		'content'   => '<br />You can choose to scan and reject dangerous content but also to sanitise requests and variables. Those 2 actions are different and can be combined together for better security.
 		<li>Scan : if anything suspicious is detected, NinjaFirewall will block the request and return an <a href="?page=nfsubopt">HTTP error code and message</a>. The user request will fail and the connection will be closed immediately.</li>
-		<li>Sanitise : this option will not block but sanitise the user request by escaping characters that can be used to perform code or SQL injections (<code>\'</code>, <code>"</code>, <code>\\</code>, <code>\n</code>, <code>\r</code>, <code>`</code>, <code>\x1a</code>, <code>\x00</code>) and various exploits (XSS etc). If it is a variable (e.g <code>?name=value</code>), both its name and value will be sanitised.<br />This action will be performed when the filtering process is over, right before NinjaFirewall forwards the request to your PHP script.<br /><br /><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;<span class="description">If you enabled </span><code>POST</code><span class="description"> requests sanitising, articles and messages posted by your visitors could be corrupted with excessive backslashes or substitute characters.</span></li>'
+		<li>Sanitise : this option will not block but sanitise the user request by escaping characters that can be used to perform code or SQL injections (<code>\'</code>, <code>"</code>, <code>\\</code>, <code>\n</code>, <code>\r</code>, <code>`</code>, <code>\x1a</code>, <code>\x00</code>) and various exploits (XSS etc). If it is a variable, i.e. <code>?name=value</code>, both its name and value will be sanitised.<br />This action will be performed when the filtering process is over, right before NinjaFirewall forwards the request to your PHP script.<br /><br /><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;<span class="description">If you enabled </span><code>POST</code><span class="description"> requests sanitising, articles and messages posted by your visitors could be corrupted with excessive backslashes or substitute characters.</span></li>'
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'			=> 'policies04',
@@ -149,6 +149,7 @@ function help_nfsubpolicies() {
 
 		<strong>WordPress</strong>
 		<li>Block direct access to any PHP file located in one of these directories:<span class="description"> this option is enabled by default and there shouldn\'t be any reason to disable it.</span></li>
+		<li>Block access to WordPress XML-RPC API (<code>xmlrpc.php</code>):<span class="description"> XML-RPC is a remote procedure call (RPC) protocol which uses XML to encode its calls and HTTP as a transport mechanism. WordPress has an XMLRPC API that can be accessed through the <code>xmlrpc.php</code> file. Since WordPress version 3.5, it is always activated and cannot be turned off. NinjaFirewall allows you to block any access to that file. This option is not enabled by default.</span></li>
 		<li>Block <code>POST</code> requests in the themes folder <code>/wp-content/themes</code>:<span class="description"> this option can be useful to block hackers from installing backdoor in the PHP theme files. However, because some custom themes may include an HTML form (contact, search form etc), this option is not enabled by default.</span></li>
 		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear.</span></li>
 		<li>Disable the plugin and theme editor <code>DISALLOW_FILE_EDIT</code>:<span class="description"> disabling the plugin and theme editor provides an additional layer of security if a hacker gains access to a well-privileged user account.</span></li>
@@ -195,7 +196,7 @@ function help_nfsublogin() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'login01',
 		'title'     => 'Login protection',
-		'content'   => '<p>By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from thousands of different IPs.</p>
+		'content'   => '<p>By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the <strong>only plugin</strong> for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from thousands of different IPs.</p>
 		<p>When too many login attempts are detected, it password-protects the login page (wp-login.php) immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).</p>
 		<li>Enable protection:<span class="description"> whether to enable or disable the protection.</span></li>
 		<li>Protect the login page against:<span class="description"> select the type of requests (<code>GET</code> and/or <code>POST</code>) to monitor.</span></li>

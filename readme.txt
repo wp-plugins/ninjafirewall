@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute-force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, virus, WAF, wp-login, XSS
 Requires at least: 3.3.0
 Tested up to: 3.6.1
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,7 +35,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 = Brute-Force Attack Protection =
 
-By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the **only** plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from thousands of different IPs.
+By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the **only plugin** for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from thousands of different IPs.
 
 See our benchmark and stress-test: [WordPress brute-force detection plugins comparison](http://nintechnet.com/1.1.1/ "").
 
@@ -63,8 +63,8 @@ If you need help, click on the *Help* menu tab located in the upper right corner
 = Strong Privacy Policy =
 
 [NinTechNet](http://nintechnet.com/ "NinTechNet") strictly follows the [WordPress Plugin Developer guidelines](http://wordpress.org/plugins/about/guidelines/ ""): our software, [NinjaFirewall (WP edition)](http://ninjafirewall.com/ninjafirewall_wp.html "NinjaFirewall"), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home".
-It does not require a registration process or an activation key to be used or installed.
-Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.
+It does not require a registration process or an activation key to be installed or used.
+Because **we do not collect any user data**, we do not even know that you are using (and hopefully enjoying!) our product.
 
 = Requirements =
 
@@ -91,6 +91,14 @@ Because we do not collect any user data, we do not even know that you are using 
 7. NinjaFirewall log
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+* Updated firewall rules.
+* Added an option to block access to WordPress XML-RPC API (Firewall Policies page).
+* Better error handling (critical errors will be displayed in the admin console only).
+* Fixed a bug where NinjaFirewall brute-force protection was always triggered by the login modals introduced in WordPress 3.6.
+* Firewall rules and options are now using `WP_CONTENT_DIR` constant.
+* The installer will attempt to detect if WordPress files were installed into a subdirectory different from the root directory.
 
 = 1.1.1 =
 * Added protection against very large brute-force attacks, including distributed attacks coming from thousands of different IPs (see new `Login Protection` menu).
@@ -124,9 +132,17 @@ Because we do not collect any user data, we do not even know that you are using 
 
 == Changelog ==
 
+= 1.1.2 =
+* Updated firewall rules.
+* Added an option to block access to WordPress XML-RPC API (Firewall Policies page).
+* Better error handling (critical errors will be displayed in the admin console only).
+* Fixed a bug where NinjaFirewall brute-force protection was always triggered by the login modals introduced in WordPress 3.6.
+* Firewall rules and options are now using `WP_CONTENT_DIR` constant.
+* The installer will attempt to detect if WordPress files were installed into a subdirectory different from the root directory.
+
 = 1.1.1 =
 * Added protection against very large brute-force attacks, including distributed attacks coming from thousands of different IPs (see new `Login Protection` menu).
-* Fixed firewall initialisation error due to user defined WP_CONTENT_DIR.
+* Fixed firewall initialisation error due to user defined `WP_CONTENT_DIR`.
 * Fixed a bug where an extended ASCII code could make the log unreadable from WP admin console.
 
 = 1.1.0 =
