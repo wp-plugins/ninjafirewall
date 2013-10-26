@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-10-17 14:32:36                                       |
+ | REVISION: 2013-10-26 22:06:24                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -21,23 +21,32 @@
  | GNU General Public License for more details.                        |
  +---------------------------------------------------------------------+
 */
-if ( $_SERVER['SCRIPT_FILENAME'] == __FILE__ ) { die('Forbidden'); }
+if ($_SERVER['SCRIPT_FILENAME'] == __FILE__) { die('Forbidden'); }
+if (defined('NFW_STATUS')) { return; }
 
 // Used for benchmarks purpose :
 $nfw_starttime = microtime(true);
 
-// Brute-force attacks detection :
+// Brute-force attack detection :
 if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
 	nfw_bfd();
+}
+
+// Optional NinjaFirewall configuration file
+// ( see http://nintechnet.com/nfwp/1.1.3/ ) :
+if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+	@include($file);
 }
 
 // We need to get access to the database but we cannot include/require()
 // either wp-load.php or wp-config.php, because that would load the core
 // part of WordPress. Remember, we are supposed to act like a real and
 // stand-alone firewall, not like a lame security plugin: we must hook
-// every single PHP request **before** WordPress.
-// Therefore, we must find, open and parse the wp-config.php file:
-$wp_config = dirname( strstr(__FILE__, '/plugins/ninjafirewall/lib', true) ) . '/wp-config.php';
+// every single PHP request **before** WordPress. Therefore, we must find,
+// open and parse the wp-config.php file.
+if (empty ($wp_config)) {
+	$wp_config = dirname( strstr(__FILE__, '/plugins/ninjafirewall/lib', true) ) . '/wp-config.php';
+}
 if (! file_exists($wp_config) ) {
 	// set the error flag and return :
 	define( 'NFW_STATUS', 1 );
@@ -332,6 +341,8 @@ return;
 
 function nfw_check_upload() {
 
+	if ( defined('NFW_STATUS') ) { return; }
+
 	global $nfw_options;
 	$tmp = '';
 
@@ -370,6 +381,8 @@ function nfw_check_upload() {
 /* ================================================================== */
 
 function nfw_check_request( $nfw_rules ) {
+
+	if ( defined('NFW_STATUS') ) { return; }
 
 	global $nfw_options;
 	$b64_post = array();
@@ -436,6 +449,8 @@ function nfw_check_request( $nfw_rules ) {
 
 function nfw_flatten( $glue, $pieces ) {
 
+	if ( defined('NFW_STATUS') ) { return; }
+
    foreach ($pieces as $r_pieces) {
       if ( is_array($r_pieces)) {
          $ret[] = nfw_flatten($glue, $r_pieces);
@@ -449,6 +464,8 @@ function nfw_flatten( $glue, $pieces ) {
 /* ================================================================== */
 
 function check_b64( $reqkey, $string ) {
+
+	if ( defined('NFW_STATUS') ) { return; }
 
 	// clean-up the string before testing it :
 	$string = preg_replace( '`[^A-Za-z0-9+/=]`', '', $string);
@@ -465,6 +482,8 @@ function check_b64( $reqkey, $string ) {
 /* ================================================================== */
 
 function nfw_sanitise( $str, $how, $msg ) {
+
+	if ( defined('NFW_STATUS') ) { return; }
 
 	global $mysqli;
 
@@ -524,6 +543,8 @@ function nfw_sanitise( $str, $how, $msg ) {
 
 function nfw_block() {
 
+	if ( defined('NFW_STATUS') ) { return; }
+
 	global $nfw_options;
 	global $num_incident;
 	global $mysqli;
@@ -561,15 +582,20 @@ function nfw_block() {
 
 	echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' . "\n" .
 		'<html><head><title>NinjaFirewall: ' . $http_codes[$nfw_options['ret_code']] .
-		'</title></head><body>' . $tmp . '</body></html>';
-
+		'</title><style>body{font-family:Verdana,Arial,Helvetica,Ubuntu,"Bitstream Vera Sans",sans-serif;font-size:12px;line-height:16px;color:#000000;}.tinygrey{font-family:' .
+		'Verdana,Arial,Helvetica,Ubuntu, "Bitstream Vera Sans",sans-serif;font-size:10px;'.
+		'line-height:12px;color:#999999;}</style></head><body>' . $tmp . '<br><br><br><br>'.
+		'<center class=tinygrey>NinjaFirewall (WP edition)<br />&copy; 2012-' . date('Y') .
+		' <a style="color:#999999;" href="http://nintechnet.com/" target="_blank" '.
+		'title="The Ninja Technologies Network">NinTechNet</a></center></body></html>';
 	exit;
-
 }
 
 /* ================================================================== */
 
 function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
+
+	if ( defined('NFW_STATUS') ) { return; }
 
 	global $nfw_options;
 	global $num_incident;
@@ -633,16 +659,24 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 
 function nfw_bfd() {
 
-	$bf_conf_dir = substr( __FILE__, 0, -16) . 'log';
+	if ( defined('NFW_STATUS') ) { return; }
 
+	$bf_conf_dir = substr( __FILE__, 0, -16) . 'log';
 	// Is brute-force protection enabled ?
 	if (! file_exists($bf_conf_dir . '/nfwbfd.php') ) {
 		return;
 	}
 
+	global $nfw_options;
 	$now = time();
 	// Get config :
-	require_once($bf_conf_dir . '/nfwbfd.php');
+	require($bf_conf_dir . '/nfwbfd.php');
+
+	// Shall we always force HTTP authentication ?
+	if ( $bf_enable == 2 ) {
+		nfw_check_auth($auth_name, $auth_pass, $auth_msg);
+		return;
+	}
 
 	// Has protection already been triggered ?
 	if ( file_exists($bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand) ) {
@@ -650,7 +684,7 @@ function nfw_bfd() {
 		$fstat = stat( $bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand );
 		if ( ($now - $fstat['mtime']) < $bf_bantime * 60 ) {
 			// User authentication required :
-			nfw_check_auth($auth_name, $auth_pass);
+			nfw_check_auth($auth_name, $auth_pass, $auth_msg);
 			return;
 		} else {
 			// Reset counter :
@@ -672,7 +706,7 @@ function nfw_bfd() {
 			// Record it :
 			@file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND);
 			// Force HTTP authentication :
-			nfw_check_auth($auth_name, $auth_pass);
+			nfw_check_auth($auth_name, $auth_pass, $auth_msg);
 			return;
 
 		}
@@ -688,9 +722,12 @@ function nfw_bfd() {
 				fclose( $bfdh );
 				// Clear the log :
 				unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
-				nfw_log('Brute-force attack detected', 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 6, 0);
+				// Setup HTTP ret code here, because we do not have access
+				// to the DB yet :
+				$nfw_options['ret_code'] = '401';
+				nfw_log('Brute-force attack detected', 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 2, 0);
 				// Force HTTP authentication :
-				nfw_check_auth($auth_name, $auth_pass);
+				nfw_check_auth($auth_name, $auth_pass, $auth_msg);
 				return;
 
 			}
@@ -708,7 +745,9 @@ function nfw_bfd() {
 }
 /* ================================================================== */
 
-function nfw_check_auth($auth_name, $auth_pass) {
+function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
+
+	if ( defined('NFW_STATUS') ) { return; }
 
 	if ( (! empty($_SERVER['PHP_AUTH_USER'])) && (! empty($_SERVER['PHP_AUTH_PW'])) ) {
 		// Allow authenticated users only :
@@ -716,9 +755,9 @@ function nfw_check_auth($auth_name, $auth_pass) {
 			return;
 		}
 	}
-	header('WWW-Authenticate: Basic realm="Access temporarily restricted"');
+	header('WWW-Authenticate: Basic realm="' . $auth_msg . '"');
 	header('HTTP/1.0 401 Unauthorized');
-	echo '401 Access temporarily restricted';
+	echo $auth_msg;
 	exit;
 }
 

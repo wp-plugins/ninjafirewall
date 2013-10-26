@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-10-17 14:32:18                                       |
+ | REVISION: 2013-10-24 00:53:01                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -106,7 +106,7 @@ function nfw_install_2a( $err ) {
 	<form method="post">
 	<p>Your WordPress directory (<code>' . ABSPATH . '</code>) is different from your website document root (<code>' . getenv('DOCUMENT_ROOT') . '</code>). Because it is possible to install WordPress into a subdirectory, but have the blog exist in the site root, NinjaFirewall needs to know its exact location.</p>
 	<p>Please edit the path below <strong style="color:red">only</strong> if you have manually modified your WordPress root directory (as described in the <a href="http://codex.wordpress.org/Giving_WordPress_Its_Own_Directory" target="_blank">Giving WordPress Its Own Directory</a> article).</p>
-	<p><strong style="color:red">Most users should <strong>not</strong> change this value.</strong></p>
+	<p><strong style="color:red">Most users should not change this value.</strong></p>
 	<p>Path to WordPress root directory: <input class="regular-text code" type="text" name="abspath" value="' . ABSPATH . '"></p>
 	<br />
 	<br />
@@ -690,7 +690,10 @@ function nfw_default_conf() {
 		'nt_show_status'	=> 1,
 		'post_b64'			=> 1,
 		// v1.1.2 :
-		'no_xmlrpc'			=> 0
+		'no_xmlrpc'			=> 0,
+		// v1.1.3 :
+		'enum_archives'	=> 1,
+		'enum_login'		=> 1
 	);
 
 	// save new options but do not overwrite existing ones :

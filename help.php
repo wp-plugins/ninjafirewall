@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-10-17 14:32:56                                    |
+ | REVISION: 2013-10-26 22:04:36                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -108,28 +108,28 @@ function help_nfsubpolicies() {
 		<div style="height:250px;">
 
 		<strong>HTTP / HTTPS</strong>
-		<li>whether to filter HTTP and/or HTTPS traffic.</li>
+		<li>Whether to filter HTTP and/or HTTPS traffic.</li>
 
 		<strong>Uploads</strong>
 		<li>File Uploads:<span class="description"> whether to allow/disallow file uploads.</span></li>
 		<li>Sanitise filenames:<span class="description"> any character that is not a letter <code>a-zA-Z</code>, a digit <code>0-9</code>, a dot <code>.</code>, a hyphen <code>-</code> or an underscore <code>_</code> will be removed from the filename and replaced with the <code>X</code> character.</span></li>
 
 		<strong>GET requests</strong>
-		<li>whether to scan and/or sanitise <code>GET</code> requests.</li>
+		<li>Whether to scan and/or sanitise <code>GET</code> requests.</li>
 
 		<strong>POST requests</strong>
-		<li>whether to scan and/or sanitise <code>POST</code> requests.</li>
+		<li>Whether to scan and/or sanitise <code>POST</code> requests.</li>
 		<li>Decode base64-encoded <code>POST</code> requests:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for <code>POST</code> requests.</span></li>
 
 		<strong>Cookies</strong>
-		<li>whether to scan and/or sanitise <code>Cookies</code> requests.</li>
+		<li>Whether to scan and/or sanitise <code>Cookies</code> requests.</li>
 
 		<strong>HTTP_USER_AGENT server variable</strong>
-		<li>whether to scan and/or sanitise <code>HTTP_USER_AGENT</code> requests.</li>
+		<li>Whether to scan and/or sanitise <code>HTTP_USER_AGENT</code> requests.</li>
 		<li>Block suspicious bots/scanners:<span class="description"> rejects some known bots, scanners and various malicious scripts attempting to access your blog.</span></li>
 
 		<strong>HTTP_REFERER server variable</strong>
-		<li>whether to scan and/or sanitise <code>HTTP_REFERER</code> requests.</li>
+		<li>Whether to scan and/or sanitise <code>HTTP_REFERER</code> requests.</li>
 		<li>Block POST requests that do not have an <code>HTTP_REFERER</code> header:<span class="description"> this option will block any <code>POST</code> request that does not have a Referrer header (<code>HTTP_REFERER</code> variable). If you need external applications to post to your scripts (ie: Paypal IPN), you are advised to keep this option disabled otherwise they will likely be blocked. Note that <code>POST</code> requests are not required to have a Referrer header and, for that reason, this option is disabled by default.</span></li>
 
 		<strong>IPs</strong>
@@ -148,10 +148,11 @@ function help_nfsubpolicies() {
 		<li>Block ASCII control characters 1 to 8 and 14 to 31:<span class="description"> in most cases, those control characters are not needed and should be rejected as well.</span></li>
 
 		<strong>WordPress</strong>
-		<li>Block direct access to any PHP file located in one of these directories:<span class="description"> this option is enabled by default and there shouldn\'t be any reason to disable it.</span></li>
+		<li>Whether to block direct access to PHP files located in specific WordPress directories.</li>
+		<li>Protect against username enumeration:<span class="description"> it is possible to enumerate usernames either through the WordPress author archives or the login page. Although this is not a vulnerability but a WordPress feature, some hackers use it to retrieve usernames in order to launched more accurate brute-force attacks. NinjaFirewall will not block the request but, if it is a failed login attempt, it will sanitise the error message returned by WordPress and, if it is an author archives scan, it will invalidate it and redirect the user to the blog index page.</span></li>
 		<li>Block access to WordPress XML-RPC API (<code>xmlrpc.php</code>):<span class="description"> XML-RPC is a remote procedure call (RPC) protocol which uses XML to encode its calls and HTTP as a transport mechanism. WordPress has an XMLRPC API that can be accessed through the <code>xmlrpc.php</code> file. Since WordPress version 3.5, it is always activated and cannot be turned off. NinjaFirewall allows you to block any access to that file. This option is not enabled by default.</span></li>
 		<li>Block <code>POST</code> requests in the themes folder <code>/wp-content/themes</code>:<span class="description"> this option can be useful to block hackers from installing backdoor in the PHP theme files. However, because some custom themes may include an HTML form (contact, search form etc), this option is not enabled by default.</span></li>
-		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear.</span></li>
+		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear. <font color="red"><strong>Warning:</strong></font> ensure that you can access your admin console from HTTPS (<a href="' . admin_url('/','https') . '" target="_blank">' . admin_url('/','https') . '</a>) <strong>before</strong> enabling this option, otherwise you will lock yourself out of your site&nbsp;!</span></li>
 		<li>Disable the plugin and theme editor <code>DISALLOW_FILE_EDIT</code>:<span class="description"> disabling the plugin and theme editor provides an additional layer of security if a hacker gains access to a well-privileged user account.</span></li>
 		<li>Disable plugin and theme update/installation <code>DISALLOW_FILE_MODS</code>:<span class="description"> this option will block users being able to use the plugin and theme installation/update functionality from the WordPress admin area. Setting this constant also disables the Plugin and Theme editor.</span></li>
 
@@ -160,7 +161,7 @@ function help_nfsubpolicies() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'policies03',
 		'title'     => 'Administrator',
-		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall. This applies to all Firewall Policies listed below, except <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options which, if enabled, are always enforced.<br /><span>'
+		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall. This applies to all Firewall Policies listed below, except <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options which, if enabled, are always enforced.<br />'
 	) );
 
 }
@@ -196,13 +197,31 @@ function help_nfsublogin() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'login01',
 		'title'     => 'Login protection',
-		'content'   => '<p>By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the <strong>only plugin</strong> for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from thousands of different IPs.</p>
-		<p>When too many login attempts are detected, it password-protects the login page (wp-login.php) immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).</p>
-		<li>Enable protection:<span class="description"> whether to enable or disable the protection.</span></li>
+		'content'   => '
+		<div style="height:250px;">
+		<p><img src="http://www.testsite.com/sites/wordpress/wp-content/plugins/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the login protection from this page too.</span></p>
+
+		<p>By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.</p>
+		<p>You can select to enable the protection only if an attack is detected or to keep it always activated:</p>
+
+		<strong>Yes, if under attack :</strong>
+		<br />When too many login attempts are detected, it password-protects the login page (wp-login.php) immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).<br />
+		<ul>
 		<li>Protect the login page against:<span class="description"> select the type of requests (<code>GET</code> and/or <code>POST</code>) to monitor.</span></li>
 		<li>Password-protect the login page:<span class="description"> enter the suitable threshold that will trigger the protection.</span></li>
-		<li>HTTP authentication:<span class="description"> enter the user name and password that you want to use to bypass the protection during an attack.</span>
-		<p><img src="http://www.testsite.com/sites/wordpress/wp-content/plugins/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the login protection from this page too.</span></p></li>'
+		<li>HTTP authentication:<span class="description"> enter the user name and password that you want to use to bypass the protection during an attack.</span></li>
+		<li>Message:<span class="description"> enter the message to display during the authentication process.</span></li>
+		</ul>
+
+		<strong>Always ON :</strong>
+		<br />NinjaFirewall will always enforce HTTP Basic authentication implementation and you will be prompted to enter your choosen username/password each time you will access the login page.<br />
+		<ul>
+		<li>HTTP authentication:<span class="description"> enter the user name and password that you want to use to access the login page.</span></li>
+		<li>Message:<span class="description"> enter the message to display during the authentication process.</span></li>
+		</ul>
+
+		<br />&nbsp;
+		</div>'
 	) );
 }
 /* ================================================================== */

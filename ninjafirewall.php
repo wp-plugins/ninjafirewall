@@ -2,8 +2,8 @@
 /*
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
-Description: A true web application firewall for WordPress.
-Version: 1.1.2
+Description: A true Web Application Firewall.
+Version: 1.1.3
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,10 +19,10 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-10-17 14:32:06                                       |
+ | REVISION: 2013-10-26 22:03:38                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.2' );
+define( 'NFW_ENGINE_VERSION', '1.1.3' );
 define( 'NFW_RULES_VERSION',  '20131017' );
  /*
  +---------------------------------------------------------------------+
@@ -39,7 +39,6 @@ define( 'NFW_RULES_VERSION',  '20131017' );
 */
 
 if (! defined( 'ABSPATH' ) ) { die( 'Forbidden' ); }
-
 if (! session_id() ) { session_start(); }
 
 /* ================================================================== */
@@ -133,7 +132,7 @@ function nfw_upgrade() {
 		$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
 		$is_update = 1;
 
-		// v1.0.4 update :
+		// v1.0.4 update -------------------------------------------------
 		if ( empty( $nfw_options['alert_email']) ) {
 			$nfw_options['a_0']  = 1; $nfw_options['a_11'] = 1;
 			$nfw_options['a_12'] = 1; $nfw_options['a_13'] = 0;
@@ -143,31 +142,51 @@ function nfw_upgrade() {
 			$nfw_options['a_24'] = 0; $nfw_options['a_31'] = 1;
 			$nfw_options['alert_email'] = get_option('admin_email');
 		}
-		// v1.1.0 update :
+		// v1.1.0 update -------------------------------------------------
 		if (! isset( $nfw_options['post_b64'] ) ) {
 			$nfw_options['alert_sa_only']  = 2;
 			$nfw_options['nt_show_status'] = 1;
 			$nfw_options['post_b64']       = 1;
 		}
-		// v1.1.1 update :
+		$nfwbfd_log = plugin_dir_path(__FILE__) . 'log/nfwbfd.php';
+		// v1.1.1 update -------------------------------------------------
 		if ((! empty($nfw_options['bf_request'])) && (! empty($nfw_options['bf_bantime'])) &&
 		    (! empty($nfw_options['bf_attempt'])) && (! empty($nfw_options['bf_maxtime'])) &&
 		    (! empty($nfw_options['auth_name'])) && (! empty($nfw_options['auth_pass'])) &&
 		    (! empty($nfw_options['bf_rand'])) ) {
 			if ( is_writable( plugin_dir_path(__FILE__) . 'log' ) ) {
-				$data = '<?php $bf_request=\'' . $nfw_options['bf_request'] . '\';$bf_bantime=' . $nfw_options['bf_bantime'] . ';' .
-					'$bf_attempt=' . $nfw_options['bf_attempt'] . ';$bf_maxtime=' . $nfw_options['bf_maxtime'] . ';' .
-					'$auth_name=\'' . $nfw_options['auth_name'] . '\';$auth_pass=\'' . $nfw_options['auth_pass'] . '\';' .
-					'$bf_rand=\'' . $nfw_options['bf_rand'] . '\'; ?>';
-				$fh = fopen( plugin_dir_path(__FILE__) . 'log/nfwbfd.php', 'w' );
+				// v1.1.3 update -------------------------------------------
+				if ( empty($nfw_options['bf_enable'])) {
+					$nfw_options['bf_enable'] = 1;
+				}
+				if ( empty($nfw_options['auth_msg']) ) {
+					$nfw_options['auth_msg'] = 'Access restricted';
+				}
+				// ---------------------------------------------------------
+				$data = '<?php $bf_enable=' . $nfw_options['bf_enable'] .
+					';$bf_request=\'' . $nfw_options['bf_request'] .
+					'\';$bf_bantime=' . $nfw_options['bf_bantime'] . ';' .
+					'$bf_attempt=' . $nfw_options['bf_attempt'] . ';$bf_maxtime=' .
+					$nfw_options['bf_maxtime'] . ';' . '$auth_name=\'' .
+					$nfw_options['auth_name'] . '\';$auth_pass=\'' .
+					$nfw_options['auth_pass'] . '\';' . '$auth_msg=\'' .
+					$nfw_options['auth_msg'] . '\';' . '$bf_rand=\'' .
+					$nfw_options['bf_rand'] . '\'; ?>';
+				$fh = fopen( $nfwbfd_log, 'w' );
 				fwrite( $fh, $data );
 				fclose( $fh );
 			}
 		}
-		// v1.1.2
+		// v1.1.2 update -------------------------------------------------
 		if (! isset( $nfw_options['no_xmlrpc'] ) ) {
 			$nfw_options['no_xmlrpc'] = 0;
 		}
+		// v1.1.3 update -------------------------------------------------
+		if (! isset( $nfw_options['enum_archives'] ) ) {
+			$nfw_options['enum_archives'] = 1;
+			$nfw_options['enum_login'] = 1;
+		}
+		// ---------------------------------------------------------------
 	}
 
 	// do we need to update rules as well ?
@@ -340,6 +359,10 @@ function ninjafirewall_admin_menu() {
 		'<br /><br />%%NINJA_LOGO%%<br /><br />If you think that was a mistake, please contact the<br />' .
 		'webmaster and enclose the following incident ID:<br /><br />[ <b>#%%NUM_INCIDENT%%</b> ]</center>'
 	);
+
+	// Only used for NinjaFirewall beta releases :
+//	 define( 'IS_BETA', ' <sup style="color:red;">Beta ' . NFW_ENGINE_VERSION . '</sup> ');
+	define( 'IS_BETA', '');
 
 	// Setup our admin menus :
 
@@ -572,7 +595,7 @@ function nf_menu_main() {
 
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(<?php echo plugins_url() ?>/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
+	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)<?php echo IS_BETA ?></h2>
 	<br />
 	<?php
 	if ( $warn_msg ) {
@@ -612,6 +635,20 @@ function nf_menu_main() {
 			<td><?php echo NFW_RULES_VERSION ?></td>
 		</tr>
 	<?php
+
+	// check for NinjaFirewall optional config file :
+	if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+		echo '<tr><td width="200">Optional configuration file</td>';
+		if ( is_writable(dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+			echo '<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
+			<td><code>' .  dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja</code> is writable. Consider changing its permissions to read-only.</td>';
+		} else {
+			echo '<td>&nbsp;</td>
+				<td><code>' .  dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja</code></td>';
+		}
+		echo '</tr>';
+	}
+
 	if ( $debug_enabled ) {
 	?>
 		<tr>
@@ -682,7 +719,7 @@ function nf_sub_statistics() {
 	echo '
 <div class="wrap">
 		<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Statistics</h2>
+	<h2>Statistics' . IS_BETA . '</h2>
 	<br />';
 
 	$critical = $high = $medium = $slow = $benchmark = $tot_bench = $speed = $upload = $total = 0;
@@ -712,14 +749,16 @@ function nf_sub_statistics() {
 				} elseif ( $match[2] == 5) {
 					$upload++;
 				}
-				if ( $match[1] > $slow) {
-					$slow = $match[1];
+				if ($match[1]) {
+					if ( $match[1] > $slow) {
+						$slow = $match[1];
+					}
+					if ( $match[1] < $fast) {
+						$fast = $match[1];
+					}
+					$speed += $match[1];
+					$tot_bench++;
 				}
-				if ( $match[1] < $fast) {
-					$fast = $match[1];
-				}
-				$speed += $match[1];
-				$tot_bench++;
 			}
 		}
 		fclose( $fh);
@@ -731,7 +770,12 @@ function nf_sub_statistics() {
 			$critical = round( $critical * $coef, 2);
 			$high = round( $high * $coef, 2);
 			$medium = round( $medium * $coef, 2);
-			$speed = round( $speed / $tot_bench, 4);
+			if ($tot_bench) {
+				$speed = round( $speed / $tot_bench, 4);
+			} else {
+				$speed = 0;
+				$fast = 0;
+			}
 		}
 	}
 
@@ -831,7 +875,7 @@ function default_msg() {
 
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Firewall Options</h2>
+	<h2>Firewall Options' . IS_BETA . '</h2>
 
 	<br />';
 
@@ -1042,11 +1086,19 @@ function chksubmenu() {
       document.getElementById("santxt").style.color = "#bbbbbb";
    }
 }
+function ssl_warn(what) {
+	if (what.value == 0) { return true; }
+	if (confirm("WARNING: ensure that you can access your admin console from HTTPS (' . admin_url('/','https') . ') before enabling this option, otherwise you will lock yourself out of your site !\nGo ahead ?")){
+		return true;
+	}
+	document.getElementById("ssl_0").checked = true;
+	return false;
+}
 </script>
 
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Firewall Policies</h2>
+	<h2>Firewall Policies' . IS_BETA . '</h2>
 	<br />';
 
 	// Saved options ?
@@ -1564,6 +1616,16 @@ function chksubmenu() {
 	} else {
 		$wp_cache = 0;
 	}
+	if ( empty( $nfw_options['enum_archives']) ) {
+		$enum_archives = 0;
+	} else {
+		$enum_archives = 1;
+	}
+	if ( empty( $nfw_options['enum_login']) ) {
+		$enum_login = 0;
+	} else {
+		$enum_login = 1;
+	}
 	if ( empty( $nfw_options['no_xmlrpc']) ) {
 		$no_xmlrpc = 0;
 	} else {
@@ -1605,7 +1667,11 @@ function chksubmenu() {
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
 						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_inc]" id="wp_02"<?php if ( $wp_inc == 1 ) { echo ' checked'; }?>></td>
-						<td><label for="wp_02"><code>/wp-includes/*.php</code><br /><code>/wp-includes/css/*</code><br /><code>/wp-includes/images/*</code><br /><code>/wp-includes/js/*</code><br /><code>/wp-includes/theme-compat/*</code></label></td>
+						<td><label for="wp_02"><code>/wp-includes/*.php</code><br /><code>/wp-includes/css/*</code><br /><code>/wp-includes/images/*</code><br /><code>/wp-includes/js/*</code><br /><code>/wp-includes/theme-compat/*</code></label>
+						<br />
+						<span class="description">Uncheck this option if you have users with Editor, Author or Contributor roles, otherwise it could prevent them from using the TinyMCE WYSIWYG editor.</span>
+
+						</td>
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
 						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_upl]" id="wp_03"<?php if ( $wp_upl == 1 ) { echo ' checked'; }?>></td>
@@ -1620,6 +1686,19 @@ function chksubmenu() {
 			</td>
 		</tr>
 	</table>
+
+	<table class="form-table">
+		<tr>
+			<td width="300">Protect against username enumeration through...</td>
+			<td width="20" align="center">&nbsp;</td>
+			<td align=left>
+				<label><input type="checkbox" name="nfw_options[enum_archives]" value="1"<?php if ( $enum_archives == 1 ) { echo ' checked'; }?>>&nbsp;the author archives (default)</label>
+				<br />
+				<label><input type="checkbox" name="nfw_options[enum_login]" value="1"<?php if ( $enum_login == 1 ) { echo ' checked'; }?>>&nbsp;the login page (default)</label>
+			</td>
+		</tr>
+	</table>
+
 	<table class="form-table">
 		<tr>
 			<td width="300">Block access to WordPress XML-RPC API (<code>xmlrpc.php</code>)</td>
@@ -1645,10 +1724,10 @@ function chksubmenu() {
 			<td width="300">Force SSL for admin and logins <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Require_SSL_for_Admin_and_Logins" target="_blank">FORCE_SSL_ADMIN</a></code></td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[force_ssl]" value="1"<?php if ( $force_ssl == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
+				<label><input type="radio" name="nfw_options[force_ssl]" value="1"<?php if ( $force_ssl == 1 ) { echo ' checked'; }?> onclick="return ssl_warn(this);">&nbsp;Yes</label>
 			</td>
 			<td align=left>
-				<label><input type="radio" name="nfw_options[force_ssl]" value="0"<?php if ( $force_ssl == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label>
+				<label><input type="radio" id="ssl_0" name="nfw_options[force_ssl]" value="0"<?php if ( $force_ssl == 0 ) { echo ' checked'; }?> onclick="return ssl_warn(this);">&nbsp;No (default)</label>
 			</td>
 		</tr>
 		<tr>
@@ -1906,6 +1985,21 @@ function nf_sub_policies_save() {
 		$nfw_options['wp_dir'] = rtrim( $tmp, '|' );
 	}
 
+	// Protect against username enumeration attempts ?
+	if (! isset( $_POST['nfw_options']['enum_archives']) ) {
+		$nfw_options['enum_archives'] = 0;
+	} else {
+		// Default : yes
+		$nfw_options['enum_archives'] = 1;
+	}
+	if (! isset( $_POST['nfw_options']['enum_login']) ) {
+		$nfw_options['enum_login'] = 0;
+	} else {
+		// Default : yes
+		$nfw_options['enum_login'] = 1;
+	}
+
+
 	// Block WordPress XML-RPC API ?
 	if ( empty( $_POST['nfw_options']['no_xmlrpc']) ) {
 		// Default : no
@@ -2068,6 +2162,8 @@ function nf_sub_policies_default() {
 	$nfw_options['wp_dir'] 				= '/wp-admin/(?:css|images|includes|js)/|' .
 		'/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
 		'/'. basename(WP_CONTENT_DIR) .'/uploads/|/cache/';
+	$nfw_options['enum_archives']		= 1;
+	$nfw_options['enum_login']			= 1;
 	$nfw_options['no_xmlrpc']			= 0;
 	$nfw_options['no_post_themes']	= 0;
 	$nfw_options['force_ssl'] 			= 0;
@@ -2118,7 +2214,7 @@ function nf_sub_network() {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Network</h2>
+	<h2>Network' . IS_BETA . '</h2>
 	<br />';
 	if (! is_multisite() ) {
 		echo '<div class="updated settings-error"><p>You do not have a multisite network.</p></div></div>';
@@ -2182,7 +2278,7 @@ function nf_sub_alerts() {
 
 	echo '<div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>E-mail alerts</h2>
+	<h2>E-mail alerts' . IS_BETA .'</h2>
 	<br />';
 
 	// Saved ?
@@ -2440,7 +2536,7 @@ function nf_sub_log() {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Firewall Log</h2>
+	<h2>Firewall Log' . IS_BETA . '</h2>
 	<br />';
 
 	if ( $err ) {
@@ -2549,7 +2645,7 @@ function nf_sub_loginprot() {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Login Protection</h2>
+	<h2>Login Protection' . IS_BETA .'</h2>
 	<br />';
 
 	// Saved ?
@@ -2562,10 +2658,14 @@ function nf_sub_loginprot() {
 			echo '<div class="error settings-error"><p><strong>' . $res . '</strong></p></div>';
 		}
 	}
-	// Fetch the current confiuration, if any :
+
+	// Fetch the current configuration, if any :
 	if ( file_exists( plugin_dir_path(__FILE__) . 'log/nfwbfd.php' ) ) {
 		require( plugin_dir_path(__FILE__) . 'log/nfwbfd.php' );
-		$bf_enable = 1;
+
+		if (! @preg_match('/^[1-2]$/', $bf_enable) ) {
+			$bf_enable = 0;
+		}
 		if (! @preg_match('/^(GET|POST|GETPOST)$/', $bf_request ) ) {
 			$bf_request = 'POST';
 		}
@@ -2586,14 +2686,20 @@ function nf_sub_loginprot() {
 		if ( ( empty($auth_name) ) ||  ( @strlen( $auth_pass ) != 40 ) ) {
 			$auth_name= '';
 		}
-	// Default values :
-	} else {
+		if ( ( empty($auth_msg) ) || ( @strlen( $auth_msg ) > 100 ) ) {
+			$auth_msg = 'Access restricted';
+		}
+	}
+
+	if ( empty( $bf_enable ) ) {
+		// Default values :
 		$bf_enable   = 0;
 		$get_post = $bf_request  = 'POST';
 		$bf_bantime  = 5;
 		$bf_attempt  = 5;
 		$bf_maxtime  = 15;
 		$auth_name = '';
+		$auth_msg = 'Access restricted';
 	}
 
 	?>
@@ -2620,10 +2726,15 @@ function nf_sub_loginprot() {
 		}
 	}
 	function toogle_table(off) {
-		if ( off ) {
+		if ( off == 1 ) {
 			document.getElementById('bf_table').style.display = '';
+			document.getElementById('bf_table2').style.display = '';
+		} else if ( off == 2 ) {
+			document.getElementById('bf_table').style.display = 'none';
+			document.getElementById('bf_table2').style.display = '';
 		} else {
 			document.getElementById('bf_table').style.display = 'none';
+			document.getElementById('bf_table2').style.display = 'none';
 		}
 		return;
 	}
@@ -2642,16 +2753,19 @@ function nf_sub_loginprot() {
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
 			<td width="300" valign="top">Enable protection</td>
 			<td width="20" align="center">&nbsp;</td>
-			<td align="left" width="100">
-			<label><input type="radio" name="nfw_options[bf_enable]" value="1"<?php echo $bf_enable == 1 ? ' checked' : '' ?> onchange="toogle_table(1);">&nbsp;Yes</label>
+			<td align="left" width="150">
+			<label><input type="radio" name="nfw_options[bf_enable]" value="1"<?php echo $bf_enable == 1 ? ' checked' : '' ?> onchange="toogle_table(1);">&nbsp;Yes, if under attack</label>
 			</td>
 			<td align="left">
-			<label><input type="radio" name="nfw_options[bf_enable]" value="0"<?php echo $bf_enable != 1 ? ' checked' : '' ?> onchange="toogle_table(0);">&nbsp;No (default)</label>
+			<label><input type="radio" name="nfw_options[bf_enable]" value="2"<?php echo $bf_enable == 2 ? ' checked' : '' ?> onchange="toogle_table(2);">&nbsp;Always ON</label>
+			</td>
+			<td align="left">
+			<label><input type="radio" name="nfw_options[bf_enable]" value="0"<?php echo $bf_enable == 0 ? ' checked' : '' ?> onchange="toogle_table(0);">&nbsp;No (default)</label>
 			</td>
 		</tr>
 	</table>
 	<br />
-	<table class="form-table" id="bf_table"<?php echo $bf_enable ? '' : ' style="display:none"' ?>>
+	<table class="form-table" id="bf_table"<?php echo $bf_enable == 1 ? '' : ' style="display:none"' ?>>
 		<tr>
 			<td width="300" valign="top">Protect the login page against</td>
 			<td width="20" align="center">&nbsp;</td>
@@ -2663,11 +2777,7 @@ function nf_sub_loginprot() {
 			<label><input onchange="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GETPOST"<?php echo $bf_request == 'GETPOST' ? ' checked' : '' ?>>&nbsp;<code>GET</code> and <code>POST</code> requests attacks</label>
 			</td>
 		</tr>
-		<tr valign="top">
-			<td width="300">&nbsp;</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td>&nbsp;</td>
-		</tr>
+
 		<tr valign="top">
 			<td width="300" valign="top">Password-protect <code>wp-login.php</code></td>
 			<td width="20" align="center">&nbsp;</td>
@@ -2675,12 +2785,16 @@ function nf_sub_loginprot() {
 				for <input maxlength="2" size="2" value="<?php echo $bf_bantime ?>" name="nfw_options[bf_bantime]" id="ban1" onkeyup="is_number('ban1')" type="text" title="Enter a value from 1 to 99" /> minutes, if more than <input maxlength="2" size="2" value="<?php echo $bf_attempt ?>" name="nfw_options[bf_attempt]" id="ban2" onkeyup="is_number('ban2')" type="text" title="Enter a value from 1 to 99" /> <code id="get_post"><?php echo $get_post; ?></code> requests within <input maxlength="2" size="2" value="<?php echo $bf_maxtime ?>" name="nfw_options[bf_maxtime]" id="ban3" onkeyup="is_number('ban3')" type="text" title="Enter a value from 1 to 99" /> seconds.
 			</td>
 		</tr>
+	</table>
+	<table class="form-table" id="bf_table2"<?php echo $bf_enable ? '' : ' style="display:none"' ?>>
 		<tr valign="top">
 			<td width="300" valign="top">HTTP authentication</td>
 			<td width="20" align="center">&nbsp;</td>
 			<td align=left>
 				User:&nbsp;<input maxlength="20" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" title="Enter user name (from 6 to 20 characters)" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="20" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" title="Enter password (from 6 to 20 characters)" />
 				<br /><span class="description">&nbsp;User and Password must be from 6 to 20 characters.</span>
+				<br /><br />Message (max. 100 characters):<br />
+				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="100" size="50" name="nfw_options[auth_msg]">
 			</td>
 		</tr>
 	</table>
@@ -2735,12 +2849,20 @@ function nf_sub_loginprot_save() {
 			}
 		}
 		// Clear the backed up values from the DB:
+		$nfw_options['bf_enable']  = 0;
 		$nfw_options['bf_request'] = 0; $nfw_options['bf_bantime'] = 0;
 		$nfw_options['bf_attempt'] = 0; $nfw_options['bf_maxtime'] = 0;
 		$nfw_options['auth_name']  = 0; $nfw_options['auth_pass']  = 0;
-		$nfw_options['bf_rand']    = 0;
+		$nfw_options['bf_rand']    = 0; $nfw_options['$auth_msg']  = 0;
 		update_option( 'nfw_options', $nfw_options );
 		return 0;
+
+	}
+
+	if ( preg_match( '/^[12]$/', $_POST['nfw_options']['bf_enable'] ) ) {
+		$bf_enable = $_POST['nfw_options']['bf_enable'];
+	} else {
+		$bf_enable = 1;
 	}
 
 	// Ensure we have all values, otherwise set the default ones :
@@ -2787,14 +2909,21 @@ function nf_sub_loginprot_save() {
 		$auth_pass = sha1( $_POST['nfw_options']['auth_pass'] );
 	}
 
+	if ( ( empty($_POST['nfw_options']['auth_msg']) ) || ( @strlen( $_POST['nfw_options']['auth_msg'] ) > 100 ) ) {
+		$auth_msg = 'Access restricted';
+	} else {
+		$auth_msg = str_replace( array('\\', "'", '"', '<', '>', '&'),	"",  stripslashes( $_POST['nfw_options']['auth_msg']) );
+	}
+
 	if ( empty( $bf_rand ) ) {
 		$bf_rand = mt_rand(100000, 999999);
 	}
 	// Save it :
-	$data = '<?php $bf_request=\'' . $bf_request . '\';$bf_bantime=' . $bf_bantime . ';' .
+	$data = '<?php $bf_enable=' . $bf_enable . ';$bf_request=\'' . $bf_request .
+	'\';$bf_bantime=' . $bf_bantime . ';' .
 		'$bf_attempt=' . $bf_attempt . ';$bf_maxtime=' . $bf_maxtime . ';' .
 		'$auth_name=\'' . $auth_name . '\';$auth_pass=\'' . $auth_pass . '\';' .
-		'$bf_rand=\'' . $bf_rand . '\'; ?>';
+		'$auth_msg=\'' . $auth_msg . '\';$bf_rand=\'' . $bf_rand . '\'; ?>';
 
 	$fh = fopen( plugin_dir_path(__FILE__) . 'log/nfwbfd.php', 'w' );
 	if (! $fh) {
@@ -2806,6 +2935,7 @@ function nf_sub_loginprot_save() {
 
 	// Save a copy to the DB, so that we could restore the configuration
 	// file after an update :
+	$nfw_options['bf_enable']  = $bf_enable;
 	$nfw_options['bf_request'] = $bf_request;
 	$nfw_options['bf_bantime'] = $bf_bantime;
 	$nfw_options['bf_attempt'] = $bf_attempt;
@@ -2813,8 +2943,96 @@ function nf_sub_loginprot_save() {
 	$nfw_options['auth_name']  = $auth_name;
 	$nfw_options['auth_pass']  = $auth_pass;
 	$nfw_options['bf_rand']    = $bf_rand;
+	$nfw_options['auth_msg']   = $auth_msg;
 	update_option( 'nfw_options', $nfw_options );
 
+}
+
+/* ================================================================== */
+
+function nfw_query( $query ) {
+
+	// User enumeration (author archives) :
+
+	if ( $query->is_main_query() && $query->is_author() ) {
+		$query->set('author_name', '0');
+		nfw_log2('User enumeration scan (author archives)', $_SERVER['REQUEST_URI'], 1, 0);
+		wp_redirect( home_url('/') );
+		exit;
+	}
+}
+if (! isset($_SESSION['nfw_goodguy']) && ! empty($nfw_options['enum_archives']) ) {
+	add_action('pre_get_posts','nfw_query');
+}
+
+/* ================================================================== */
+
+function nfw_authenticate( $user ) {
+
+	// User enumeration (login page) :
+
+	if ( is_wp_error( $user ) ) {
+		if ( preg_match( '/^(?:in(?:correct_password|valid_username)|authentication_failed)$/', $user->get_error_code() ) ) {
+			$user = new WP_Error( 'denied', sprintf( __( '<strong>ERROR</strong>: Invalid username or password.<br /><a href="%s" title="Password Lost and Found">Lost your password</a>?' ), wp_lostpassword_url() ) );
+			add_filter('shake_error_codes', 'nfw_err_shake');
+		}
+	}
+	return $user;
+}
+if (! empty( $nfw_options['enum_login']) ) {
+	add_filter( 'authenticate', 'nfw_authenticate', 90, 3 );
+}
+
+function nfw_err_shake( $shake_codes ) {
+	// shake the login box :
+	$shake_codes[] = 'denied';
+	return $shake_codes;
+}
+
+/* ================================================================== */
+
+function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) {
+
+	// Write incident to the firewall log :
+
+	global $nfw_options;
+
+	if (! empty($nfw_options['debug']) ) {
+		$num_incident = '0000000';
+		$loglevel = 7;
+		$http_ret_code = '200 OK';
+	// Create a random incident number :
+	} else {
+		$num_incident = mt_rand(1000000, 9000000);
+		$http_ret_code = $nfw_options['ret_code'];
+	}
+   if (strlen($logdata) > 100) { $logdata = substr($logdata, 0, 100) . '...'; }
+	$res = '';
+	$string = str_split($logdata);
+	foreach ( $string as $char ) {
+		// Allow only ASCII printable characters :
+		if ( ( ord($char) < 32 ) || ( ord($char) > 126 ) ) {
+			$res .= '%' . bin2hex($char);
+		} else {
+			$res .= $char;
+		}
+	}
+	get_blog_timezone();
+
+	$log_file = plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log';
+	if (! $fh = fopen($log_file, 'a') ) {
+		return;
+	}
+   fwrite( $fh,
+      '[' . time() . '] ' . '[0] ' .
+      '[' . $_SERVER['SERVER_NAME'] . '] ' . '[#' . $num_incident . '] ' .
+      '[' . $ruleid . '] ' .
+      '[' . $loglevel . '] ' . '[' . $_SERVER['REMOTE_ADDR'] . '] ' .
+      '[' . $http_ret_code . '] ' . '[' . $_SERVER['REQUEST_METHOD'] . '] ' .
+      '[' . $_SERVER['SCRIPT_NAME'] . '] ' . '[' . $loginfo . '] ' .
+      '[' . $res . ']' . "\n"
+   );
+   fclose($fh);
 }
 
 /* ================================================================== */
@@ -2831,7 +3049,7 @@ function nf_sub_edit() {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Rules Editor</h2>
+	<h2>Rules Editor' . IS_BETA . '</h2>
 	<br />';
 
 	global $nfw_rules;
@@ -2952,7 +3170,7 @@ function show_table(table_id) {
 </script>
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;" title="NinTechNet"></div>
-	<h2>About</h2>
+	<h2>About' . IS_BETA . '</h2>
 	<br />
 	<br />
 	<center>
@@ -2975,23 +3193,23 @@ function show_table(table_id) {
 							<td align=center style="border-right:dotted 0px #FDCD25;" width="33%">
 								<img src="' . plugins_url( '/images/logo_nm_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
-								<a href="http://ninjamonitoring.com/" title="NinjaMonitoring: monitor your website for suspicious activities"><b>NinjaMonitoring</b></a>
+								<a href="http://ninjamonitoring.com/" title="NinjaMonitoring: monitor your website for suspicious activities"><b>NinjaMonitoring.com</b></a>
 								<br />
-								Monitor your website for suspicious activities.
+								Monitor your website for suspicious activities for just $4.99 per month.
 							</td>
 							<td align=center style="border-right:dotted 0px #FDCD25;" width="34%">
 								<img src="' . plugins_url( '/images/logo_pro_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
-								<a href="http://ninjafirewall.com/" title="NinjaFirewall: advanced firewall software for all your PHP applications"><b>NinjaFirewall</b></a>
+								<a href="http://ninjafirewall.com/" title="NinjaFirewall: advanced firewall software for all your PHP applications"><b>NinjaFirewall.com</b></a>
 								<br />
 								Advanced firewall software for all your PHP applications.
 							</td>
 							<td align=center width="33%">
 								<img src="' . plugins_url( '/images/logo_nr_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
-								<a href="http://ninjarecovery.com/" title="NinjaRecovery: Incident response, malware removal &amp; hacking recovery"><b>NinjaRecovery</b></a>
+								<a href="http://ninjarecovery.com/" title="NinjaRecovery: Incident response, malware removal and hacking recovery"><b>NinjaRecovery.com</b></a>
 								<br />
-								Incident response, malware removal &amp; hacking recovery.
+								Incident response, malware removal and hacking recovery.
 							</td>
 						</tr>
 					</table>

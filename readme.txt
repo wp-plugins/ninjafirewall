@@ -1,13 +1,13 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet
-Tags: attack, backdoor, botnet, brute-force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, virus, WAF, wp-login, XSS
+Tags: attack, backdoor, botnet, bruteforce, brute force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XSS
 Requires at least: 3.3.0
-Tested up to: 3.6.1
-Stable tag: 1.1.2
+Tested up to: 3.7
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A true web application firewall for WordPress.
+A true Web Application Firewall for WordPress.
 
 == Description ==
 
@@ -23,6 +23,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Scans and/or sanitises GET / POST requests, HTTP / HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
 * Sanitises variables names and values
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
+* Blocks username enumeration scanning attempts through the author archives and the login page
 * Blocks/allows uploads, sanitises uploaded file names
 * Blocks suspicious bots and scanners
 * Hides PHP error and notice messages
@@ -35,7 +36,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 = Brute-Force Attack Protection =
 
-By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the **only plugin** for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from thousands of different IPs.
+By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the **only plugin** for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
 
 See our benchmark and stress-test: [WordPress brute-force detection plugins comparison](http://nintechnet.com/1.1.1/ "").
 
@@ -92,6 +93,12 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 == Upgrade Notice ==
 
+= 1.1.3 =
+* Added an option to block username enumeration scanning attempts through the author archives and the login page (Firewall Policies page).
+* Added an option to always enforce HTTP Basic authentication to protect the login page and the possibility to set a custom 'realm' message (Login Protection page).
+* Added an optional configuration file that can be used to tell NinjaFirewall where is located the `wp-config.php` file, in the case it was moved to another directory (see `http://nintechnet.com/nfwp/1.1.3/` for full details).
+* Added a warning about blocking direct access to PHP scripts located in the `/wp-includes/` directory because it could prevent non-admin users from using the TinyMCE WYSIWYG editor.
+
 = 1.1.2 =
 * Updated firewall rules.
 * Added an option to block access to WordPress XML-RPC API (Firewall Policies page).
@@ -101,7 +108,7 @@ Because **we do not collect any user data**, we do not even know that you are us
 * The installer will attempt to detect if WordPress files were installed into a subdirectory different from the root directory.
 
 = 1.1.1 =
-* Added protection against very large brute-force attacks, including distributed attacks coming from thousands of different IPs (see new `Login Protection` menu).
+* Added protection against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs (see new `Login Protection` menu).
 * Fixed firewall initialisation error due to user defined WP_CONTENT_DIR.
 * Fixed a bug where an extended ASCII code could make the log unreadable from WP admin console.
 
@@ -132,6 +139,12 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 == Changelog ==
 
+= 1.1.3 =
+* Added an option to block username enumeration scanning attempts through the author archives and the login page (Firewall Policies page).
+* Added an option to always enforce HTTP Basic authentication to protect the login page and the possibility to set a custom 'realm' message (Login Protection page).
+* Added an optional configuration file that can be used to tell NinjaFirewall where is located the `wp-config.php` file, in the case it was moved to another directory (see `http://nintechnet.com/nfwp/1.1.3/` for full details).
+* Added a warning about blocking direct access to PHP scripts located in the `/wp-includes/` directory because it could prevent non-admin users from using the TinyMCE WYSIWYG editor.
+
 = 1.1.2 =
 * Updated firewall rules.
 * Added an option to block access to WordPress XML-RPC API (Firewall Policies page).
@@ -141,7 +154,7 @@ Because **we do not collect any user data**, we do not even know that you are us
 * The installer will attempt to detect if WordPress files were installed into a subdirectory different from the root directory.
 
 = 1.1.1 =
-* Added protection against very large brute-force attacks, including distributed attacks coming from thousands of different IPs (see new `Login Protection` menu).
+* Added protection against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs (see new `Login Protection` menu).
 * Fixed firewall initialisation error due to user defined `WP_CONTENT_DIR`.
 * Fixed a bug where an extended ASCII code could make the log unreadable from WP admin console.
 
