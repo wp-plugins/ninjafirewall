@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-10-26 22:04:36                                    |
+ | REVISION: 2013-11-09 23:31:04                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -301,7 +301,7 @@ function help_nfsubabout() {
 		NinjaFirewall is a powerful firewall software designed to protect all PHP applications from custom scripts to shopping cart softwares (osCommerce, Magento, VirtueMart etc) and also CMS applications (Joomla, WordPress etc).
 		<br /><br />
 		Product features :<br />
-		<li>Specifically designed for shared hosting accounts.</li>
+		<li>Compatible with shared hosting accounts.</li>
 		<li>Protects against remote & local file inclusions, code execution, uploads, MySQL injections, brute-force scanners, XSS and many other threats.</li>
 		<li>Stand-alone firewall; will not stop working when you upgrade your shopping cart or CMS software.</li>
 		<li>Hooks and sanitises all requests before they reach your scripts.</li>
@@ -333,7 +333,7 @@ function help_nfsubabout() {
 		<br /><br />
 		NinjaWPass is a WordPress plugin used to protect your blog administration console. It makes it basically impossible for a hacker who stole your password to log in to your console.
 		<br/><br/>
-		<center><a href="http://ninjafirewall.com/ninjawpass.html" title="NinjaWPass" target="_blank"><b>NinjaWPass</b></a></center><br />'
+		<center><a href="http://wordpress.org/plugins/ninjawpass/" title="NinjaWPass" target="_blank"><b>NinjaWPass</b></a></center><br />'
 	) );
 }
 

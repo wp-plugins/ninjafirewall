@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.1.3
+Version: 1.1.4
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-10-26 22:03:38                                       |
+ | REVISION: 2013-11-09 23:31:27                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.3' );
-define( 'NFW_RULES_VERSION',  '20131017' );
+define( 'NFW_ENGINE_VERSION', '1.1.4' );
+define( 'NFW_RULES_VERSION',  '20131109' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -42,6 +42,14 @@ if (! defined( 'ABSPATH' ) ) { die( 'Forbidden' ); }
 if (! session_id() ) { session_start(); }
 
 /* ================================================================== */
+
+// Some constants first :
+define( 'NFW_NULL_BYTE', 2);
+define( 'NFW_SCAN_BOTS', 310);
+define( 'NFW_ASCII_CTRL', 500);
+define( 'NFW_DOC_ROOT', 510);
+define( 'NFW_WRAPPERS', 520);
+define( 'NFW_LOOPBACK', 540);
 
 function nfw_activate() {
 
@@ -224,6 +232,10 @@ function nfw_upgrade() {
 	if ( defined( 'NFW_ALERT' ) ) {
 		check_email_alert();
 	}
+
+	if ( current_user_can( 'manage_options' ) && ! empty( $nfw_options['wl_admin']) ) {
+		$_SESSION['nfw_goodguy'] = true;
+	}
 }
 
 add_action('admin_init', 'nfw_upgrade' );
@@ -247,7 +259,7 @@ function nfw_login_hook( $user_login, $user ) {
 		$admin_flag = 1;
 	} elseif ( $user->roles[0] == 'administrator' ) {
 		$whoami = 'administrator';
-		$admin_flag = 1;
+		$admin_flag = 2;
 	} else {
 		$whoami = $user->roles[0];
 		$admin_flag = 0;
@@ -261,7 +273,7 @@ function nfw_login_hook( $user_login, $user ) {
 		}
 	}
 
-	if ( $admin_flag ) {
+	if ( $admin_flag == 2 ) {
 		if (! empty( $nfw_options['wl_admin']) ) {
 			// Set the goodguy flag :
 			$_SESSION['nfw_goodguy'] = true;
@@ -347,13 +359,6 @@ function ninjafirewall_admin_menu() {
 		return;
 	}
 
-	// Some constants first :
-	define( 'NFW_NULL_BYTE', 2);
-	define( 'NFW_SCAN_BOTS', 310);
-	define( 'NFW_ASCII_CTRL', 500);
-	define( 'NFW_DOC_ROOT', 510);
-	define( 'NFW_WRAPPERS', 520);
-	define( 'NFW_LOOPBACK', 540);
 	define( 'NFW_DEFAULT_MSG', '<br /><br /><br /><br /><center>Sorry <b>%%REM_ADDRESS%%</b>, ' .
 		'your request cannot be proceeded.<br />For security reason, it was blocked and logged.' .
 		'<br /><br />%%NINJA_LOGO%%<br /><br />If you think that was a mistake, please contact the<br />' .
@@ -636,6 +641,17 @@ function nf_menu_main() {
 		</tr>
 	<?php
 
+	// Ensure /log/ dir is writable :
+	if (! is_writable( plugin_dir_path(__FILE__) .  'log' ) ) {
+		?>
+			<tr>
+			<td width="200">Log dir</td>
+			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
+			<td><code><?php echo plugin_dir_path(__FILE__) .  'log/' ?></code> directory is not writable&nbsp;! Please chmod it to 0777 or equivalent.</td>
+		</tr>
+	<?php
+	}
+
 	// check for NinjaFirewall optional config file :
 	if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
 		echo '<tr><td width="200">Optional configuration file</td>';
@@ -696,7 +712,7 @@ function nf_menu_main() {
 		echo $ro_msg . '<tr>
 			<td width="200">&nbsp;</td>
 			<td width="20">&nbsp;</td>
-			<td><span class="description">&nbsp;Warning: you have some read-only system files; please <a href="http://ninjafirewall.com/ninjafirewall_wp_readonly.html" target="_blank">read this</a> if you want to uninstall NinjaFirewall.</span></td>
+			<td><span class="description">&nbsp;Warning: you have some read-only system files; please <a href="http://ninjafirewall.com/wordpress/help.php#ro_sysfile" target="_blank">read this</a> if you want to uninstall NinjaFirewall.</span></td>
 			</tr></table>';
 	}
 	?>
@@ -3107,21 +3123,25 @@ function nf_sub_edit() {
 			<form method="post">
 			<select name="sel_e_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
 				<option value="0">Total rules enabled : ' . count( $enabled_rules ) . '</option>';
-	ksort( $enabled_rules );
+	sort( $enabled_rules );
 
 	foreach ( $enabled_rules as $key ) {
-		// skip those ones, they can be changed in the Firewall Policies section:
-		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) { continue; }
-		echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+		// grey-out those ones, they can be changed in the Firewall Policies section:
+		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) {
+			echo '<option value="0" disabled="disabled">Rule ID : ' . $key . '</option>';
+		} else {
+			echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+		}
 	}
 	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Disable it">
+	<br /><span class="description">Greyed out rules can be changed in the <a href="?page=nfsubpolicies">Firewall Policies</a> page.</span>
 		</form>
 		<br />
 
 		<form method="post">
 		<select name="sel_d_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
 		<option value="0">Total rules disabled : ' . count( $disabled_rules ) . '</option>';
-	ksort( $disabled_rules );
+	sort( $disabled_rules );
 	foreach ( $disabled_rules as $key ) {
 		echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
 	}
