@@ -2,18 +2,18 @@
 Contributors: nintechnet
 Tags: attack, backdoor, botnet, bruteforce, brute force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XSS
 Requires at least: 3.3.0
-Tested up to: 3.7
-Stable tag: 1.1.3
+Tested up to: 3.7.1
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A true Web Application Firewall for WordPress.
+A true Web Application Firewall.
 
 == Description ==
 
-NinjaFirewall (WP edition) is a true web application firewall. Although it can be installed and configured just like a plugin, it is a stand-alone firewall that sits in front of WordPress.
+NinjaFirewall (WP edition) is a true Web Application Firewall. Although it can be installed and configured just like a plugin, it is a stand-alone firewall that sits in front of WordPress.
 
-It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP script before it reaches WordPress. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers shell scripts and backdoors will be filtered by NinjaFirewall.
+It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP script before it reaches WordPress or any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers shell scripts and backdoors will be filtered by NinjaFirewall.
 
 = Web Application Firewall =
 
@@ -91,7 +91,15 @@ Because **we do not collect any user data**, we do not even know that you are us
 6. NinjaFirewall Policies 4/4
 7. NinjaFirewall log
 
-== Upgrade Notice ==
+== Changelog ==
+
+= 1.1.4 =
+* Updated firewall rules.
+* Fixed potential session timeout for the logged-in admin.
+* Fixed dead links in doc.
+* Improved installer/uninstaller.
+* Added a warning to the firewall status page if the `log` directory is not writable.
+* Fixed an undefined `NFW_DOC_ROOT` constant warning.
 
 = 1.1.3 =
 * Added an option to block username enumeration scanning attempts through the author archives and the login page (Firewall Policies page).
@@ -109,7 +117,7 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 = 1.1.1 =
 * Added protection against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs (see new `Login Protection` menu).
-* Fixed firewall initialisation error due to user defined WP_CONTENT_DIR.
+* Fixed firewall initialisation error due to user defined `WP_CONTENT_DIR`.
 * Fixed a bug where an extended ASCII code could make the log unreadable from WP admin console.
 
 = 1.1.0 =
@@ -137,7 +145,10 @@ Because **we do not collect any user data**, we do not even know that you are us
 = 1.0.0 =
 * Initial release.
 
-== Changelog ==
+== Upgrade Notice ==
+
+= 1.1.4 =
+This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
 
 = 1.1.3 =
 * Added an option to block username enumeration scanning attempts through the author archives and the login page (Firewall Policies page).
