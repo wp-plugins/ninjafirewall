@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.1.4
+Version: 1.1.5
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-11-09 23:31:27                                       |
+ | REVISION: 2013-12-16 16:37:33                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.4' );
-define( 'NFW_RULES_VERSION',  '20131109' );
+define( 'NFW_ENGINE_VERSION', '1.1.5' );
+define( 'NFW_RULES_VERSION',  '20131216' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -233,9 +233,19 @@ function nfw_upgrade() {
 		check_email_alert();
 	}
 
+	// if admin is whiteliseted, update the goodguy flag (helps to avoid
+	// potential session timeout) :
 	if ( current_user_can( 'manage_options' ) && ! empty( $nfw_options['wl_admin']) ) {
 		$_SESSION['nfw_goodguy'] = true;
+		return;
 	}
+
+	// clear it otherwise :
+	if ( isset( $_SESSION['nfw_goodguy'] ) ) {
+		unset( $_SESSION['nfw_goodguy'] );
+	}
+
+
 }
 
 add_action('admin_init', 'nfw_upgrade' );
@@ -420,7 +430,7 @@ function ninjafirewall_admin_menu() {
 	add_action( 'load-' . $menu_hook, 'help_nfsubnetwork' );
 
 	// Alerts menu :
-	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: E-mail Alerts', 'E-mail Alerts', 'manage_options',
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Event Notifications', 'Event Notifications', 'manage_options',
 		'nfsubalerts', 'nf_sub_alerts' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubalerts' );
 
@@ -615,27 +625,27 @@ function nf_menu_main() {
 	<h3>Firewall status</h3>
 	<table class="form-table">
 		<tr>
-			<td width="200">Firewall</td>
+			<th scope="row">Firewall</th>
 			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/' . $img, __FILE__ ) ?>" border="0" height="16" width="16"></td>
 			<td><?php echo $txt; if ( $warn_msg == 1) {echo '&nbsp;&nbsp;&nbsp;&nbsp;<a href="?page=nfsubopt">Click here to enable NinjaFirewall</a>';} ?></td>
 		</tr>
 		<tr>
-			<td width="200">PHP hook</td>
+			<th scope="row">PHP hook</th>
 			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/' . $img2, __FILE__ ) ?>" border="0" height="16" width="16"></td>
 			<td><?php echo $txt2 ?></td>
 		</tr>
 		<tr>
-			<td width="200">PHP SAPI</td>
+			<th scope="row">PHP SAPI</th>
 			<td width="20" align="center">-</td>
 			<td><?php echo strtoupper(PHP_SAPI) ?></td>
 		</tr>
 		<tr>
-			<td width="200">Engine version</td>
+			<th scope="row">Engine version</th>
 			<td width="20" align="center">-</td>
 			<td><?php echo NFW_ENGINE_VERSION ?></td>
 		</tr>
 		<tr>
-			<td width="200">Rules version</td>
+			<th scope="row">Rules version</th>
 			<td width="20" align="center">-</td>
 			<td><?php echo NFW_RULES_VERSION ?></td>
 		</tr>
@@ -645,7 +655,7 @@ function nf_menu_main() {
 	if (! is_writable( plugin_dir_path(__FILE__) .  'log' ) ) {
 		?>
 			<tr>
-			<td width="200">Log dir</td>
+			<th scope="row">Log dir</th>
 			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
 			<td><code><?php echo plugin_dir_path(__FILE__) .  'log/' ?></code> directory is not writable&nbsp;! Please chmod it to 0777 or equivalent.</td>
 		</tr>
@@ -654,12 +664,12 @@ function nf_menu_main() {
 
 	// check for NinjaFirewall optional config file :
 	if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
-		echo '<tr><td width="200">Optional configuration file</td>';
+		echo '<tr><th scope="row">Optional configuration file</th>';
 		if ( is_writable(dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
 			echo '<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 			<td><code>' .  dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja</code> is writable. Consider changing its permissions to read-only.</td>';
 		} else {
-			echo '<td>&nbsp;</td>
+			echo '<td width="20">&nbsp;</td>
 				<td><code>' .  dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja</code></td>';
 		}
 		echo '</tr>';
@@ -668,7 +678,7 @@ function nf_menu_main() {
 	if ( $debug_enabled ) {
 	?>
 		<tr>
-			<td width="200">Debugging mode</td>
+			<th scope="row">Debugging mode</th>
 			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ ) ?>" border="0" height="16" width="16"></td>
 			<td>On&nbsp;&nbsp;&nbsp;&nbsp;<a href="?page=nfsubopt">Click here to turn off Debugging mode</a></td>
 		</tr>
@@ -676,7 +686,7 @@ function nf_menu_main() {
 	}
 	echo '</table>';
 
-	$ro_msg = '<h3>File System</h3>
+	$ro_msg = '<h3>System Files</h3>
 	<table class="form-table">';
 	// If the user files (.htaccess & PHP INI) are read-only, we display a warning,
 	// otherwise, if (s)he wanted to uninstall NinjaFirewall, the uninstall process
@@ -684,7 +694,7 @@ function nf_menu_main() {
 	$ro = 0;
 	if ( ( file_exists( ABSPATH . '.htaccess' ) ) && (! is_writable( ABSPATH . '.htaccess' ) ) ) {
 		$ro_msg .= '<tr>
-		<td width="200">.htaccess</td>
+		<th scope="row">.htaccess</th>
 		<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 		<td><code>' . ABSPATH . '.htaccess</code> is read-only</td>
 		</tr>';
@@ -701,7 +711,7 @@ function nf_menu_main() {
 	if ( $phpini ) {
 		if (! is_writable( $phpini ) ) {
 			$ro_msg .= '<tr>
-			<td width="200">PHP INI</td>
+			<th scope="row">PHP INI</th>
 			<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 			<td><code>' . $phpini . '</code> is read-only</td>
 			</tr>';
@@ -710,7 +720,7 @@ function nf_menu_main() {
 	}
 	if ( $ro++ ) {
 		echo $ro_msg . '<tr>
-			<td width="200">&nbsp;</td>
+			<th scope="row">&nbsp;</th>
 			<td width="20">&nbsp;</td>
 			<td><span class="description">&nbsp;Warning: you have some read-only system files; please <a href="http://ninjafirewall.com/wordpress/help.php#ro_sysfile" target="_blank">read this</a> if you want to uninstall NinjaFirewall.</span></td>
 			</tr></table>';
@@ -798,32 +808,29 @@ function nf_sub_statistics() {
 	echo '
 	<table class="form-table">
 		<tr>
-			<td width="200"><h3>Monthly stats</h3></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>' . date("F Y") . '</td>
+			<th scope="row"><h3>Monthly stats</h3></th>
+			<td align="left">' . date("F Y") . '</td>
 		</tr>
 		<tr>
-			<td width="200">Total blocked hacking attempts</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>' . $total . '</td>
+			<th scope="row">Blocked hacking attempts</th>
+			<td align="left">' . $total . '</td>
 		</tr>
 		<tr>
-			<td valign="center" width="200">Hacking attempts severity</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
+			<th scope="row">Hacking attempts severity</th>
+			<td align="left">
 				Critical : ' . $critical . '%<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="250" align="left" style="height:14px;">
 					<tr>
 						<td width="' . round( $critical) . '%" background="' . plugins_url( '/images/bar-critical.png', __FILE__ ) . '" style="padding:0px"></td><td width="' . round(100 - $critical) . '%" style="padding:0px"></td>
 					</tr>
 				</table>
-				<br />High : ' . $high . '%<br />
+				<br /><br />High : ' . $high . '%<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="250" align="left" style="height:14px;">
 					<tr>
 						<td width="' . round( $high) . '%" background="' . plugins_url( '/images/bar-high.png', __FILE__ ) . '" style="padding:0px"></td><td width="' . round(100 - $high) . '%" style="padding:0px"></td>
 					</tr>
 				</table>
-				<br />Medium : ' . $medium . '%<br />
+				<br /><br />Medium : ' . $medium . '%<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="250" align="left" style="height:14px;">
 					<tr>
 						<td width="' . round( $medium) . '%" background="' . plugins_url( '/images/bar-medium.png', __FILE__ ) . '" style="padding:0px;"></td><td width="' . round(100 - $medium) . '%" style="padding:0px;"></td>
@@ -832,26 +839,22 @@ function nf_sub_statistics() {
 			</td>
 		</tr>
 		<tr>
-			<td width="200">Total uploaded files</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>' . $upload . '</td>
+			<th scope="row">Uploaded files</th>
+			<td align="left">' . $upload . '</td>
 		</tr>
 
-		<tr><td><h3>Benchmarks</h3></td><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><th scope="row"><h3>Benchmarks</h3></th><td>&nbsp;</td><td>&nbsp;</td></tr>
 		<tr>
-			<td width="200">Average time per request</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>' . $speed . 's</td>
+			<th scope="row">Average time per request</th>
+			<td align="left">' . $speed . 's</td>
 		</tr>
 		<tr>
-			<td width="200">Fastest request</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>' . round( $fast, 4) . 's</td>
+			<th scope="row">Fastest request</th>
+			<td align="left">' . round( $fast, 4) . 's</td>
 		</tr>
 		<tr>
-			<td width="200">Slowest request</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>' . round( $slow, 4) . 's</td>
+			<th scope="row">Slowest request</th>
+			<td align="left">' . round( $slow, 4) . 's</td>
 		</tr>
 	</table>
 </div>';
@@ -892,7 +895,6 @@ function default_msg() {
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
 	<h2>Firewall Options' . IS_BETA . '</h2>
-
 	<br />';
 
 	// Saved options ?
@@ -902,17 +904,16 @@ function default_msg() {
 		echo '<div class="updated settings-error"><p><strong>Your changes have been saved.</strong></p></div>';
 	}
 
-	echo '
+	echo '<br />
 	<form method="post" name="option_form">
 	<table class="form-table">
 		<tr>
-			<td width="200">Firewall protection</td>';
-
+			<th scope="row">Firewall protection</th>';
 	// Enabled :
 	if (! empty( $nfw_options['enabled']) ) {
 		echo '
 			<td width="20" align="center"><img src="' . plugins_url( '/images/icon_ok_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
-			<td align=left>
+			<td align="left">
 				<select name="nfw_options[enabled]" style="width:200px">
 					<option value="1" selected>Enabled</option>
 					<option value="0">Disabled</option>
@@ -921,23 +922,22 @@ function default_msg() {
 	} else {
 		echo '
 			<td width="20" align="center"><img src="' . plugins_url( '/images/icon_error_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
-			<td align=left>
+			<td align="left">
 				<select name="nfw_options[enabled]" style="width:200px">
 					<option value="1">Enabled</option>
 					<option value="0" selected>Disabled</option>
 				</select>&nbsp;<span class="description">&nbsp;Warning: your site is not protected !</span>';
 	}
-
 	echo '
 			</td>
 		</tr>
 		<tr>
-			<td valign="center" width="200">Debugging mode</td>';
+			<th scope="row">Debugging mode</th>';
 
 	// Debugging enabled ?
 	if (! empty( $nfw_options['debug']) ) {
 	echo '<td width="20" align="center"><img src="' . plugins_url( '/images/icon_error_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
-			<td align=left>
+			<td align="left">
 				<select name="nfw_options[debug]" style="width:200px">
 				<option value="1" selected>Enabled</option>
 					<option value="0">Disabled (default)</option>
@@ -946,8 +946,8 @@ function default_msg() {
 
 	} else {
 	// Debugging disabled ?
-	echo '<td width="20" align="center">&nbsp;</td>
-			<td align=left>
+	echo '<td width="20">&nbsp;</td>
+			<td align="left">
 				<select name="nfw_options[debug]" style="width:200">
 				<option value="1">Enabled</option>
 					<option value="0" selected>Disabled (default)</option>
@@ -959,50 +959,43 @@ function default_msg() {
 	if (! @preg_match( '/^(?:40[0346]|50[03])$/', $nfw_options['ret_code']) ) {
 		$nfw_options['ret_code'] = '403';
 	}
-	echo '
+	?>
+		</tr>
 		<tr>
-			<td width="200">HTTP error code to return</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-				<select name="nfw_options[ret_code]" style="width:200px">';
-
-	echo '<option value="400"';
-	if ( $nfw_options['ret_code'] == 400 ) { echo ' selected'; }
-	echo '>400 Bad Request</option><option value="403"';
-	if ( $nfw_options['ret_code'] == 403 ) { echo ' selected'; }
-	echo '>403 Forbidden (default)</option><option value="404"';
-	if ( $nfw_options['ret_code'] == 404 ) { echo ' selected'; }
-	echo '>404 Not Found</option><option value="406"';
-	if ( $nfw_options['ret_code'] == 406 ) { echo ' selected'; }
-	echo '>406 Not Acceptable</option><option value="500"';
-	if ( $nfw_options['ret_code'] == 500 ) { echo ' selected'; }
-	echo '>500 Internal Server Error</option><option value="503"';
-	if ( $nfw_options['ret_code'] == 503 ) { echo ' selected'; }
-	echo '>503 Service Unavailable</option>';
-
-	echo '	</select>
+			<th scope="row">HTTP error code to return</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
+			<select name="nfw_options[ret_code]" style="width:200px">
+			<option value="400"<?php selected($nfw_options['ret_code'], 400) ?>>400 Bad Request</option>
+			<option value="403"<?php selected($nfw_options['ret_code'], 403) ?>>403 Forbidden (default)</option>
+			<option value="404"<?php selected($nfw_options['ret_code'], 404) ?>>404 Not Found</option>
+			<option value="406"<?php selected($nfw_options['ret_code'], 406) ?>>406 Not Acceptable</option>
+			<option value="500"<?php selected($nfw_options['ret_code'], 500) ?>>500 Internal Server Error</option>
+			<option value="503"<?php selected($nfw_options['ret_code'], 503) ?>>503 Service Unavailable</option>
+			</select>
 			</td>
 		</tr>
-
+	<?php
+	echo '
 		<tr>
-			<td valign="center" width="200">Blocked user message</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-				<textarea name="nfw_options[blocked_msg]" class="large-text code" cols="60" rows="5">';
+			<th scope="row">Blocked user message</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
+				<textarea name="nfw_options[blocked_msg]" class="small-text code" cols="60" rows="5">';
+
 	if (! empty( $nfw_options['blocked_msg']) ) {
 		echo $nfw_options['blocked_msg'];
 	} else {
 		echo NFW_DEFAULT_MSG;
 	}
 	echo '</textarea>
-				<br />
-				<input class="button-secondary" type="button" id="btn_msg" value="Preview message" onclick="javascript:preview_msg();" />&nbsp;&nbsp;<input class="button-secondary" type="button" id="btn_msg" value="Default message" onclick="javascript:default_msg();" />&nbsp;&nbsp;
+				<p><input class="button-secondary" type="button" id="btn_msg" value="Preview message" onclick="javascript:preview_msg();" />&nbsp;&nbsp;<input class="button-secondary" type="button" id="btn_msg" value="Default message" onclick="javascript:default_msg();" /></p>
 			</td>
 		</tr>
 	</table>
 
 	<table class="form-table" border=1>
-		<tr id="td_msg" style="display:none"><td id="out_msg" style="border:1px solid #DFDFDF" width="100%"></td></tr>
+		<tr id="td_msg" style="display:none"><td id="out_msg" style="border:1px solid #DFDFDF;background-color:#ffffff;" width="100%"></td></tr>
 	</table>
 
 	<br />
@@ -1144,14 +1137,12 @@ function ssl_warn(what) {
 	<h3>HTTP / HTTPS</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300" valign="top">Enable NinjaFirewall for...</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<label><input type="radio" name="nfw_options[scan_protocol]" value="3"<?php if ( $scan_protocol == 3 ) {	echo ' checked';	}?>>&nbsp;<code>HTTP</code> and <code>HTTPS/SSL</code> traffic (default)</label>
-			<br />
-			<label><input type="radio" name="nfw_options[scan_protocol]" value="1"<?php if ( $scan_protocol == 1 ) {	echo ' checked';	}?>>&nbsp;<code>HTTP</code> traffic only</label>
-			<br />
-			<label><input type="radio" name="nfw_options[scan_protocol]" value="2"<?php if ( $scan_protocol == 2 ) {	echo ' checked';	}?>>&nbsp;<code>HTTPS/SSL</code> traffic only</label>
+			<th scope="row">Enable NinjaFirewall for</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
+			<p><label><input type="radio" name="nfw_options[scan_protocol]" value="3"<?php checked($scan_protocol, 3 ) ?>>&nbsp;<code>HTTP</code> and <code>HTTPS/SSL</code> traffic (default)</label></p>
+			<p><label><input type="radio" name="nfw_options[scan_protocol]" value="1"<?php checked($scan_protocol, 1 ) ?>>&nbsp;<code>HTTP</code> traffic only</label></p>
+			<p><label><input type="radio" name="nfw_options[scan_protocol]" value="2"<?php checked($scan_protocol, 2 ) ?>>&nbsp;<code>HTTPS/SSL</code> traffic only</label></p>
 			</td>
 		</tr>
 	</table>
@@ -1172,13 +1163,13 @@ function ssl_warn(what) {
 	<h3>Uploads</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">File Uploads</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
+			<th scope="row">File Uploads</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
 				<select name="nfw_options[uploads]" onchange="chksubmenu();">
-					<option value="1"<?php if ( $uploads == 1 ) {	echo ' selected';	}?>>Allow uploads</option>
-					<option value="0"<?php if ( $uploads == 0 ) {	echo ' selected';	}?>>Disallow uploads (default)</option>
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<label id="santxt"<?php if (! $uploads) { echo ' style="color:#bbbbbb;"'; }?>><input type="checkbox" name="nfw_options[sanitise_fn]"<?php if ( $sanitise_fn == 1 ) { echo ' checked'; }if (! $uploads) { echo ' disabled'; }?> id="san">&nbsp;Sanitise filenames</label>
+					<option value="1"<?php selected( $uploads, 1 ) ?>>Allow uploads</option>
+					<option value="0"<?php selected( $uploads, 0 ) ?>>Disallow uploads (default)</option>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<label id="santxt"<?php if (! $uploads) { echo ' style="color:#bbbbbb;"'; }?>><input type="checkbox" name="nfw_options[sanitise_fn]"<?php checked( $sanitise_fn, 1 ); disabled( $uploads, 0 ) ?> id="san">&nbsp;Sanitise filenames</label>
 			</td>
 		</tr>
 	</table>
@@ -1198,23 +1189,23 @@ function ssl_warn(what) {
 	<h3>GET requests</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">Scan <code>GET</code> requests</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[get_scan]" value="1"<?php if ( $get_scan == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Scan <code>GET</code> requests</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[get_scan]" value="1"<?php checked( $get_scan, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[get_scan]" value="0"<?php if ( $get_scan == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[get_scan]" value="0"<?php checked( $get_scan, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Sanitise <code>GET</code> requests</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[get_sanitise]" value="1"<?php if ( $get_sanitise == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Sanitise <code>GET</code> requests</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[get_sanitise]" value="1"<?php checked( $get_sanitise, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[get_sanitise]" value="0"<?php if ( $get_sanitise == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[get_sanitise]" value="0"<?php checked( $get_sanitise, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1238,34 +1229,34 @@ function ssl_warn(what) {
 	?>
 	<h3>POST requests</h3>
 	<table class="form-table">
-		<tr>
-			<td width="300">Scan <code>POST</code> requests</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[post_scan]" value="1"<?php if ( $post_scan == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+		<tr valign="top">
+			<th scope="row">Scan <code>POST</code> requests</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[post_scan]" value="1"<?php checked( $post_scan, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[post_scan]" value="0"<?php if ( $post_scan == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[post_scan]" value="0"<?php checked( $post_scan, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr valign="top">
-			<td width="300">Sanitise <code>POST</code> requests</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[post_sanitise]" value="1"<?php if ( $post_sanitise == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
+			<th scope="row">Sanitise <code>POST</code> requests</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120" style="vertical-align:top;">
+				<label><input type="radio" name="nfw_options[post_sanitise]" value="1"<?php checked( $post_sanitise, 1 ) ?>>&nbsp;Yes</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[post_sanitise]" value="0"<?php if ( $post_sanitise == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Do not enable this option unless you know what you are doing!</span>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[post_sanitise]" value="0"<?php checked( $post_sanitise, 0 ) ?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Do not enable this option unless you know what you are doing!</span>
 			</td>
 		</tr>
 		<tr valign="top">
-			<td width="300">Decode base64-encoded <code>POST</code> requests</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[post_b64]" value="1"<?php if ( $post_b64 == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Decode base64-encoded <code>POST</code> requests</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[post_b64]" value="1"<?php checked( $post_b64, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[post_b64]" value="0"<?php if ( $post_b64 == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[post_b64]" value="0"<?php checked( $post_b64, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1285,23 +1276,23 @@ function ssl_warn(what) {
 	<h3>Cookies</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">Scan cookies</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[cookies_scan]" value="1"<?php if ( $cookies_scan == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Scan cookies</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[cookies_scan]" value="1"<?php checked( $cookies_scan, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[cookies_scan]" value="0"<?php if ( $cookies_scan == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[cookies_scan]" value="0"<?php checked( $cookies_scan, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Sanitise cookies</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[cookies_sanitise]" value="1"<?php if ( $cookies_sanitise == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Sanitise cookies</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[cookies_sanitise]" value="1"<?php checked( $cookies_sanitise, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[cookies_sanitise]" value="0"<?php if ( $cookies_sanitise == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[cookies_sanitise]" value="0"<?php checked( $cookies_sanitise, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1328,33 +1319,33 @@ function ssl_warn(what) {
 	<h3>HTTP_USER_AGENT server variable</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">Scan <code>HTTP_USER_AGENT</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[ua_scan]" value="1"<?php if ( $ua_scan == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Scan <code>HTTP_USER_AGENT</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[ua_scan]" value="1"<?php checked( $ua_scan, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[ua_scan]" value="0"<?php if ( $ua_scan == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
-			</td>
-		</tr>
-		<tr>
-			<td width="300">Sanitise <code>HTTP_USER_AGENT</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[ua_sanitise]" value="1"<?php if ( $ua_sanitise == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
-			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[ua_sanitise]" value="0"<?php if ( $ua_sanitise == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[ua_scan]" value="0"<?php checked( $ua_scan, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Block suspicious bots/scanners</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_rules[block_bots]" value="1"<?php if ( $block_bots == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Sanitise <code>HTTP_USER_AGENT</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[ua_sanitise]" value="1"<?php checked( $ua_sanitise, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_rules[block_bots]" value="0"<?php if ( $block_bots == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[ua_sanitise]" value="0"<?php checked( $ua_sanitise, 0 ) ?>>&nbsp;No</label>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Block suspicious bots/scanners</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_rules[block_bots]" value="1"<?php checked( $block_bots, 1 ) ?>>&nbsp;Yes (default)</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_rules[block_bots]" value="0"<?php checked( $block_bots, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1379,33 +1370,33 @@ function ssl_warn(what) {
 	<h3>HTTP_REFERER server variable</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">Scan <code>HTTP_REFERER</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[referer_scan]" value="1"<?php if ( $referer_scan == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Scan <code>HTTP_REFERER</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[referer_scan]" value="1"<?php checked( $referer_scan, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[referer_scan]" value="0"<?php if ( $referer_scan == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[referer_scan]" value="0"<?php checked( $referer_scan, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Sanitise <code>HTTP_REFERER</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[referer_sanitise]" value="1"<?php if ( $referer_sanitise == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Sanitise <code>HTTP_REFERER</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[referer_sanitise]" value="1"<?php checked( $referer_sanitise, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[referer_sanitise]" value="0"<?php if ( $referer_sanitise == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[referer_sanitise]" value="0"<?php checked( $referer_sanitise, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr valign="top">
-			<td width="300">Block <code>POST</code> requests that do not have an <code>HTTP_REFERER</code> header</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[referer_post]" value="1"<?php if ( $referer_post == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
+			<th scope="row">Block <code>POST</code> requests that do not have an <code>HTTP_REFERER</code> header</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120" style="vertical-align:top;">
+				<label><input type="radio" name="nfw_options[referer_post]" value="1"<?php checked( $referer_post, 1 ) ?>>&nbsp;Yes</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php if ( $referer_post == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Keep this option disabled if you are using scripts like Paypal IPN etc.</span>
+			<td align="left" style="vertical-align:top;">
+				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php checked( $referer_post, 0 ) ?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Keep this option disabled if you are using scripts like Paypal IPN etc.</span>
 			</td>
 		</tr>
 	</table>
@@ -1430,33 +1421,33 @@ function ssl_warn(what) {
 	<h3>IPs</h3>
 	<table class="form-table" border=0>
 		<tr>
-			<td width="300">Block localhost IP in <code>GET/POST</code> requests</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_rules[no_localhost_ip]" value="1"<?php if ( $no_localhost_ip == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Block localhost IP in <code>GET/POST</code> requests</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_rules[no_localhost_ip]" value="1"<?php checked( $no_localhost_ip, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_rules[no_localhost_ip]" value="0"<?php if ( $no_localhost_ip == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
-			</td>
-		</tr>
-		<tr>
-			<td width="300">Block HTTP requests with an IP in the <code>Host</code> header</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[no_host_ip]" value="1"<?php if ( $no_host_ip == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
-			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[no_host_ip]" value="0"<?php if ( $no_host_ip == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_rules[no_localhost_ip]" value="0"<?php checked( $no_localhost_ip, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Do not scan traffic coming from localhost (127.0.0.1) and private IP address spaces</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[allow_local_ip]" value="1"<?php if ( $allow_local_ip == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Block HTTP requests with an IP in the <code>Host</code> header</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[no_host_ip]" value="1"<?php checked( $no_host_ip, 1 ) ?>>&nbsp;Yes</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[allow_local_ip]" value="0"<?php if ( $allow_local_ip == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[no_host_ip]" value="0"<?php checked( $no_host_ip, 0 ) ?>>&nbsp;No (default)</label>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Do not scan traffic coming from localhost (127.0.0.1) and private IP address spaces</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[allow_local_ip]" value="1"<?php checked( $allow_local_ip, 1 ) ?>>&nbsp;Yes (default)</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[allow_local_ip]" value="0"<?php checked( $allow_local_ip, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1491,53 +1482,53 @@ function ssl_warn(what) {
 	<h3>PHP</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">Block PHP built-in wrappers</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_rules[php_wrappers]" value="1"<?php if ( $php_wrappers == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Block PHP built-in wrappers</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_rules[php_wrappers]" value="1"<?php checked( $php_wrappers, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_rules[php_wrappers]" value="0"<?php if ( $php_wrappers == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
-			</td>
-		</tr>
-		<tr>
-			<td width="300">Hide PHP notice &amp; error messages</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[php_errors]" value="1"<?php if ( $php_errors == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
-			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[php_errors]" value="0"<?php if ( $php_errors == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_rules[php_wrappers]" value="0"<?php checked( $php_wrappers, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Sanitise <code>PHP_SELF</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[php_self]" value="1"<?php if ( $php_self == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Hide PHP notice &amp; error messages</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[php_errors]" value="1"<?php checked( $php_errors, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[php_self]" value="0"<?php if ( $php_self == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
-			</td>
-		</tr>
-		<tr>
-			<td width="300">Sanitise <code>PATH_TRANSLATED</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[php_path_t]" value="1"<?php if ( $php_path_t == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
-			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[php_path_t]" value="0"<?php if ( $php_path_t == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[php_errors]" value="0"<?php checked( $php_errors, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Sanitise <code>PATH_INFO</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[php_path_i]" value="1"<?php if ( $php_path_i == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Sanitise <code>PHP_SELF</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[php_self]" value="1"<?php checked( $php_self, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[php_path_i]" value="0"<?php if ( $php_path_i == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[php_self]" value="0"<?php checked( $php_self, 0 ) ?>>&nbsp;No</label>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Sanitise <code>PATH_TRANSLATED</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[php_path_t]" value="1"<?php checked( $php_path_t, 1 ) ?>>&nbsp;Yes (default)</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[php_path_t]" value="0"<?php checked( $php_path_t, 0 ) ?>>&nbsp;No</label>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Sanitise <code>PATH_INFO</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[php_path_i]" value="1"<?php checked( $php_path_i, 1 ) ?>>&nbsp;Yes (default)</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[php_path_i]" value="0"<?php checked( $php_path_i, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1577,33 +1568,33 @@ function ssl_warn(what) {
 	<h3>Various</h3>
 	<table class="form-table">
 		<tr valign="top">
-			<td width="300">Block the <code>DOCUMENT_ROOT</code> server variable <?php echo '(<code>' . getenv( 'DOCUMENT_ROOT' ) . '</code>)' ?> in HTTP requests</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label <?php echo $greyed ?>><input type="radio" name="nfw_rules[block_doc_root]" value="1"<?php if ( $block_doc_root == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Block the <code>DOCUMENT_ROOT</code> server variable in HTTP requests</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label <?php echo $greyed ?>><input type="radio" name="nfw_rules[block_doc_root]" value="1"<?php checked( $block_doc_root, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label <?php echo $greyed ?>><input <?php echo $disabled ?>type="radio" name="nfw_rules[block_doc_root]" value="0"<?php if ( $block_doc_root == 0 ) { echo ' checked'; }?>>&nbsp;No</label><?php echo $disabled_msg ?>
-			</td>
-		</tr>
-		<tr>
-			<td width="300">Block ASCII character 0x00 (NULL byte)</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_rules[block_null_byte]" value="1"<?php if ( $block_null_byte == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
-			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_rules[block_null_byte]" value="0"<?php if ( $block_null_byte == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label <?php echo $greyed ?>><input <?php echo $disabled ?>type="radio" name="nfw_rules[block_doc_root]" value="0"<?php checked( $block_doc_root, 0 ) ?>>&nbsp;No</label><?php echo $disabled_msg ?>
 			</td>
 		</tr>
 		<tr>
-			<td width="300">Block ASCII control characters 1 to 8 and 14 to 31</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_rules[block_ctrl_chars]" value="1"<?php if ( $block_ctrl_chars == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
+			<th scope="row">Block ASCII character 0x00 (NULL byte)</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_rules[block_null_byte]" value="1"<?php checked( $block_null_byte, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_rules[block_ctrl_chars]" value="0"<?php if ( $block_ctrl_chars == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_rules[block_null_byte]" value="0"<?php checked( $block_null_byte, 0 ) ?>>&nbsp;No</label>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row">Block ASCII control characters 1 to 8 and 14 to 31</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_rules[block_ctrl_chars]" value="1"<?php checked( $block_ctrl_chars, 1 ) ?>>&nbsp;Yes (default)</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_rules[block_ctrl_chars]" value="0"<?php checked( $block_ctrl_chars, 0 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -1673,28 +1664,41 @@ function ssl_warn(what) {
 	<h3>WordPress</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">Block direct access to any PHP file located in one of these directories</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
+			<th scope="row">Block direct access to any PHP file located in one of these directories</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
 				<table class="form-table">
 					<tr style="border: solid 1px #DFDFDF;">
-						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_admin]" id="wp_01"<?php if ( $wp_admin == 1 ) { echo ' checked'; }?>></td>
-						<td><label for="wp_01"><code>/wp-admin/css/*</code><br /><code>/wp-admin/images/*</code><br /><code>/wp-admin/includes/*</code><br /><code>/wp-admin/js/*</code></label></td>
-					</tr>
-					<tr style="border: solid 1px #DFDFDF;">
-						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_inc]" id="wp_02"<?php if ( $wp_inc == 1 ) { echo ' checked'; }?>></td>
-						<td><label for="wp_02"><code>/wp-includes/*.php</code><br /><code>/wp-includes/css/*</code><br /><code>/wp-includes/images/*</code><br /><code>/wp-includes/js/*</code><br /><code>/wp-includes/theme-compat/*</code></label>
-						<br />
-						<span class="description">Uncheck this option if you have users with Editor, Author or Contributor roles, otherwise it could prevent them from using the TinyMCE WYSIWYG editor.</span>
-
+						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_admin]" id="wp_01"<?php checked( $wp_admin, 1 ) ?>></td>
+						<td>
+						<label for="wp_01">
+						<p><code>/wp-admin/css/*</code></p>
+						<p><code>/wp-admin/images/*</code></p>
+						<p><code>/wp-admin/includes/*</code></p>
+						<p><code>/wp-admin/js/*</code></p>
+						</label>
 						</td>
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
-						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_upl]" id="wp_03"<?php if ( $wp_upl == 1 ) { echo ' checked'; }?>></td>
-						<td><label for="wp_03"><code>/<?php echo basename(WP_CONTENT_DIR); ?>/upload/*</code></label></td>
+						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_inc]" id="wp_02"<?php checked( $wp_inc, 1 ) ?>></td>
+						<td>
+						<label for="wp_02">
+						<p><code>/wp-includes/*.php</code></p>
+						<p><code>/wp-includes/css/*</code></p>
+						<p><code>/wp-includes/images/*</code></p>
+						<p><code>/wp-includes/js/*</code></p>
+						<p><code>/wp-includes/theme-compat/*</code></p>
+						</label>
+						<br />
+						<span class="description">Uncheck this option if you have users with Editor, Author or Contributor roles, otherwise it could prevent them from using the TinyMCE WYSIWYG editor.</span>
+						</td>
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
-						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_cache]" id="wp_04"<?php if ( $wp_cache == 1 ) { echo ' checked'; }?>></td>
+						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_upl]" id="wp_03"<?php checked( $wp_upl, 1 ) ?>></td>
+						<td><label for="wp_03"><code>/<?php echo basename(WP_CONTENT_DIR); ?>/uploads/*</code></label></td>
+					</tr>
+					<tr style="border: solid 1px #DFDFDF;">
+						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_cache]" id="wp_04"<?php checked( $wp_cache, 1 ) ?>></td>
 						<td><label for="wp_04"><code>*/cache/*</code></label></td>
 					</tr>
 				</table>
@@ -1705,65 +1709,64 @@ function ssl_warn(what) {
 
 	<table class="form-table">
 		<tr>
-			<td width="300">Protect against username enumeration through...</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-				<label><input type="checkbox" name="nfw_options[enum_archives]" value="1"<?php if ( $enum_archives == 1 ) { echo ' checked'; }?>>&nbsp;the author archives (default)</label>
-				<br />
-				<label><input type="checkbox" name="nfw_options[enum_login]" value="1"<?php if ( $enum_login == 1 ) { echo ' checked'; }?>>&nbsp;the login page (default)</label>
+			<th scope="row">Protect against username enumeration</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
+				<p><label><input type="checkbox" name="nfw_options[enum_archives]" value="1"<?php checked( $enum_archives, 1 ) ?>>&nbsp;Through the author archives (default)</label></p>
+				<p><label><input type="checkbox" name="nfw_options[enum_login]" value="1"<?php checked( $enum_login, 1 ) ?>>&nbsp;Through the login page (default)</label></p>
 			</td>
 		</tr>
 	</table>
 
 	<table class="form-table">
-		<tr>
-			<td width="300">Block access to WordPress XML-RPC API (<code>xmlrpc.php</code>)</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[no_xmlrpc]" value="1"<?php if ( $no_xmlrpc == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
+		<tr valign="top">
+			<th scope="row">Block access to WordPress XML-RPC API</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[no_xmlrpc]" value="1"<?php checked( $no_xmlrpc, 1 ) ?>>&nbsp;Yes</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[no_xmlrpc]" value="0"<?php if ( $no_xmlrpc == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label>
-			</td>
-		</tr>
-		<tr>
-			<td width="300">Block <code>POST</code> requests in the themes folder <code>/<?php echo basename(WP_CONTENT_DIR); ?>/themes</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[no_post_themes]" value="1"<?php if ( $no_post_themes == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
-			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[no_post_themes]" value="0"<?php if ( $no_post_themes == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[no_xmlrpc]" value="0"<?php checked( $no_xmlrpc, 0 ) ?>>&nbsp;No (default)</label>
 			</td>
 		</tr>
-		<tr>
-			<td width="300">Force SSL for admin and logins <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Require_SSL_for_Admin_and_Logins" target="_blank">FORCE_SSL_ADMIN</a></code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[force_ssl]" value="1"<?php if ( $force_ssl == 1 ) { echo ' checked'; }?> onclick="return ssl_warn(this);">&nbsp;Yes</label>
+		<tr valign="top">
+			<th scope="row">Block <code>POST</code> requests in the themes folder <code>/<?php echo basename(WP_CONTENT_DIR); ?>/themes</code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[no_post_themes]" value="1"<?php checked( $no_post_themes, 1 ) ?>>&nbsp;Yes</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" id="ssl_0" name="nfw_options[force_ssl]" value="0"<?php if ( $force_ssl == 0 ) { echo ' checked'; }?> onclick="return ssl_warn(this);">&nbsp;No (default)</label>
-			</td>
-		</tr>
-		<tr>
-			<td width="300">Disable the plugin and theme editor <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Disable_the_Plugin_and_Theme_Editor" target="_blank">DISALLOW_FILE_EDIT</a></code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[disallow_edit]" value="1"<?php if ( $disallow_edit == 1 ) { echo ' checked'; }?>>&nbsp;Yes (default)</label>
-			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[disallow_edit]" value="0"<?php if ( $disallow_edit == 0 ) { echo ' checked'; }?>>&nbsp;No</label>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[no_post_themes]" value="0"<?php checked( $no_post_themes, 0 ) ?>>&nbsp;No (default)</label>
 			</td>
 		</tr>
-		<tr>
-			<td width="300">Disable plugin and theme update/installation <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Disable_Plugin_and_Theme_Update_and_Installation" target="_blank">DISALLOW_FILE_MODS</a></code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left width="120">
-				<label><input type="radio" name="nfw_options[disallow_mods]" value="1"<?php if ( $disallow_mods == 1 ) { echo ' checked'; }?>>&nbsp;Yes</label>
+		<tr valign="top">
+			<th scope="row"><a name="builtinconstants"></a>Force SSL for admin and logins <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Require_SSL_for_Admin_and_Logins" target="_blank">FORCE_SSL_ADMIN</a></code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[force_ssl]" value="1"<?php checked( $force_ssl, 1 ) ?> onclick="return ssl_warn(this);">&nbsp;Yes</label>
 			</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[disallow_mods]" value="0"<?php if ( $disallow_mods == 0 ) { echo ' checked'; }?>>&nbsp;No (default)</label>
+			<td align="left">
+				<label><input type="radio" id="ssl_0" name="nfw_options[force_ssl]" value="0"<?php checked( $force_ssl, 0 ) ?> onclick="return ssl_warn(this);">&nbsp;No (default)</label>
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row">Disable the plugin and theme editor <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Disable_the_Plugin_and_Theme_Editor" target="_blank">DISALLOW_FILE_EDIT</a></code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[disallow_edit]" value="1"<?php checked( $disallow_edit, 1 ) ?>>&nbsp;Yes (default)</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[disallow_edit]" value="0"<?php checked( $disallow_edit, 0 ) ?>>&nbsp;No</label>
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row">Disable plugin and theme update/installation <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Disable_Plugin_and_Theme_Update_and_Installation" target="_blank">DISALLOW_FILE_MODS</a></code></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[disallow_mods]" value="1"<?php checked( $disallow_mods, 1 ) ?>>&nbsp;Yes</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[disallow_mods]" value="0"<?php checked( $disallow_mods, 0 ) ?>>&nbsp;No (default)</label>
 			</td>
 		</tr>
 
@@ -1780,18 +1783,16 @@ function ssl_warn(what) {
 	?>
 	<table class="form-table">
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-			<td width="300">Do not block WordPress admin (must be logged in)</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-				<label><input type="radio" name="nfw_options[wl_admin]" value="1"<?php if ( $wl_admin == 1 ) { echo ' checked'; }?>>&nbsp;Yes, do not block the Administrator (default)</label>
-				<br />
-				<label><input type="radio" name="nfw_options[wl_admin]" value="0"<?php if ( $wl_admin == 0 ) { echo ' checked'; }?>>&nbsp;No, block everyone, including the Admin if needed !</label>
-				<br />
-
-				<span class="description">Note: does not apply to </span><code>FORCE_SSL_ADMIN</code><span class="description">, </span><code>DISALLOW_FILE_EDIT</code><span class="description"> and </span><code>DISALLOW_FILE_MODS</code><span class="description"> options which, if enabled, are always enforced.</span>
+			<th scope="row">Do not block WordPress administrator (must be logged in)</th>
+			<td width="20">&nbsp;</td>
+			<td align="left">
+			<p><label><input type="radio" name="nfw_options[wl_admin]" value="1"<?php checked( $wl_admin, 1 ) ?>>&nbsp;Yes, do not block the Administrator (default)</label></p>
+			<p><label><input type="radio" name="nfw_options[wl_admin]" value="0"<?php checked( $wl_admin, 0 ) ?>>&nbsp;No, block everyone, including the Admin if needed !</label></p>
+			<p><span class="description">Note : does not apply to <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options which, if enabled, are always enforced.</span></p>
 			</td>
 		</tr>
 	</table>
+
 	<br />
 	<br />
 	<input class="button-primary" type="submit" name="Save" value="Save Firewall Policies" />
@@ -2260,11 +2261,8 @@ function nf_sub_network() {
 		<tr>
 			<td width="300" valign="top">Display NinjaFirewall status icon in the admin bar of all sites in the network</td>
 			<td width="20" align="center">&nbsp;</td>
-			<td width="120" align=left>
-			<label><input type="radio" name="nfw_options[nt_show_status]" value="1"<?php echo $nfw_options['nt_show_status'] != 2 ? ' checked' : '' ?>>&nbsp;Yes (default)</label>
-			<td align=left>
-			<label><input type="radio" name="nfw_options[nt_show_status]" value="2"<?php echo $nfw_options['nt_show_status'] == 2 ? ' checked' : '' ?>>&nbsp;No</label>
-			</td>
+			<td width="120" align=left><label><input type="radio" name="nfw_options[nt_show_status]" value="1"<?php echo $nfw_options['nt_show_status'] != 2 ? ' checked' : '' ?>>&nbsp;Yes (default)</label></td>
+			<td align=left><label><input type="radio" name="nfw_options[nt_show_status]" value="2"<?php echo $nfw_options['nt_show_status'] == 2 ? ' checked' : '' ?>>&nbsp;No</label></td>
 		</tr>
 	</table>
 
@@ -2294,7 +2292,7 @@ function nf_sub_alerts() {
 
 	echo '<div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>E-mail alerts' . IS_BETA .'</h2>
+	<h2>Event Notifications' . IS_BETA .'</h2>
 	<br />';
 
 	// Saved ?
@@ -2313,14 +2311,11 @@ function nf_sub_alerts() {
 	<h3>WordPress admin console</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300" valign="top">Send me an alert whenever...</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<label><input type="radio" name="nfw_options[a_0]" value="1"<?php echo $nfw_options['a_0'] == 1 ? ' checked' : '' ?>>&nbsp;an administrator logs in (default)</label>
-			<br />
-			<label><input type="radio" name="nfw_options[a_0]" value="2"<?php echo $nfw_options['a_0'] == 2 ? ' checked' : '' ?>>&nbsp;someone (user, admin, editor...) logs in</label>
-			<br />
-			<label><input type="radio" name="nfw_options[a_0]" value="0"<?php echo $nfw_options['a_0'] == 0 ? ' checked' : '' ?>>&nbsp;no, thanks</label>
+			<th scope="row">Send me an alert whenever</th>
+			<td align="left">
+			<p><label><input type="radio" name="nfw_options[a_0]" value="1"<?php checked( $nfw_options['a_0'], 1) ?>>&nbsp;An administrator logs in (default)</label></p>
+			<p><label><input type="radio" name="nfw_options[a_0]" value="2"<?php checked( $nfw_options['a_0'], 2) ?>>&nbsp;Someone (user, admin, editor...) logs in</label></p>
+			<p><label><input type="radio" name="nfw_options[a_0]" value="0"<?php checked( $nfw_options['a_0'], 0) ?>>&nbsp;No, thanks</label></p>
 			</td>
 		</tr>
 	</table>
@@ -2330,20 +2325,14 @@ function nf_sub_alerts() {
 	<h3>Plugins</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300" valign="top">Send me an alert whenever someone...</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<label><input type="checkbox" name="nfw_options[a_11]" value="1"<?php echo empty($nfw_options['a_11']) ? '' : ' checked' ?>>&nbsp;uploads a plugin (default)</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_12]" value="1"<?php echo empty($nfw_options['a_12']) ? '' : ' checked' ?>>&nbsp;installs a plugin (default)</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_13]" value="1"<?php echo empty($nfw_options['a_13']) ? '' : ' checked' ?>>&nbsp;activates a plugin</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_14]" value="1"<?php echo empty($nfw_options['a_14']) ? '' : ' checked' ?>>&nbsp;updates a plugin</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_15]" value="1"<?php echo empty($nfw_options['a_15']) ? '' : ' checked' ?>>&nbsp;deactivates a plugin (default)</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_16]" value="1"<?php echo empty($nfw_options['a_16']) ? '' : ' checked' ?>>&nbsp;deletes a plugin</label>
+			<th scope="row">Send me an alert whenever someone</th>
+			<td align="left">
+			<p><label><input type="checkbox" name="nfw_options[a_11]" value="1"<?php checked( $nfw_options['a_11'], 1) ?>>&nbsp;Uploads a plugin (default)</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_12]" value="1"<?php checked( $nfw_options['a_12'], 1) ?>>&nbsp;Installs a plugin (default)</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_13]" value="1"<?php checked( $nfw_options['a_13'], 1) ?>>&nbsp;Activates a plugin</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_14]" value="1"<?php checked( $nfw_options['a_14'], 1) ?>>&nbsp;Updates a plugin</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_15]" value="1"<?php checked( $nfw_options['a_15'], 1) ?>>&nbsp;Deactivates a plugin (default)</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_16]" value="1"<?php checked( $nfw_options['a_16'], 1) ?>>&nbsp;Deletes a plugin</label></p>
 			</td>
 		</tr>
 	</table>
@@ -2353,16 +2342,12 @@ function nf_sub_alerts() {
 	<h3>Themes</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300" valign="top">Send me an alert whenever someone...</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<label><input type="checkbox" name="nfw_options[a_21]" value="1"<?php echo empty($nfw_options['a_21']) ? '' : ' checked' ?>>&nbsp;uploads a theme (default)</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_22]" value="1"<?php echo empty($nfw_options['a_22']) ? '' : ' checked' ?>>&nbsp;installs a theme (default)</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_23]" value="1"<?php echo empty($nfw_options['a_23']) ? '' : ' checked' ?>>&nbsp;activates a theme</label>
-			<br />
-			<label><input type="checkbox" name="nfw_options[a_24]" value="1"<?php echo empty($nfw_options['a_24']) ? '' : ' checked' ?>>&nbsp;deletes a theme</label>
+			<th scope="row">Send me an alert whenever someone</th>
+			<td align="left">
+			<p><label><input type="checkbox" name="nfw_options[a_21]" value="1"<?php checked( $nfw_options['a_21'], 1) ?>>&nbsp;Uploads a theme (default)</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_22]" value="1"<?php checked( $nfw_options['a_22'], 1) ?>>&nbsp;Installs a theme (default)</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_23]" value="1"<?php checked( $nfw_options['a_23'], 1) ?>>&nbsp;Activates a theme</label></p>
+			<p><label><input type="checkbox" name="nfw_options[a_24]" value="1"<?php checked( $nfw_options['a_24'], 1) ?>>&nbsp;Deletes a theme</label></p>
 			</td>
 		</tr>
 	</table>
@@ -2372,10 +2357,9 @@ function nf_sub_alerts() {
 	<h3>Core</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300" valign="top">Send me an alert whenever someone...</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<label><input type="checkbox" name="nfw_options[a_31]" value="1"<?php echo empty($nfw_options['a_31']) ? '' : ' checked' ?>>&nbsp;updates WordPress (default)</label>
+			<th scope="row">Send me an alert whenever someone</th>
+			<td align="left">
+			<p><label><input type="checkbox" name="nfw_options[a_31]" value="1"<?php checked( $nfw_options['a_31'], 1) ?>>&nbsp;Updates WordPress (default)</label></p>
 			</td>
 		</tr>
 	</table>
@@ -2388,10 +2372,9 @@ function nf_sub_alerts() {
 	<h3>Contact email</h3>
 	<table class="form-table">
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-			<td width="300" valign="top">Email address where alerts should be sent to</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<input type="text" name="nfw_options[alert_email]" size="45" maxlength="250" value="<?php echo empty( $nfw_options['alert_email']) ? get_option('admin_email') : $nfw_options['alert_email'] ?>">
+			<th scope="row">Alerts should be sent to</th>
+			<td align="left">
+			<input class="regular-text" type="text" name="nfw_options[alert_email]" size="45" maxlength="250" value="<?php echo empty( $nfw_options['alert_email']) ? get_option('admin_email') : $nfw_options['alert_email'] ?>">
 			<input type="hidden" name="nfw_options[alert_sa_only]" value="2">
 			</td>
 		</tr>
@@ -2407,12 +2390,10 @@ function nf_sub_alerts() {
 	<h3>Contact email</h3>
 	<table class="form-table">
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-			<td width="300" valign="top">Where email alerts should be sent ?</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php echo $nfw_options['alert_sa_only'] != 2 ? ' checked' : '' ?>>&nbsp;only to me, the Super Admin (<?php echo get_option('admin_email'); ?>)</label>
-			<br />
-			<label><input type="radio" name="nfw_options[alert_sa_only]" value="2"<?php echo $nfw_options['alert_sa_only'] == 2 ? ' checked' : '' ?>>&nbsp;to the administrator of the site where originated the alert (default)</label>
+			<th scope="row">Alerts should be sent to</th>
+			<td align="left">
+			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php checked( $nfw_options['alert_sa_only'], 1 ) ?>>&nbsp;Only to me, the Super Admin (<?php echo get_option('admin_email'); ?>)</label></p>
+			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="2"<?php checked( $nfw_options['alert_sa_only'], 2) ?>>&nbsp;To the administrator of the site where originated the alert (default)</label></p>
 			<input type="hidden" name="nfw_options[alert_email]" value="<?php echo get_option('admin_email'); ?>">
 			</td>
 		</tr>
@@ -2423,7 +2404,7 @@ function nf_sub_alerts() {
 
 	<br />
 	<br />
-	<input class="button-primary" type="submit" name="Save" value="Save E-mail Alerts" />
+	<input class="button-primary" type="submit" name="Save" value="Save Event Notifications" />
 
 	</form>
 
@@ -2435,7 +2416,7 @@ function nf_sub_alerts() {
 
 function nf_sub_alerts_save() {
 
-	// Save e-mail alerts :
+	// Save Event Notifications :
 
 	if (! current_user_can( 'manage_options' ) ) {
 		wp_die( 'You do not have sufficient permissions to access this page.',
@@ -2596,8 +2577,7 @@ function nf_sub_log() {
 	<table class="form-table">
 		<tr>
 			<td width="100%">
-				<textarea style="line-height:15px;width:100%;height:320px;font-family:\'Courier New\',Courier,' .
-				'monospace;font-size:12px;padding:4px;" wrap="off">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
+				<textarea class="small-text code" style="width:100%;height:320px;" wrap="off">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
 				'DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCIDENT&nbsp;&nbsp;LEVEL&nbsp;&nbsp;' .
 				'&nbsp;&nbsp;&nbsp;RULE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
 				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REQUEST' . "\n";
@@ -2761,52 +2741,45 @@ function nf_sub_loginprot() {
 		document.getElementById('get_post').innerHTML = request;
 	}
 	</script>
-
+<br />
 <form method="post" name="bp_form">
-
-	<h3>Brute-force attack protection</h3>
 	<table class="form-table">
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-			<td width="300" valign="top">Enable protection</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align="left" width="150">
-			<label><input type="radio" name="nfw_options[bf_enable]" value="1"<?php echo $bf_enable == 1 ? ' checked' : '' ?> onchange="toogle_table(1);">&nbsp;Yes, if under attack</label>
+			<th scope="row">Enable brute force attack protection</th>
+			<td>&nbsp;</td>
+			<td align="left">
+			<label><input type="radio" name="nfw_options[bf_enable]" value="1"<?php checked($bf_enable, 1) ?> onchange="toogle_table(1);">&nbsp;Yes, if under attack</label>
 			</td>
 			<td align="left">
-			<label><input type="radio" name="nfw_options[bf_enable]" value="2"<?php echo $bf_enable == 2 ? ' checked' : '' ?> onchange="toogle_table(2);">&nbsp;Always ON</label>
+			<label><input type="radio" name="nfw_options[bf_enable]" value="2"<?php checked($bf_enable, 2) ?> onchange="toogle_table(2);">&nbsp;Always ON</label>
 			</td>
 			<td align="left">
-			<label><input type="radio" name="nfw_options[bf_enable]" value="0"<?php echo $bf_enable == 0 ? ' checked' : '' ?> onchange="toogle_table(0);">&nbsp;No (default)</label>
+			<label><input type="radio" name="nfw_options[bf_enable]" value="0"<?php checked($bf_enable, 0) ?> onchange="toogle_table(0);">&nbsp;No (default)</label>
 			</td>
 		</tr>
 	</table>
 	<br />
 	<table class="form-table" id="bf_table"<?php echo $bf_enable == 1 ? '' : ' style="display:none"' ?>>
 		<tr>
-			<td width="300" valign="top">Protect the login page against</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-			<label><input onchange="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GET"<?php echo $bf_request == 'GET' ? ' checked' : '' ?>>&nbsp;<code>GET</code> request attacks</label>
-			<br />
-			<label><input onchange="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="POST"<?php echo $bf_request == 'POST' ? ' checked' : '' ?>>&nbsp;<code>POST</code> request attacks (default)</label>
-			<br />
-			<label><input onchange="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GETPOST"<?php echo $bf_request == 'GETPOST' ? ' checked' : '' ?>>&nbsp;<code>GET</code> and <code>POST</code> requests attacks</label>
+			<th scope="row">Protect the login page against</th>
+			<td align="left">
+			<p><label><input onchange="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GET"<?php checked($bf_request, 'GET') ?>>&nbsp;<code>GET</code> request attacks</label></p>
+			<p><label><input onchange="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="POST"<?php checked($bf_request, 'POST') ?>>&nbsp;<code>POST</code> request attacks (default)</label></p>
+			<p><label><input onchange="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GETPOST"<?php checked($bf_request, 'GETPOST') ?>>&nbsp;<code>GET</code> and <code>POST</code> requests attacks</label></p>
 			</td>
 		</tr>
 
 		<tr valign="top">
-			<td width="300" valign="top">Password-protect <code>wp-login.php</code></td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
-				for <input maxlength="2" size="2" value="<?php echo $bf_bantime ?>" name="nfw_options[bf_bantime]" id="ban1" onkeyup="is_number('ban1')" type="text" title="Enter a value from 1 to 99" /> minutes, if more than <input maxlength="2" size="2" value="<?php echo $bf_attempt ?>" name="nfw_options[bf_attempt]" id="ban2" onkeyup="is_number('ban2')" type="text" title="Enter a value from 1 to 99" /> <code id="get_post"><?php echo $get_post; ?></code> requests within <input maxlength="2" size="2" value="<?php echo $bf_maxtime ?>" name="nfw_options[bf_maxtime]" id="ban3" onkeyup="is_number('ban3')" type="text" title="Enter a value from 1 to 99" /> seconds.
+			<th scope="row">Password-protect it</th>
+			<td align="left">
+				For <input maxlength="2" size="2" value="<?php echo $bf_bantime ?>" name="nfw_options[bf_bantime]" id="ban1" onkeyup="is_number('ban1')" type="text" title="Enter a value from 1 to 99" /> minutes, if more than <input maxlength="2" size="2" value="<?php echo $bf_attempt ?>" name="nfw_options[bf_attempt]" id="ban2" onkeyup="is_number('ban2')" type="text" title="Enter a value from 1 to 99" /> <code id="get_post"><?php echo $get_post; ?></code> requests within <input maxlength="2" size="2" value="<?php echo $bf_maxtime ?>" name="nfw_options[bf_maxtime]" id="ban3" onkeyup="is_number('ban3')" type="text" title="Enter a value from 1 to 99" /> seconds.
 			</td>
 		</tr>
 	</table>
 	<table class="form-table" id="bf_table2"<?php echo $bf_enable ? '' : ' style="display:none"' ?>>
 		<tr valign="top">
-			<td width="300" valign="top">HTTP authentication</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td align=left>
+			<th scope="row">HTTP authentication</th>
+			<td align="left">
 				User:&nbsp;<input maxlength="20" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" title="Enter user name (from 6 to 20 characters)" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="20" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" title="Enter password (from 6 to 20 characters)" />
 				<br /><span class="description">&nbsp;User and Password must be from 6 to 20 characters.</span>
 				<br /><br />Message (max. 100 characters):<br />
@@ -3115,11 +3088,8 @@ function nf_sub_edit() {
 	echo '<br /><h3>NinjaFirewall built-in security rules</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300">
-			<p>Select the rule you want to disable or enable</p>
-			</td>
-			<td width="20">&nbsp;</td>
-			<td align="left">
+			<th scope="row">Select the rule you want to disable or enable</th>
+			<td align="center">
 			<form method="post">
 			<select name="sel_e_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
 				<option value="0">Total rules enabled : ' . count( $enabled_rules ) . '</option>';
@@ -3134,20 +3104,24 @@ function nf_sub_edit() {
 		}
 	}
 	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Disable it">
-	<br /><span class="description">Greyed out rules can be changed in the <a href="?page=nfsubpolicies">Firewall Policies</a> page.</span>
 		</form>
 		<br />
-
 		<form method="post">
 		<select name="sel_d_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
 		<option value="0">Total rules disabled : ' . count( $disabled_rules ) . '</option>';
 	sort( $disabled_rules );
 	foreach ( $disabled_rules as $key ) {
-		echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+		// grey-out those ones, they can be changed in the Firewall Policies section:
+		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) {
+			echo '<option value="0" disabled="disabled">Rule ID : ' . $key . '</option>';
+		} else {
+			echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+		}
 	}
 
 	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Enable it">
 				</form>
+				<br /><span class="description">Greyed out rules can be changed in the <a href="?page=nfsubpolicies">Firewall Policies</a> page.</span>
 			</td>
 		</tr>
 	</table>
@@ -3261,7 +3235,7 @@ function show_table(table_id) {
 		<table id="12" style="display:none;" width="500">
 			<tr>
 				<td>
-					<textarea class="large-text code" cols="60" rows="8">' . $changelog . '</textarea>
+					<textarea class="small-text code" cols="60" rows="8">' . $changelog . '</textarea>
 				</td>
 			</tr>
 		</table>
@@ -3311,7 +3285,7 @@ function show_table(table_id) {
 		<table id="14" style="display:none;" width="500">
 			<tr>
 				<td>
-					<textarea class="large-text code" cols="60" rows="8">NinTechNet strictly follows the WordPress Plugin Developer guidelines &lt;http://wordpress.org/plugins/about/guidelines/&gt;: NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.' . "\n" . 'Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.</textarea>
+					<textarea class="small-text code" cols="60" rows="8">NinTechNet strictly follows the WordPress Plugin Developer guidelines &lt;http://wordpress.org/plugins/about/guidelines/&gt;: NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.' . "\n" . 'Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.</textarea>
 				</td>
 			</tr>
 		</table>

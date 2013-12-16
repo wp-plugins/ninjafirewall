@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-10-26 22:06:24                                       |
+ | REVISION: 2013-12-16 16:37:50                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -213,7 +213,7 @@ if ( $a_msg ) {
 
 // Do not scan/filter WordPress admin (if logged in) ?
 if (! session_id() ) { session_start(); }
-if ( (! empty($nfw_options['wl_admin']) ) && (! empty($_SESSION['nfw_goodguy']) ) ) {
+if (! empty($_SESSION['nfw_goodguy']) ) {
 	$table_prefix = '';
 	$mysqli->close();
 	// for testing purpose (used during the installation process) :
@@ -231,7 +231,7 @@ if (! empty($nfw_options['php_errors']) ) {
 }
 
 // Ignore localhost & private IP address spaces ?
-if ( (! empty($nfw_options['allow_local_ip']) ) && (preg_match("/^(?:::ffff:)?(?:10|172\.(?:1[6-9]|2[0-9]|3[0-1])|192\.168)\./", $_SERVER['REMOTE_ADDR'])) ) {
+if (! empty($nfw_options['allow_local_ip']) && preg_match("/^(?:::ffff:)?(?:127|10|172\.(?:1[6-9]|2[0-9]|3[0-1])|192\.168)\./", $_SERVER['REMOTE_ADDR']) ) {
 	$table_prefix = '';
 	$mysqli->close();
 	define( 'NFW_STATUS', 20 );
