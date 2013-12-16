@@ -2,8 +2,8 @@
 Contributors: nintechnet
 Tags: attack, backdoor, botnet, bruteforce, brute force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XSS
 Requires at least: 3.3.0
-Tested up to: 3.7.1
-Stable tag: 1.1.4
+Tested up to: 3.8
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,7 +63,7 @@ If you need help, click on the *Help* menu tab located in the upper right corner
 
 = Strong Privacy Policy =
 
-[NinTechNet](http://nintechnet.com/ "NinTechNet") strictly follows the [WordPress Plugin Developer guidelines](http://wordpress.org/plugins/about/guidelines/ ""): our software, [NinjaFirewall (WP edition)](http://ninjafirewall.com/ninjafirewall_wp.html "NinjaFirewall"), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home".
+[NinTechNet](http://nintechnet.com/ "NinTechNet") strictly follows the [WordPress Plugin Developer guidelines](http://wordpress.org/plugins/about/guidelines/ ""): our software, [NinjaFirewall (WP edition)](http://ninjafirewall.com/wordpress/ "NinjaFirewall"), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home".
 It does not require a registration process or an activation key to be installed or used.
 Because **we do not collect any user data**, we do not even know that you are using (and hopefully enjoying!) our product.
 
@@ -92,6 +92,13 @@ Because **we do not collect any user data**, we do not even know that you are us
 7. NinjaFirewall log
 
 == Changelog ==
+
+= 1.1.5 =
+* Updated firewall rules.
+* Improved admin UI to offer better smartphones compatibility.
+* Fixed a bug where the localhost IP was not blacklisted.
+* Fixed a bug where some disabled Firewall Policies options were wrongly accessible from the Rules Editor.
+* Renamed `E-mail Alerts` menu to `Event Notifications`.
 
 = 1.1.4 =
 * Updated firewall rules.
@@ -147,49 +154,6 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 == Upgrade Notice ==
 
-= 1.1.4 =
+= 1.1.5 =
 This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
 
-= 1.1.3 =
-* Added an option to block username enumeration scanning attempts through the author archives and the login page (Firewall Policies page).
-* Added an option to always enforce HTTP Basic authentication to protect the login page and the possibility to set a custom 'realm' message (Login Protection page).
-* Added an optional configuration file that can be used to tell NinjaFirewall where is located the `wp-config.php` file, in the case it was moved to another directory (see `http://nintechnet.com/nfwp/1.1.3/` for full details).
-* Added a warning about blocking direct access to PHP scripts located in the `/wp-includes/` directory because it could prevent non-admin users from using the TinyMCE WYSIWYG editor.
-
-= 1.1.2 =
-* Updated firewall rules.
-* Added an option to block access to WordPress XML-RPC API (Firewall Policies page).
-* Better error handling (critical errors will be displayed in the admin console only).
-* Fixed a bug where NinjaFirewall brute-force protection was always triggered by the login modals introduced in WordPress 3.6.
-* Firewall rules and options are now using `WP_CONTENT_DIR` constant.
-* The installer will attempt to detect if WordPress files were installed into a subdirectory different from the root directory.
-
-= 1.1.1 =
-* Added protection against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs (see new `Login Protection` menu).
-* Fixed firewall initialisation error due to user defined `WP_CONTENT_DIR`.
-* Fixed a bug where an extended ASCII code could make the log unreadable from WP admin console.
-
-= 1.1.0 =
-* Added multi-site network support.
-* Added an option to decode and scan base64 encoded values in POST requests (Firewall Policies page).
-
-= 1.0.4 =
-* Added an `E-mail Alerts` configuration page to send alerts on specific events (users login, themes/plugins installation, activation, deletion etc).
-* Added `Privacy Policy` to the About page and to the installer.
-
-= 1.0.3 =
-* Added a `Rules Editor` menu to enable/disable built-in rules individually.
-* Fixed installation issue with Listespeed HTTP server when using Apache-style configuration directives (`php_value`).
-* Added a call to `stripslashes()` to prevent WordPress from escaping quotes in the "Blocked user message" textarea.
-
-= 1.0.2 =
-* Updated firewall rules.
-* Added extensive contextual help to the Firewall Policies page.
-* Fixed some code, minor errors and typos.
-
-= 1.0.1 =
-* Fixed a `Call to undefined function flatten()` error message.
-* NinjaFirewall will warn and refuse to install if `SAFE_MODE` is enabled with PHP 5.3+.
-
-= 1.0.0 =
-* Initial release.

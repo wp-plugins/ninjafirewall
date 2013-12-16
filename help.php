@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-11-09 23:31:04                                    |
+ | REVISION: 2013-12-16 17:37:58                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -150,7 +150,7 @@ function help_nfsubpolicies() {
 		<strong>WordPress</strong>
 		<li>Whether to block direct access to PHP files located in specific WordPress directories.</li>
 		<li>Protect against username enumeration:<span class="description"> it is possible to enumerate usernames either through the WordPress author archives or the login page. Although this is not a vulnerability but a WordPress feature, some hackers use it to retrieve usernames in order to launched more accurate brute-force attacks. NinjaFirewall will not block the request but, if it is a failed login attempt, it will sanitise the error message returned by WordPress and, if it is an author archives scan, it will invalidate it and redirect the user to the blog index page.</span></li>
-		<li>Block access to WordPress XML-RPC API (<code>xmlrpc.php</code>):<span class="description"> XML-RPC is a remote procedure call (RPC) protocol which uses XML to encode its calls and HTTP as a transport mechanism. WordPress has an XMLRPC API that can be accessed through the <code>xmlrpc.php</code> file. Since WordPress version 3.5, it is always activated and cannot be turned off. NinjaFirewall allows you to block any access to that file. This option is not enabled by default.</span></li>
+		<li>Block access to WordPress XML-RPC API:<span class="description"> XML-RPC is a remote procedure call (RPC) protocol which uses XML to encode its calls and HTTP as a transport mechanism. WordPress has an XMLRPC API that can be accessed through the <code>xmlrpc.php</code> file. Since WordPress version 3.5, it is always activated and cannot be turned off. NinjaFirewall allows you to block any access to that file. This option is not enabled by default.</span></li>
 		<li>Block <code>POST</code> requests in the themes folder <code>/wp-content/themes</code>:<span class="description"> this option can be useful to block hackers from installing backdoor in the PHP theme files. However, because some custom themes may include an HTML form (contact, search form etc), this option is not enabled by default.</span></li>
 		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear. <font color="red"><strong>Warning:</strong></font> ensure that you can access your admin console from HTTPS (<a href="' . admin_url('/','https') . '" target="_blank">' . admin_url('/','https') . '</a>) <strong>before</strong> enabling this option, otherwise you will lock yourself out of your site&nbsp;!</span></li>
 		<li>Disable the plugin and theme editor <code>DISALLOW_FILE_EDIT</code>:<span class="description"> disabling the plugin and theme editor provides an additional layer of security if a hacker gains access to a well-privileged user account.</span></li>
@@ -180,11 +180,11 @@ function help_nfsubnetwork() {
 
 function help_nfsubalerts() {
 
-	// E-mail alerts menu help :
+	// Event Notifications menu help :
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
-		'title'     => 'E-mail alerts',
+		'title'     => 'Event Notifications',
 		'content'   => '<br />NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.'
 	) );
 }
@@ -205,7 +205,7 @@ function help_nfsublogin() {
 		<p>You can select to enable the protection only if an attack is detected or to keep it always activated:</p>
 
 		<strong>Yes, if under attack :</strong>
-		<br />When too many login attempts are detected, it password-protects the login page (wp-login.php) immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).<br />
+		<br />When too many login attempts are detected, it password-protects the login page (<code>wp-login.php</code>) immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).<br />
 		<ul>
 		<li>Protect the login page against:<span class="description"> select the type of requests (<code>GET</code> and/or <code>POST</code>) to monitor.</span></li>
 		<li>Password-protect the login page:<span class="description"> enter the suitable threshold that will trigger the protection.</span></li>
