@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.1.5
+Version: 1.1.6
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-12-16 16:37:33                                       |
+ | REVISION: 2013-12-27 18:58:47                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.5' );
-define( 'NFW_RULES_VERSION',  '20131216' );
+define( 'NFW_ENGINE_VERSION', '1.1.6 beta build 2013-12-28' );
+define( 'NFW_RULES_VERSION',  '20131228' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -45,7 +45,7 @@ if (! session_id() ) { session_start(); }
 
 // Some constants first :
 define( 'NFW_NULL_BYTE', 2);
-define( 'NFW_SCAN_BOTS', 310);
+define( 'NFW_SCAN_BOTS', 531);
 define( 'NFW_ASCII_CTRL', 500);
 define( 'NFW_DOC_ROOT', 510);
 define( 'NFW_WRAPPERS', 520);
@@ -2082,7 +2082,7 @@ function nf_sub_policies_save() {
 		// Default: yes
 		$nfw_rules[NFW_NULL_BYTE]['on'] = 1;
 	}
-	// Block bots & script kiddies' scanners (#ID 310) :
+	// Block bots & script kiddies' scanners (#ID 531) :
 	if ( empty( $_POST['nfw_rules']['block_bots']) ) {
 		$nfw_rules[NFW_SCAN_BOTS]['on'] = 0;
 	} else {

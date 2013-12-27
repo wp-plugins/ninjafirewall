@@ -91,7 +91,16 @@ Because **we do not collect any user data**, we do not even know that you are us
 6. NinjaFirewall Policies 4/4
 7. NinjaFirewall log
 
+== Upgrade Notice ==
+
+= 1.1.5 =
+This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
+
 == Changelog ==
+
+= 1.1.6 beta =
+* Updated and tweaked some security rules.
+* Fixed multiple file upload error.
 
 = 1.1.5 =
 * Updated firewall rules.
@@ -151,9 +160,3 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 = 1.0.0 =
 * Initial release.
-
-== Upgrade Notice ==
-
-= 1.1.5 =
-This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
-

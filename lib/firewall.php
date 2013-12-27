@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-12-16 16:37:50                                       |
+ | REVISION: 2013-12-26 23:27:03                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -344,14 +344,17 @@ function nfw_check_upload() {
 	if ( defined('NFW_STATUS') ) { return; }
 
 	global $nfw_options;
-	$tmp = '';
+
+	// Fetch uploaded files, if any :
+	$f_uploaded = nfw_fetch_uploads();
 
 	// Uploads are disallowed :
 	if ( empty($nfw_options['uploads']) ) {
-		foreach ($_FILES as $file) {
+		$tmp = '';
+		foreach ($f_uploaded as $key => $value) {
 			// Empty field ?
-			if (! $file['name']) { continue; }
-         $tmp .= $file['name'] . ', ' . number_format($file['size']) . ' bytes ';
+			if (! $f_uploaded[$key]['name']) { continue; }
+         $tmp .= $f_uploaded[$key]['name'] . ', ' . number_format($f_uploaded[$key]['size']) . ' bytes ';
       }
       if ( $tmp ) {
 			// Log and block :
@@ -360,22 +363,54 @@ function nfw_check_upload() {
 		}
 	// Uploads are allowed :
 	} else {
-		foreach ($_FILES as $nm => $file) {
-			if(! $file['tmp_name']) { continue; }
+		foreach ($f_uploaded as $key => $value) {
+			if (! $f_uploaded[$key]['name']) { continue; }
 			// Sanitise filename ?
 			if (! empty($nfw_options['sanitise_fn']) ) {
-				$file['name'] = preg_replace('/[^\w\.\-]/i', 'X', $file['name'], -1, $count);
+				$tmp = '';
+				$f_uploaded[$key]['name'] = preg_replace('/[^\w\.\-]/i', 'X', $f_uploaded[$key]['name'], -1, $count);
 				if ($count) {
 					$tmp = ' (sanitising '. $count . ' char. from filename)';
 				}
 				if ( $tmp ) {
-					$_FILES[$nm]['name'] = $file['name'];
+					list ($kn, $is_arr, $kv) = explode('::', $f_uploaded[$key]['where']);
+					if ( $is_arr ) {
+						$_FILES[$kn]['name'][$kv] = $f_uploaded[$key]['name'];
+					} else {
+						$_FILES[$kn]['name'] = $f_uploaded[$key]['name'];
+					}
 				}
 			}
 			// Log and let it go :
-			nfw_log('Uploading file' . $tmp , $file['name'] . ', ' . number_format($file['size']) . ' bytes', 5, 0);
+			nfw_log('Uploading file' . $tmp , $f_uploaded[$key]['name'] . ', ' . number_format($f_uploaded[$key]['size']) . ' bytes', 5, 0);
 		}
 	}
+}
+
+/* ================================================================== */
+
+function nfw_fetch_uploads() {
+
+	$f_uploaded = array();
+	$count = 0;
+	foreach ($_FILES as $nm => $file) {
+		if ( is_array($file['name']) ) {
+			foreach($file['name'] as $key => $value) {
+				$f_uploaded[$count]['name'] = $file['name'][$key];
+				$f_uploaded[$count]['size'] = $file['size'][$key];
+				$f_uploaded[$count]['tmp_name'] = $file['tmp_name'][$key];
+				$f_uploaded[$count]['where'] = $nm . '::1::' . $key;
+				$count++;
+			}
+		} else {
+			$f_uploaded[$count]['name'] = $file['name'];
+			$f_uploaded[$count]['size'] = $file['size'];
+			$f_uploaded[$count]['tmp_name'] = $file['tmp_name'];
+			$f_uploaded[$count]['where'] = $nm . '::0::0' ;
+			$count++;
+		}
+	}
+	return $f_uploaded;
 }
 
 /* ================================================================== */
