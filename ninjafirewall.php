@@ -22,7 +22,7 @@ Network: true
  | REVISION: 2013-12-27 18:58:47                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.6 beta build 2013-12-28' );
+define( 'NFW_ENGINE_VERSION', '1.1.6 beta build 2014-01-04' );
 define( 'NFW_RULES_VERSION',  '20131228' );
  /*
  +---------------------------------------------------------------------+
@@ -260,6 +260,9 @@ function nfw_login_hook( $user_login, $user ) {
 	if (! isset( $nfw_options ) ) {
 		$nfw_options = get_option( 'nfw_options' );
 	}
+
+	// Don't do anything if NinjaFirewall is disabled :
+	if ( empty( $nfw_options['enabled'] ) ) { return; }
 
 	if ( empty( $user->roles[0] ) ) {
 		// This can occur in multisite mode, when the Super Admin logs in
@@ -1095,12 +1098,10 @@ function chksubmenu() {
       document.getElementById("santxt").style.color = "#bbbbbb";
    }
 }
-function ssl_warn(what) {
-	if (what.value == 0) { return true; }
+function ssl_warn() {
 	if (confirm("WARNING: ensure that you can access your admin console from HTTPS (' . admin_url('/','https') . ') before enabling this option, otherwise you will lock yourself out of your site !\nGo ahead ?")){
 		return true;
 	}
-	document.getElementById("ssl_0").checked = true;
 	return false;
 }
 </script>
@@ -1743,10 +1744,10 @@ function ssl_warn(what) {
 			<th scope="row"><a name="builtinconstants"></a>Force SSL for admin and logins <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Require_SSL_for_Admin_and_Logins" target="_blank">FORCE_SSL_ADMIN</a></code></th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
-				<label><input type="radio" name="nfw_options[force_ssl]" value="1"<?php checked( $force_ssl, 1 ) ?> onclick="return ssl_warn(this);">&nbsp;Yes</label>
+				<label><input type="radio" name="nfw_options[force_ssl]" value="1"<?php checked( $force_ssl, 1 ) ?> onclick="return ssl_warn();">&nbsp;Yes</label>
 			</td>
 			<td align="left">
-				<label><input type="radio" id="ssl_0" name="nfw_options[force_ssl]" value="0"<?php checked( $force_ssl, 0 ) ?> onclick="return ssl_warn(this);">&nbsp;No (default)</label>
+				<label><input type="radio" id="ssl_0" name="nfw_options[force_ssl]" value="0"<?php checked( $force_ssl, 0 ) ?>>&nbsp;No (default)</label>
 			</td>
 		</tr>
 		<tr valign="top">
@@ -2950,7 +2951,7 @@ function nfw_query( $query ) {
 		exit;
 	}
 }
-if (! isset($_SESSION['nfw_goodguy']) && ! empty($nfw_options['enum_archives']) ) {
+if (! isset($_SESSION['nfw_goodguy']) && ! empty($nfw_options['enum_archives']) && ! empty($nfw_options['enabled']) ) {
 	add_action('pre_get_posts','nfw_query');
 }
 
@@ -2968,7 +2969,7 @@ function nfw_authenticate( $user ) {
 	}
 	return $user;
 }
-if (! empty( $nfw_options['enum_login']) ) {
+if (! empty( $nfw_options['enum_login']) && ! empty($nfw_options['enabled']) ) {
 	add_filter( 'authenticate', 'nfw_authenticate', 90, 3 );
 }
 

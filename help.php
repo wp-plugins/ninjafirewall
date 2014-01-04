@@ -41,6 +41,13 @@ function help_nfsubmain() {
 		'title'     => 'NinjaFirewall Help',
 		'content'   => '<br />This is the contextual help&nbsp;!<br />Each NinjaFirewall menu page has such a contextual help screen with useful information about how to use and configure it.<br />&nbsp;'
 	) );
+	get_current_screen()->set_help_sidebar(
+	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
+	'<p>' . __( '<a href="http://ninjafirewall.com/wordpress/help.php" target="_blank">Installation help &amp; troubleshooting</a>' ) . '</p>' .
+	'<p>' . __( '<a href="http://wordpress.org/support/plugin/ninjafirewall/" target="_blank">Support Forums</a>' ) . '</p>' .
+	'<p>' . __( '<a href="https://secure.ninjafirewall.com/wordpress/contact.php?q=install" target="_blank">Installation Request</a>' ) . '</p>'
+)	;
+
 }
 
 /* ================================================================== */

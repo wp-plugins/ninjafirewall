@@ -439,7 +439,7 @@ function nfw_check_request( $nfw_rules ) {
 					} else {
 						if ( (! empty($nfw_options['post_b64'])) && ($where == 'POST') && ($reqvalue) && (! isset( $b64_post[$reqkey])) ) {
 							$b64_post[$reqkey] = 1;
-							check_b64($reqkey, $reqvalue);
+							nfw_check_b64($reqkey, $reqvalue);
 						}
 					}
 					if (! $reqvalue) { continue; }
@@ -498,7 +498,7 @@ function nfw_flatten( $glue, $pieces ) {
 
 /* ================================================================== */
 
-function check_b64( $reqkey, $string ) {
+function nfw_check_b64( $reqkey, $string ) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
@@ -507,7 +507,7 @@ function check_b64( $reqkey, $string ) {
 	if ( (! $string) || (strlen($string) % 4 != 0) ) { return; }
 
 	if ( base64_encode( $decoded = base64_decode($string) ) === $string ) {
-		if ( preg_match( '`\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|chmod|curl_exec|(?:ex|im)plode|error_reporting|eval|file(?:_get_contents)?|f(?:open|write|close)|fsockopen|function_exists|gzinflate|md5|move_uploaded_file|ob_start|passthru|preg_replace|phpinfo|stripslashes|strrev|(?:shell_)?exec|system|unlink)\s*\(|\becho\s*[\'"]|<\s*(?i:applet|div|embed|i?frame(?:set)?|img|meta|marquee|object|script|textarea)\b|\b(?i:(?:ht|f)tps?|php)://`', $decoded) ) {
+		if ( preg_match( '`\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|chmod|curl_exec|(?:ex|im)plode|error_reporting|eval|file(?:_get_contents)?|f(?:open|write|close)|fsockopen|function_exists|gzinflate|md5|move_uploaded_file|ob_start|passthru|preg_replace|phpinfo|stripslashes|strrev|(?:shell_)?exec|system|unlink)\s*\(|\becho\s*[\'"]|<\s*(?i:applet|div|embed|i?frame(?:set)?|img|meta|marquee|object|script|textarea)\b|\b(?i:(?:ht|f)tps?|php)://|\W\$\{\s*[\'"]\w+[\'"]|<\?(?i:php)`', $decoded) ) {
 			nfw_log('base64-encoded injection', 'POST:' . $reqkey . ' = ' . $string, '3', 0);
 			nfw_block();
 		}
