@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-11-09 23:31:43                                       |
+ | REVISION: 2014-01-10 19:09:02                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -105,6 +105,7 @@ function nfw_uninstall() {
 	delete_option( 'nfw_options' );
 	delete_option( 'nfw_rules' );
 	delete_option( 'nfw_install' );
+	delete_option( 'nfw_tmp' );
 
 }
 

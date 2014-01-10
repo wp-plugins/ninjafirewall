@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-12-27 18:58:47                                       |
+ | REVISION: 2014-01-09 18:35:42                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.6 beta build 2014-01-04' );
-define( 'NFW_RULES_VERSION',  '20131228' );
+define( 'NFW_ENGINE_VERSION', '1.1.6' );
+define( 'NFW_RULES_VERSION',  '20140109' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -124,6 +124,10 @@ function nfw_upgrade() {
 
 	// Only used when upgrading NinjaFirewall and sending alerts:
 
+	if (! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
 	global $nfw_options;
 	global $nfw_rules;
 	$is_update = 0;
@@ -194,6 +198,10 @@ function nfw_upgrade() {
 			$nfw_options['enum_archives'] = 1;
 			$nfw_options['enum_login'] = 1;
 		}
+		// v1.1.6 update -------------------------------------------------
+		if (! isset( $nfw_options['request_sanitise'] ) ) {
+			$nfw_options['request_sanitise'] = 0;
+		}
 		// ---------------------------------------------------------------
 	}
 
@@ -223,8 +231,20 @@ function nfw_upgrade() {
 		$is_update = 1;
 	}
 
-	// update options ?
 	if ( $is_update ) {
+		// Check if we need to restore the log which was saved to the DB
+		// before starting NinjaFirewall's update :
+		if ( isset($nfw_options['nfw_tmp']) ) {
+			unset( $nfw_options['nfw_tmp'] );
+			// Fetch it, unpack it, and save it to disk...
+			$log_file = plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log';
+			if ( $tmp_data = @gzinflate( base64_decode( get_option('nfw_tmp') ) ) ) {
+				file_put_contents( $log_file, $tmp_data );
+			}
+			// ... and clear it from the DB :
+			delete_option( 'nfw_tmp' );
+		}
+		// Update options :
 		update_option( 'nfw_options', $nfw_options);
 	}
 
@@ -233,19 +253,16 @@ function nfw_upgrade() {
 		check_email_alert();
 	}
 
-	// if admin is whiteliseted, update the goodguy flag (helps to avoid
+	// If admin is whiteliseted, update the goodguy flag (helps to avoid
 	// potential session timeout) :
-	if ( current_user_can( 'manage_options' ) && ! empty( $nfw_options['wl_admin']) ) {
+	if (! empty( $nfw_options['wl_admin']) ) {
 		$_SESSION['nfw_goodguy'] = true;
 		return;
 	}
-
 	// clear it otherwise :
 	if ( isset( $_SESSION['nfw_goodguy'] ) ) {
 		unset( $_SESSION['nfw_goodguy'] );
 	}
-
-
 }
 
 add_action('admin_init', 'nfw_upgrade' );
@@ -329,7 +346,6 @@ function send_login_email( $user_login, $whoami ) {
 function nfw_logout_hook() {
 
 	// Whoever it was, we clear the goodguy flag :
-
 	if ( isset( $_SESSION['nfw_goodguy'] ) ) {
 		unset( $_SESSION['nfw_goodguy'] );
 	}
@@ -480,7 +496,8 @@ function nf_admin_bar_status() {
 	if (! isset( $nfw_options) ) {
 		$nfw_options = get_option( 'nfw_options' );
 	}
-	if ( $nfw_options['nt_show_status'] != 1 ) {
+	// Disable it, unless this is the superadmin :
+	if ( $nfw_options['nt_show_status'] != 1 && ! current_user_can('manage_network') ) {
 		return;
 	}
 
@@ -1187,10 +1204,10 @@ function ssl_warn() {
 		$get_sanitise = 1;
 	}
 	?>
-	<h3>GET requests</h3>
+	<h3>HTTP GET variables</h3>
 	<table class="form-table">
 		<tr>
-			<th scope="row">Scan <code>GET</code> requests</th>
+			<th scope="row">Scan <code>GET</code> variables</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[get_scan]" value="1"<?php checked( $get_scan, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1200,7 +1217,7 @@ function ssl_warn() {
 			</td>
 		</tr>
 		<tr>
-			<th scope="row">Sanitise <code>GET</code> requests</th>
+			<th scope="row">Sanitise <code>GET</code> variables</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[get_sanitise]" value="1"<?php checked( $get_sanitise, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1228,10 +1245,10 @@ function ssl_warn() {
 		$post_b64 = 1;
 	}
 	?>
-	<h3>POST requests</h3>
+	<h3>HTTP POST variables</h3>
 	<table class="form-table">
 		<tr valign="top">
-			<th scope="row">Scan <code>POST</code> requests</th>
+			<th scope="row">Scan <code>POST</code> variables</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[post_scan]" value="1"<?php checked( $post_scan, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1241,7 +1258,7 @@ function ssl_warn() {
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row">Sanitise <code>POST</code> requests</th>
+			<th scope="row">Sanitise <code>POST</code> variables</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120" style="vertical-align:top;">
 				<label><input type="radio" name="nfw_options[post_sanitise]" value="1"<?php checked( $post_sanitise, 1 ) ?>>&nbsp;Yes</label>
@@ -1251,13 +1268,34 @@ function ssl_warn() {
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row">Decode base64-encoded <code>POST</code> requests</th>
+			<th scope="row">Decode base64-encoded <code>POST</code> variables</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[post_b64]" value="1"<?php checked( $post_b64, 1 ) ?>>&nbsp;Yes (default)</label>
 			</td>
 			<td align="left">
 				<label><input type="radio" name="nfw_options[post_b64]" value="0"<?php checked( $post_b64, 0 ) ?>>&nbsp;No</label>
+			</td>
+		</tr>
+	</table>
+
+	<?php
+	if ( empty( $nfw_options['request_sanitise']) ) {
+		$request_sanitise = 0;
+	} else {
+		$request_sanitise = 1;
+	}
+	?>
+	<h3>HTTP REQUEST variables</h3>
+	<table class="form-table">
+		<tr>
+			<th scope="row">Sanitise <code>REQUEST</code> variables</th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120">
+				<label><input type="radio" name="nfw_options[request_sanitise]" value="1"<?php checked( $request_sanitise, 1 ) ?>>&nbsp;Yes</label>
+			</td>
+			<td align="left">
+				<label><input type="radio" name="nfw_options[request_sanitise]" value="0"<?php checked( $request_sanitise, 0 ) ?>>&nbsp;No (default)</label>
 			</td>
 		</tr>
 	</table>
@@ -1884,6 +1922,14 @@ function nf_sub_policies_save() {
 	}
 
 
+	// Sanitise REQUEST requests ?
+	if ( empty( $_POST['nfw_options']['request_sanitise']) ) {
+		// Default: yes
+		$nfw_options['request_sanitise'] = 0;
+	} else {
+		$nfw_options['request_sanitise'] = 1;
+	}
+
 	// Scan COOKIES requests ?
 	if ( empty( $_POST['nfw_options']['cookies_scan']) ) {
 		$nfw_options['cookies_scan'] = 0;
@@ -2164,6 +2210,7 @@ function nf_sub_policies_default() {
 	$nfw_options['get_sanitise']		= 1;
 	$nfw_options['post_scan']			= 1;
 	$nfw_options['post_sanitise']		= 0;
+	$nfw_options['request_sanitise'] = 0;
 	$nfw_options['cookies_scan']		= 1;
 	$nfw_options['cookies_sanitise']	= 1;
 	$nfw_options['ua_scan']				= 1;
@@ -3092,7 +3139,7 @@ function nf_sub_edit() {
 			<th scope="row">Select the rule you want to disable or enable</th>
 			<td align="center">
 			<form method="post">
-			<select name="sel_e_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
+			<select name="sel_e_r" style="width:220px;font-family:Consolas,Monaco,monospace;">
 				<option value="0">Total rules enabled : ' . count( $enabled_rules ) . '</option>';
 	sort( $enabled_rules );
 
@@ -3108,7 +3155,7 @@ function nf_sub_edit() {
 		</form>
 		<br />
 		<form method="post">
-		<select name="sel_d_r" style="width:220px;font-family:\'Courier New\',Courier,monospace;">
+		<select name="sel_d_r" style="width:220px;font-family:Consolas,Monaco,monospace;">
 		<option value="0">Total rules disabled : ' . count( $disabled_rules ) . '</option>';
 	sort( $disabled_rules );
 	foreach ( $disabled_rules as $key ) {
@@ -3355,6 +3402,18 @@ function check_email_alert() {
 	// Check what it is :
 	list( $a_1, $a_2, $a_3 ) = explode( ':', NFW_ALERT . ':' );
 
+	// We try to save the log if this is an update of NinjaFirewall
+	// because WP will delete all its files and directories :
+	if ( NFW_ALERT == '1:4:ninjafirewall/ninjafirewall.php' && empty( $nfw_options['nfw_tmp'] ) ) {
+		// Read, pack and save the log to DB :
+		$log_file = plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log';
+		if ( file_exists( $log_file ) ) {
+			update_option( 'nfw_tmp', base64_encode( gzdeflate( file_get_contents($log_file), 9 ) ) );
+			$nfw_options['nfw_tmp'] = 1;
+			update_option( 'nfw_options', $nfw_options);
+		}
+	}
+
 	// Shall we alert the admin ?
 	if (! empty($nfw_options['a_' . $a_1 . $a_2]) ) {
 		$alert_array = array(
@@ -3389,6 +3448,99 @@ function check_email_alert() {
 		wp_mail( $recipient, $subject, $message );
 	}
 }
+/* ================================================================== */
+
+function nfw_dashboard_widgets() {
+
+	// Add dashboard widgets
+
+	if (! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+    wp_add_dashboard_widget( 'nfw_dashboard_welcome', 'NinjaFirewall Statistics', 'nfw_stats_widget' );
+ }
+function nfw_stats_widget(){
+	$critical = $high = $medium = $upload = $total = 0;
+	if (! file_exists( plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log' ) ) {
+	} else {
+		if (! $fh = @fopen( plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log', 'r') ) {
+			echo '<strong>NinjaFirewall error:</strong> cannot open logfile <code>' . plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log</code>';
+			return;
+		}
+		// Retrieve all lines :
+		while (! feof( $fh) ) {
+			$line = fgets( $fh);
+			if (preg_match( '/^\[.+?\]\s+\[(.+?)\]\s+(?:\[.+?\]\s+){3}\[(1|2|3|4|5|6)\]/', $line, $match) ) {
+				if ( $match[2] == 1) {
+					$medium++;
+				} elseif ( $match[2] == 2) {
+					$high++;
+				} elseif ( $match[2] == 3) {
+					$critical++;
+				} elseif ( $match[2] == 5) {
+					$upload++;
+				}
+			}
+		}
+		fclose( $fh);
+		$total = $critical + $high + $medium;
+		if ( $total ) {
+			$coef = 100 / $total;
+			$critical = round( $critical * $coef, 2);
+			$high = round( $high * $coef, 2);
+			$medium = round( $medium * $coef, 2);
+		}
+	}
+	echo '
+	<table border="0" width="100%">
+		<tr>
+			<th width="50%" align="left">Blocked hacking attempts</th>
+			<td width="50%" align="left">' . $total . '</td>
+		</tr>
+		<tr>
+			<th width="50%" align="left">Hacking attempts severity</th>
+			<td width="50%" align="left">
+				<i>Critical : ' . $critical . '%</i>
+				<br />
+				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
+					<tr>
+						<td width="' . round( $critical) . '%" background="' . plugins_url( '/images/bar-critical.png', __FILE__ ) . '" style="padding:0px"></td><td width="' . round(100 - $critical) . '%" style="padding:0px"></td>
+					</tr>
+				</table>
+				<br />
+				<i>High : ' . $high . '%</i>
+				<br />
+				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
+					<tr>
+						<td width="' . round( $high) . '%" background="' . plugins_url( '/images/bar-high.png', __FILE__ ) . '" style="padding:0px"></td><td width="' . round(100 - $high) . '%" style="padding:0px"></td>
+					</tr>
+				</table>
+				<br />
+				<i>Medium : ' . $medium . '%</i>
+				<br />
+				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
+					<tr>
+						<td width="' . round( $medium) . '%" background="' . plugins_url( '/images/bar-medium.png', __FILE__ ) . '" style="padding:0px;"></td><td width="' . round(100 - $medium) . '%" style="padding:0px;"></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<th width="50%" align="left">Uploaded files</th>
+			<td width="50%" align="left">' . $upload . '</td>
+		</tr>
+	</table>
+	<div align="right"><small><a href="admin.php?page=nfsublog">View firewall log</a></small></div>
+';
+}
+
+if ( is_multisite() ) {
+	add_action( 'wp_network_dashboard_setup', 'nfw_dashboard_widgets' );
+} else {
+	add_action( 'wp_dashboard_setup', 'nfw_dashboard_widgets' );
+}
+
 /* ================================================================== */
 
 // EOF //

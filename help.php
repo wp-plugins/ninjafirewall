@@ -8,7 +8,7 @@
  +------------------------------------------------------------------+
  | http://nintechnet.com/                                           |
  +------------------------------------------------------------------+
- | REVISION: 2013-12-16 17:37:58                                    |
+ | REVISION: 2014-01-09 18:37:09                                    |
  +------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or    |
  | modify it under the terms of the GNU General Public License as   |
@@ -76,7 +76,8 @@ function help_nfsubopt() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt01',
 		'title'     => 'Firewall protection',
-		'content'   => '<br />This option allows you to disable NinjaFirewall. It has basically the same effect as deactivating it from the <a href="' . admin_url() . 'plugins.php" style="text-decoration:underline;">Plugins menu</a> page.<br />Your site will remain unprotected until you enable it again.'
+		'content'   => '<br />This option allows you to disable NinjaFirewall. It has basically the same effect as deactivating it from the <a href="' . admin_url() . 'plugins.php" style="text-decoration:underline;">Plugins menu</a> page.<br />Your site will remain unprotected until you enable it again.
+		<p><img src="http://www.testsite.com/sites/wordpress/wp-content/plugins/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the <a href="?page=nfsubloginprot">Login Protection</a> too.</span></p>'
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt02',
@@ -87,7 +88,7 @@ function help_nfsubopt() {
 		'id'        => 'opt03',
 		'title'     => 'Error code and message to return',
 		'content'   => '<br />Lets you customize the HTTP error code returned by NinjaFirewall when blocking a dangerous request and the message to display to the user. You can use any HTML tags and 3 built-in variables:
-		<li><code>%%REM_ADDRESS%%</code> : the blocked user IP.</li><li><code>%%NUM_INCIDENT%%</code> : the unique incident number as it will appear in the <a href="?page=nfsublog">firewall log</a> INCIDENT column.</li><li><code>%%NINJA_LOGO%%</code> : NinjaFirewall logo.</li>'
+		<li><code>%%REM_ADDRESS%%</code> : the blocked user IP.</li><li><code>%%NUM_INCIDENT%%</code> : the unique incident number as it will appear in the <a href="?page=nfsublog">firewall log</a> "INCIDENT" column.</li><li><code>%%NINJA_LOGO%%</code> : NinjaFirewall logo.</li>'
 	) );
 }
 /* ================================================================== */
@@ -121,12 +122,15 @@ function help_nfsubpolicies() {
 		<li>File Uploads:<span class="description"> whether to allow/disallow file uploads.</span></li>
 		<li>Sanitise filenames:<span class="description"> any character that is not a letter <code>a-zA-Z</code>, a digit <code>0-9</code>, a dot <code>.</code>, a hyphen <code>-</code> or an underscore <code>_</code> will be removed from the filename and replaced with the <code>X</code> character.</span></li>
 
-		<strong>GET requests</strong>
-		<li>Whether to scan and/or sanitise <code>GET</code> requests.</li>
+		<strong>HTTP GET variables</strong>
+		<li>Whether to scan and/or sanitise <code>GET</code> variables.</li>
 
-		<strong>POST requests</strong>
-		<li>Whether to scan and/or sanitise <code>POST</code> requests.</li>
-		<li>Decode base64-encoded <code>POST</code> requests:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for <code>POST</code> requests.</span></li>
+		<strong>HTTP POST variables</strong>
+		<li>Whether to scan and/or sanitise <code>POST</code> variables.</li>
+		<li>Decode base64-encoded <code>POST</code> variables:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for <code>POST</code> variables.</span></li>
+
+		<strong>HTTP REQUEST variables</strong>
+		<li>Whether to sanitise <code>REQUEST</code> variables.</li>
 
 		<strong>Cookies</strong>
 		<li>Whether to scan and/or sanitise <code>Cookies</code> requests.</li>
@@ -168,7 +172,7 @@ function help_nfsubpolicies() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'policies03',
 		'title'     => 'Administrator',
-		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall. This applies to all Firewall Policies listed below, except <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options which, if enabled, are always enforced.<br />'
+		'content'   => '<br />By default, any logged in WordPress administrator will not be blocked by NinjaFirewall. This applies to all Firewall Policies listed below, except <code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code>, <code>DISALLOW_FILE_MODS</code> options and the <a href="?page=nfsubloginprot">Login Protection</a> which, if enabled, are always enforced.<br />'
 	) );
 
 }
@@ -180,7 +184,7 @@ function help_nfsubnetwork() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'network01',
 		'title'     => 'Network',
-		'content'   => '<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.'
+		'content'   => '<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.'
 	) );
 }
 /* ================================================================== */
