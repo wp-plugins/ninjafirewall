@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2013-12-26 23:27:03                                       |
+ | REVISION: 2014-01-09 18:37:28                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -312,6 +312,9 @@ if ( (! empty($nfw_options['get_sanitise']) ) && (isset($_GET)) ){
 }
 if ( (! empty($nfw_options['post_sanitise']) ) && (isset($_POST)) ){
 	$_POST = nfw_sanitise( $_POST, 1, 'POST');
+}
+if ( (! empty($nfw_options['request_sanitise']) ) && (isset($_REQUEST)) ){
+	$_REQUEST = nfw_sanitise( $_REQUEST, 1, 'REQUEST');
 }
 if ( (! empty($nfw_options['cookies_sanitise']) ) && (isset($_COOKIE)) ) {
 	$_COOKIE = nfw_sanitise( $_COOKIE, 1, 'COOKIE');

@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, bruteforce, brute force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XSS
 Requires at least: 3.3.0
 Tested up to: 3.8
-Stable tag: 1.1.5
+Stable tag: 1.1.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,14 +93,19 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 == Upgrade Notice ==
 
-= 1.1.5 =
-This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
+= 1.1.6 =
+This update adds new features, fixes some bugs and installs a new set of security rules. See Changelog for more details.
 
 == Changelog ==
 
-= 1.1.6 beta =
-* Updated and tweaked some security rules.
+= 1.1.6 =
+* Updated firewall rules.
+* Added an option to sanitise HTTP REQUEST variables ("Firewall Policies" page).
+* Added NinjaFirewall Statistics widget to WP dashboard.
 * Fixed multiple file upload error.
+* Fixed a bug where login alerts were sent even when NinjaFirewall was disabled from the "Firewall Options" menu.
+* NinjaFirewall status icon in the admin bar (multi-site installation) will always be visible to the Super Admin, even when it is disabled.
+* Log file and stats will be saved and restored after upgrading NinjaFirewall.
 
 = 1.1.5 =
 * Updated firewall rules.
@@ -160,3 +165,9 @@ This update fixes a few bugs, improves some features and installs a new set of s
 
 = 1.0.0 =
 * Initial release.
+
+== Upgrade Notice ==
+
+= 1.1.5 =
+This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
+
