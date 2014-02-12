@@ -1,25 +1,25 @@
 <?php
 /*
- +------------------------------------------------------------------+
- | NinjaFirewall (WordPress edition)                                |
- |                                                                  |
- | (c)2012-2013 NinTechNet                                          |
- | <wordpress@nintechnet.com>                                       |
- +------------------------------------------------------------------+
- | http://nintechnet.com/                                           |
- +------------------------------------------------------------------+
- | REVISION: 2014-01-09 18:37:09                                    |
- +------------------------------------------------------------------+
- | This program is free software: you can redistribute it and/or    |
- | modify it under the terms of the GNU General Public License as   |
- | published by the Free Software Foundation, either version 3 of   |
- | the License, or (at your option) any later version.              |
- |                                                                  |
- | This program is distributed in the hope that it will be useful,  |
- | but WITHOUT ANY WARRANTY; without even the implied warranty of   |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the    |
- | GNU General Public License for more details.                     |
- +------------------------------------------------------------------+
+ +---------------------------------------------------------------------+
+ | NinjaFirewall (WP edition)                                          |
+ |                                                                     |
+ | (c) NinTechNet                                                      |
+ | <wordpress@nintechnet.com>                                          |
+ +---------------------------------------------------------------------+
+ | http://nintechnet.com/                                              |
+ +---------------------------------------------------------------------+
+ | REVISION: 2014-01-10 19:09:02                                       |
+ +---------------------------------------------------------------------+
+ | This program is free software: you can redistribute it and/or       |
+ | modify it under the terms of the GNU General Public License as      |
+ | published by the Free Software Foundation, either version 3 of      |
+ | the License, or (at your option) any later version.                 |
+ |                                                                     |
+ | This program is distributed in the hope that it will be useful,     |
+ | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
+ | GNU General Public License for more details.                        |
+ +---------------------------------------------------------------------+
 */
 
 
@@ -77,7 +77,7 @@ function help_nfsubopt() {
 		'id'        => 'opt01',
 		'title'     => 'Firewall protection',
 		'content'   => '<br />This option allows you to disable NinjaFirewall. It has basically the same effect as deactivating it from the <a href="' . admin_url() . 'plugins.php" style="text-decoration:underline;">Plugins menu</a> page.<br />Your site will remain unprotected until you enable it again.
-		<p><img src="http://www.testsite.com/sites/wordpress/wp-content/plugins/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the <a href="?page=nfsubloginprot">Login Protection</a> too.</span></p>'
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the <a href="?page=nfsubloginprot">Login Protection</a> too.</span></p>'
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt02',
@@ -210,7 +210,7 @@ function help_nfsublogin() {
 		'title'     => 'Login protection',
 		'content'   => '
 		<div style="height:250px;">
-		<p><img src="http://www.testsite.com/sites/wordpress/wp-content/plugins/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the login protection from this page too.</span></p>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the login protection from this page too.</span></p>
 
 		<p>By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.</p>
 		<p>You can select to enable the protection only if an attack is detected or to keep it always activated:</p>
@@ -337,15 +337,7 @@ function help_nfsubabout() {
 		<br/><br/>
 		<center><a href="http://ninjarecovery.com/" title="NinjaRecovery.com" target="_blank"><b>www.NinjaRecovery.com</b></a></center><br />'
 	) );
-	get_current_screen()->add_help_tab( array(
-		'id'        => 'about05',
-		'title'     => 'NinjaWPass',
-		'content'   => '<br /><strong>NinjaWPass for WordPress :</strong> Secure WordPress log-in form against keyloggers, stolen passwords and brute-force attacks.
-		<br /><br />
-		NinjaWPass is a WordPress plugin used to protect your blog administration console. It makes it basically impossible for a hacker who stole your password to log in to your console.
-		<br/><br/>
-		<center><a href="http://wordpress.org/plugins/ninjawpass/" title="NinjaWPass" target="_blank"><b>NinjaWPass</b></a></center><br />'
-	) );
+
 }
 
 /* ================================================================== */

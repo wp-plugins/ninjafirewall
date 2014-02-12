@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.1.6
+Version: 1.1.7
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-01-09 18:35:42                                       |
+ | REVISION: 2014-02-12 16:56:46                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.6' );
-define( 'NFW_RULES_VERSION',  '20140109' );
+define( 'NFW_ENGINE_VERSION', '1.1.7' );
+define( 'NFW_RULES_VERSION',  '20140212' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -2993,7 +2993,7 @@ function nfw_query( $query ) {
 
 	if ( $query->is_main_query() && $query->is_author() ) {
 		$query->set('author_name', '0');
-		nfw_log2('User enumeration scan (author archives)', $_SERVER['REQUEST_URI'], 1, 0);
+		nfw_log2('User enumeration scan (author archives)', $_SERVER['REQUEST_URI'], 2, 0);
 		wp_redirect( home_url('/') );
 		exit;
 	}
