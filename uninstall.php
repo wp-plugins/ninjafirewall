@@ -1,9 +1,9 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WordPress edition)                                   |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c)2012-2013 NinTechNet                                             |
+ | (c) NinTechNet                                                      |
  | <wordpress@nintechnet.com>                                          |
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |

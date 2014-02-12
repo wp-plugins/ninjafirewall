@@ -1,14 +1,14 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WordPress edition)                                   |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c)2012-2013 NinTechNet                                             |
+ | (c) NinTechNet                                                      |
  | <wordpress@nintechnet.com>                                          |
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-01-09 18:37:28                                       |
+ | REVISION: 2014-02-12 16:55:50                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -267,7 +267,7 @@ if ( (! empty($nfw_options['referer_post']) ) && ($_SERVER['REQUEST_METHOD'] == 
 
 // Block access to WordPress XML-RPC API ?
 if ( (! empty($nfw_options['no_xmlrpc'])) && (strpos($_SERVER['SCRIPT_NAME'], $nfw_options['no_xmlrpc']) !== FALSE) ) {
-	nfw_log('Access to WordPress XML-RPC API', $_SERVER['SCRIPT_NAME'], 2, 0);
+	nfw_log('Access to WordPress XML-RPC API', $_SERVER['SCRIPT_NAME'], 1, 0);
    nfw_block();
 }
 
@@ -307,31 +307,31 @@ $result->close();
 nfw_check_request( unserialize($rules->option_value) );
 
 // Sanitise requests/variables if needed :
-if ( (! empty($nfw_options['get_sanitise']) ) && (isset($_GET)) ){
+if (! empty($nfw_options['get_sanitise']) && ! empty($_GET) ){
 	$_GET = nfw_sanitise( $_GET, 1, 'GET');
 }
-if ( (! empty($nfw_options['post_sanitise']) ) && (isset($_POST)) ){
+if (! empty($nfw_options['post_sanitise']) && ! empty($_POST) ){
 	$_POST = nfw_sanitise( $_POST, 1, 'POST');
 }
-if ( (! empty($nfw_options['request_sanitise']) ) && (isset($_REQUEST)) ){
+if (! empty($nfw_options['request_sanitise']) && ! empty($_REQUEST) ){
 	$_REQUEST = nfw_sanitise( $_REQUEST, 1, 'REQUEST');
 }
-if ( (! empty($nfw_options['cookies_sanitise']) ) && (isset($_COOKIE)) ) {
+if (! empty($nfw_options['cookies_sanitise']) && ! empty($_COOKIE) ) {
 	$_COOKIE = nfw_sanitise( $_COOKIE, 1, 'COOKIE');
 }
-if ( (! empty($nfw_options['ua_sanitise']) ) && (! empty($_SERVER['HTTP_USER_AGENT'])) ) {
+if (! empty($nfw_options['ua_sanitise']) && ! empty($_SERVER['HTTP_USER_AGENT']) ) {
 	$_SERVER['HTTP_USER_AGENT'] = nfw_sanitise( $_SERVER['HTTP_USER_AGENT'], 1, 'HTTP_USER_AGENT');
 }
-if ( (! empty($nfw_options['referer_sanitise']) ) && (! empty($_SERVER['HTTP_REFERER'])) ) {
+if (! empty($nfw_options['referer_sanitise']) && ! empty($_SERVER['HTTP_REFERER']) ) {
 	$_SERVER['HTTP_REFERER'] = nfw_sanitise( $_SERVER['HTTP_REFERER'], 1, 'HTTP_REFERER');
 }
-if ( (! empty($nfw_options['php_path_i']) ) && (! empty($_SERVER['PATH_INFO'])) ) {
+if (! empty($nfw_options['php_path_i']) && ! empty($_SERVER['PATH_INFO']) ) {
 	$_SERVER['PATH_INFO'] = nfw_sanitise( $_SERVER['PATH_INFO'], 2, 'PATH_INFO');
 }
-if ( (! empty($nfw_options['php_path_t']) ) && (! empty($_SERVER['PATH_TRANSLATED'])) ) {
+if (! empty($nfw_options['php_path_t']) && ! empty($_SERVER['PATH_TRANSLATED']) ) {
 	$_SERVER['PATH_TRANSLATED'] = nfw_sanitise( $_SERVER['PATH_TRANSLATED'], 2, 'PATH_TRANSLATED');
 }
-if ( (! empty($nfw_options['php_self']) ) && (! empty($_SERVER['PHP_SELF'])) ) {
+if (! empty($nfw_options['php_self']) && ! empty($_SERVER['PHP_SELF']) ) {
 	$_SERVER['PHP_SELF'] = nfw_sanitise( $_SERVER['PHP_SELF'], 2, 'PHP_SELF');
 }
 
@@ -618,6 +618,11 @@ function nfw_block() {
 		header('Status: ' .  $http_codes[$nfw_options['ret_code']] );
 	}
 
+	if (! $tzstring = ini_get('date.timezone') ) {
+		$tzstring = 'UTC';
+	}
+	date_default_timezone_set($tzstring);
+
 	echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' . "\n" .
 		'<html><head><title>NinjaFirewall: ' . $http_codes[$nfw_options['ret_code']] .
 		'</title><style>body{font-family:Verdana,Arial,Helvetica,Ubuntu,"Bitstream Vera Sans",sans-serif;font-size:12px;line-height:16px;color:#000000;}.tinygrey{font-family:' .
@@ -735,21 +740,6 @@ function nfw_bfd() {
 		return;
 	}
 
-	// If this is an attempt to log in, ensure all variables, values and
-	// cookies are okay, otherwise we don't even forward it to WordPress
-	// and reject it right away :
-	if ( ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_REQUEST['action'])) ) {
-		if ( (empty($_POST['log'])) || (empty($_POST['pwd'])) || (empty($_POST['wp-submit'])) ||
-			(empty($_POST['testcookie'])) || (empty($_COOKIE['wordpress_test_cookie'])) ) {
-			// Record it :
-			@file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND);
-			// Force HTTP authentication :
-			nfw_check_auth($auth_name, $auth_pass, $auth_msg);
-			return;
-
-		}
-	}
-
 	// Read our log, if any :
 	if ( file_exists($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
 		$tmp_log = file( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -774,6 +764,20 @@ function nfw_bfd() {
 		$fstat = stat( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
 		if ( ($now - $fstat['mtime']) > $bf_bantime * 60 ) {
 			unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
+		}
+	}
+
+	// If this is an attempt to log in, ensure all variables, values and
+	// cookies are okay, otherwise we reject it right away :
+	if ( ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_REQUEST['action'])) ) {
+		if ( (empty($_POST['log'])) || (empty($_POST['pwd'])) || (empty($_POST['wp-submit'])) ||
+			(empty($_POST['testcookie'])) || (empty($_COOKIE['wordpress_test_cookie'])) ) {
+			// Record it :
+			@file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND);
+			// Force HTTP authentication :
+			nfw_check_auth($auth_name, $auth_pass, $auth_msg);
+			return;
+
 		}
 	}
 

@@ -2,8 +2,8 @@
 Contributors: nintechnet
 Tags: attack, backdoor, botnet, bruteforce, brute force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XSS
 Requires at least: 3.3.0
-Tested up to: 3.8
-Stable tag: 1.1.6
+Tested up to: 3.8.1
+Stable tag: 1.1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,10 +93,15 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 == Upgrade Notice ==
 
-= 1.1.6 =
-This update adds new features, fixes some bugs and installs a new set of security rules. See Changelog for more details.
+= 1.1.7 =
+This update installs a new set of security rules and fixes a few issues. See Changelog for more details.
 
 == Changelog ==
+
+= 1.1.7 =
+* Updated firewall rules.
+* Tweaked security rules ID 100 and 300 to reduce false positives.
+* Fixed some code and minor errors.
 
 = 1.1.6 =
 * Updated firewall rules.
