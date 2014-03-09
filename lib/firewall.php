@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-02-12 16:55:50                                       |
+ | REVISION: 2014-03-07 21:01:24                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -35,7 +35,18 @@ if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
 // Optional NinjaFirewall configuration file
 // ( see http://nintechnet.com/nfwp/1.1.3/ ) :
 if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
-	@include($file);
+	$res = @include($file);
+	// Allow and stop filtering :
+	if ( $res == 'ALLOW' ) {
+		define( 'NFW_STATUS', 20 );
+		return;
+	}
+	// Reject immediately :
+	if ( $res == 'BLOCK' ) {
+		header('HTTP/1.1 403 Forbidden');
+		header('Status: 403 Forbidden');
+		die('403 Forbidden');
+	}
 }
 
 // We need to get access to the database but we cannot include/require()
@@ -618,19 +629,9 @@ function nfw_block() {
 		header('Status: ' .  $http_codes[$nfw_options['ret_code']] );
 	}
 
-	if (! $tzstring = ini_get('date.timezone') ) {
-		$tzstring = 'UTC';
-	}
-	date_default_timezone_set($tzstring);
-
 	echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' . "\n" .
 		'<html><head><title>NinjaFirewall: ' . $http_codes[$nfw_options['ret_code']] .
-		'</title><style>body{font-family:Verdana,Arial,Helvetica,Ubuntu,"Bitstream Vera Sans",sans-serif;font-size:12px;line-height:16px;color:#000000;}.tinygrey{font-family:' .
-		'Verdana,Arial,Helvetica,Ubuntu, "Bitstream Vera Sans",sans-serif;font-size:10px;'.
-		'line-height:12px;color:#999999;}</style></head><body>' . $tmp . '<br><br><br><br>'.
-		'<center class=tinygrey>NinjaFirewall (WP edition)<br />&copy; 2012-' . date('Y') .
-		' <a style="color:#999999;" href="http://nintechnet.com/" target="_blank" '.
-		'title="The Ninja Technologies Network">NinTechNet</a></center></body></html>';
+		'</title><style>body{font-family:sans-serif;font-size:13px;color:#000000;}</style></head><body bgcolor="white">' . $tmp . '</body></html>';
 	exit;
 }
 
@@ -680,8 +681,26 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 		$tzstring = 'UTC';
 	}
 	date_default_timezone_set($tzstring);
+	$cur_month = date('Y-m');
 
-	$log_file = substr(__FILE__, 0, -16) . 'log/firewall_' . date('Y-m') . '.log';
+	$log_dir = substr(__FILE__, 0, -16) . 'log/';
+	$stat_file = $log_dir. 'stats_' . $cur_month . '.log';
+	$log_file = $log_dir. 'firewall_' . $cur_month . '.log';
+
+	// Update stats :
+	if ( file_exists( $stat_file ) ) {
+		$nfw_stat = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+	} else {
+		$nfw_stat = '0:0:0:0:0:0:0:0:0:0';
+	}
+	$nfw_stat_arr = explode(':', $nfw_stat . ':');
+	$nfw_stat_arr[$loglevel]++;
+
+	@file_put_contents( $stat_file, $nfw_stat_arr[0] . ':' . $nfw_stat_arr[1] . ':' .
+		$nfw_stat_arr[2] . ':' . $nfw_stat_arr[3] . ':' . $nfw_stat_arr[4] . ':' .
+		$nfw_stat_arr[5] . ':' . $nfw_stat_arr[6] . ':' . $nfw_stat_arr[7] . ':' .
+		$nfw_stat_arr[8] . ':' . $nfw_stat_arr[9] );
+
 	if (! $fh = fopen($log_file, 'a') ) {
 		return;
 	}
