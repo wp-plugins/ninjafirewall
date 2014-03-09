@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, bruteforce, brute force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XSS
 Requires at least: 3.3.0
 Tested up to: 3.8.1
-Stable tag: 1.1.7
+Stable tag: 1.1.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,10 +93,18 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 == Upgrade Notice ==
 
-= 1.1.7 =
+= 1.1.8 =
 This update installs a new set of security rules and fixes a few issues. See Changelog for more details.
 
 == Changelog ==
+
+= 1.1.8 =
+* Updated firewall rules.
+* Fixed a bug where notifications were not sent to the contact email address given by the user ("Event Notifications" page).
+* The "Protect against username enumeration" option ("Firewall Policies" page) will not be enabled by default, to prevent Google bot from being blocked.
+* Modified the handling of session_start.
+* Added a stats file to summarize the firewall log statistics in order to speed up the display of the dashboard widget when the log is huge.
+* Added new features to the `.htninja` file to quickly allow or block visitors. See `http://nintechnet.com/nfwp/1.1.3/` for full details.
 
 = 1.1.7 =
 * Updated firewall rules.

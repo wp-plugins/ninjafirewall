@@ -1,13 +1,69 @@
 <?php
-// NinjaFirewall optional configuration file:
-// See: http://nintechnet.com/nfwp/1.1.3/
+/*
+ +=====================================================================+
+ | NinjaFirewall optional configuration file                           |
+ |                                                                     |
+ | See: http://nintechnet.com/nfwp/1.1.3/                              |
+ |                                                                     |
+ +=====================================================================+
+*/
 
-// Tell NinjaFirewall where you moved your WP config file:
+
+// To tell NinjaFirewall where you moved your WP config file,
+// use the '$wp_config' variable :
 $wp_config = '/foo/bar/wp-config.php';
 
-// Users of Cloudflare:
+
+
+// Users of Cloudflare CDN:
 if (! empty($_SERVER["HTTP_CF_CONNECTING_IP"]) ) {
 	$_SERVER["REMOTE_ADDR"] = $_SERVER["HTTP_CF_CONNECTING_IP"];
 }
+
+
+
+// Whitelist/blacklist whatever you want:
+//
+// Return codes:
+// 	'ALLOW' == Allow and stop filtering (whitelist).
+// 	'BLOCK' == Reject immediately (blacklist).
+//
+// Any other return code will be ignored
+//
+// Note that if you use 'ALLOW'/'BLOCK', nothing will be written
+// to the firewall log.
+
+// Whitelist single IP 1.2.3.4:
+if ( $_SERVER["REMOTE_ADDR"] == '1.2.3.4' ) {
+	return 'ALLOW'; // whitelist
+}
+
+// Whitelist IPs 1.1.1.1, 2.2.2.2 and 3.3.3.3:
+$ip_array = array( '1.1.1.1' , '2.2.2.2' , '3.3.3.3' );
+if ( in_array( $_SERVER["REMOTE_ADDR"], $ip_array ) ) {
+	return 'ALLOW'; // whitelist
+}
+
+// Whitelist all IPs from 1.1.1.1 to 1.1.1.255:
+if ( preg_match( '/^1\.1\.1\.\d+$/', $_SERVER["REMOTE_ADDR"] ) ) {
+	return 'ALLOW'; // whitelist
+}
+
+// Blacklist single IP 1.2.3.4:
+if ( $_SERVER["REMOTE_ADDR"] == '1.2.3.4' ) {
+	return 'BLOCK'; // blacklist
+}
+
+// Blacklist IPs 1.1.1.1, 2.2.2.2 and 3.3.3.3:
+$ip_array = array( '1.1.1.1' , '2.2.2.2' , '3.3.3.3' );
+if ( in_array( $_SERVER["REMOTE_ADDR"], $ip_array ) ) {
+	return 'BLOCK'; // blacklist
+}
+
+// Blacklist all IPs from 1.1.1.1 to 1.1.1.255:
+if ( preg_match( '/^1\.1\.1\.\d+$/', $_SERVER["REMOTE_ADDR"] ) ) {
+	return 'BLOCK'; // blacklist
+}
+
 
 // do not add anything below this line.

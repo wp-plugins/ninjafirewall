@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.1.7
+Version: 1.1.8
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-02-12 16:56:46                                       |
+ | REVISION: 2014-03-07 21:00:55                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.7' );
-define( 'NFW_RULES_VERSION',  '20140212' );
+define( 'NFW_ENGINE_VERSION', '1.1.8' );
+define( 'NFW_RULES_VERSION',  '20140309' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -39,7 +39,11 @@ define( 'NFW_RULES_VERSION',  '20140212' );
 */
 
 if (! defined( 'ABSPATH' ) ) { die( 'Forbidden' ); }
-if (! session_id() ) { session_start(); }
+
+add_action('init', 'nfw_sessionstart', 1);
+function nfw_sessionstart() {
+	if (! session_id() ) { session_start(); }
+}
 
 /* ================================================================== */
 
@@ -195,7 +199,7 @@ function nfw_upgrade() {
 		}
 		// v1.1.3 update -------------------------------------------------
 		if (! isset( $nfw_options['enum_archives'] ) ) {
-			$nfw_options['enum_archives'] = 1;
+			$nfw_options['enum_archives'] = 0;
 			$nfw_options['enum_login'] = 1;
 		}
 		// v1.1.6 update -------------------------------------------------
@@ -244,13 +248,29 @@ function nfw_upgrade() {
 			// ... and clear it from the DB :
 			delete_option( 'nfw_tmp' );
 		}
+		if ( $tmp_data ) {
+			// Try to re-create the widget stats file :
+			$stat_file = plugin_dir_path(__FILE__) . 'log/stats_' . date( 'Y-m' ) . '.log';
+			$nfw_stat = '0:0:0:0:0:0:0:0:0:0';
+			$stats_lines = explode( PHP_EOL, $tmp_data );
+			foreach ( $stats_lines as $line ) {
+				if (preg_match( '/^\[.+?\]\s+\[.+?\]\s+(?:\[.+?\]\s+){3}\[([0-9])\]/', $line, $match) ) {
+					$nfw_stat[$match[1]]++;
+				}
+			}
+			@file_put_contents( $stat_file, $nfw_stat[0] . ':' . $nfw_stat[1] . ':' .
+				$nfw_stat[2] . ':' . $nfw_stat[3] . ':' . $nfw_stat[4] . ':' .
+				$nfw_stat[5] . ':' . $nfw_stat[6] . ':' . $nfw_stat[7] . ':' .
+				$nfw_stat[8] . ':' . $nfw_stat[9] );
+		}
+
 		// Update options :
 		update_option( 'nfw_options', $nfw_options);
 	}
 
 	// E-mail alert ?
 	if ( defined( 'NFW_ALERT' ) ) {
-		check_email_alert();
+		nfw_check_emailalert();
 	}
 
 	// If admin is whiteliseted, update the goodguy flag (helps to avoid
@@ -299,7 +319,7 @@ function nfw_login_hook( $user_login, $user ) {
 	if (! empty($nfw_options['a_0']) ) {
 		// User login:
 		if ( ( ( $nfw_options['a_0'] == 1) && ( $admin_flag )  ) ||	( $nfw_options['a_0'] == 2 ) ) {
-			send_login_email( $user_login, $whoami );
+			nfw_send_loginemail( $user_login, $whoami );
 		}
 	}
 
@@ -319,18 +339,18 @@ add_action( 'wp_login', 'nfw_login_hook', 10, 2 );
 
 /* ================================================================== */
 
-function send_login_email( $user_login, $whoami ) {
+function nfw_send_loginemail( $user_login, $whoami ) {
 
 	global $nfw_options;
 
-	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 1 ) ) {
-		$recipient = $nfw_options['alert_email'];
-	} else {
+	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 2 ) ) {
 		$recipient = get_option('admin_email');
+	} else {
+		$recipient = $nfw_options['alert_email'];
 	}
 
 	// Get timezone :
-	get_blog_timezone();
+	nfw_get_blogtimezone();
 
 	$subject = '[NinjaFirewall] Alert: WordPress console login';
 	$message = 'Someone just logged in to your WordPress admin console:' . "\n\n".
@@ -1435,7 +1455,7 @@ function ssl_warn() {
 				<label><input type="radio" name="nfw_options[referer_post]" value="1"<?php checked( $referer_post, 1 ) ?>>&nbsp;Yes</label>
 			</td>
 			<td align="left" style="vertical-align:top;">
-				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php checked( $referer_post, 0 ) ?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Keep this option disabled if you are using scripts like Paypal IPN etc.</span>
+				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php checked( $referer_post, 0 ) ?>>&nbsp;No (default)</label><br /><span class="description">&nbsp;Keep this option disabled if you are using scripts like Paypal IPN, WordPress WP-Cron...</span>
 			</td>
 		</tr>
 	</table>
@@ -1751,7 +1771,7 @@ function ssl_warn() {
 			<th scope="row">Protect against username enumeration</th>
 			<td width="20">&nbsp;</td>
 			<td align="left">
-				<p><label><input type="checkbox" name="nfw_options[enum_archives]" value="1"<?php checked( $enum_archives, 1 ) ?>>&nbsp;Through the author archives (default)</label></p>
+				<p><label><input type="checkbox" name="nfw_options[enum_archives]" value="1"<?php checked( $enum_archives, 1 ) ?>>&nbsp;Through the author archives</label></p>
 				<p><label><input type="checkbox" name="nfw_options[enum_login]" value="1"<?php checked( $enum_login, 1 ) ?>>&nbsp;Through the login page (default)</label></p>
 			</td>
 		</tr>
@@ -2051,9 +2071,9 @@ function nf_sub_policies_save() {
 
 	// Protect against username enumeration attempts ?
 	if (! isset( $_POST['nfw_options']['enum_archives']) ) {
+		// Default : no
 		$nfw_options['enum_archives'] = 0;
 	} else {
-		// Default : yes
 		$nfw_options['enum_archives'] = 1;
 	}
 	if (! isset( $_POST['nfw_options']['enum_login']) ) {
@@ -2227,7 +2247,7 @@ function nf_sub_policies_default() {
 	$nfw_options['wp_dir'] 				= '/wp-admin/(?:css|images|includes|js)/|' .
 		'/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
 		'/'. basename(WP_CONTENT_DIR) .'/uploads/|/cache/';
-	$nfw_options['enum_archives']		= 1;
+	$nfw_options['enum_archives']		= 0;
 	$nfw_options['enum_login']			= 1;
 	$nfw_options['no_xmlrpc']			= 0;
 	$nfw_options['no_post_themes']	= 0;
@@ -2612,13 +2632,13 @@ function nf_sub_log() {
 	if ( $count < $max_lines ) {
 		$skip = 0;
 	} else  {
-		echo '<div class="updated settings-error"><p><strong>Warning :</strong> your logfile has ' .
+		echo '<div class="updated settings-error"><p><strong>Warning :</strong> your log has ' .
 			$count . ' lines. I will display the last 500 lines only.</p></div>';
 		$skip = $count - $max_lines;
 	}
 
 	// Get timezone :
-	get_blog_timezone();
+	nfw_get_blogtimezone();
 
 	$levels = array( '', 'medium', 'high', 'critical', 'error', 'upload', 'info', 'DEBUG_ON' );
 	echo '
@@ -3054,9 +3074,25 @@ function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) {
 			$res .= $char;
 		}
 	}
-	get_blog_timezone();
+	nfw_get_blogtimezone();
 
-	$log_file = plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log';
+	$cur_month = date('Y-m');
+	$stat_file = plugin_dir_path(__FILE__) . 'log/stats_' . $cur_month . '.log';
+	$log_file = plugin_dir_path(__FILE__) . 'log/firewall_' . $cur_month . '.log';
+
+	// Update stats :
+	if ( file_exists( $stat_file ) ) {
+		$nfw_stat = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+	} else {
+		$nfw_stat = '0:0:0:0:0:0:0:0:0:0';
+	}
+	$nfw_stat_arr = explode(':', $nfw_stat . ':');
+	$nfw_stat_arr[$loglevel]++;
+	@file_put_contents( $stat_file, $nfw_stat_arr[0] . ':' . $nfw_stat_arr[1] . ':' .
+		$nfw_stat_arr[2] . ':' . $nfw_stat_arr[3] . ':' . $nfw_stat_arr[4] . ':' .
+		$nfw_stat_arr[5] . ':' . $nfw_stat_arr[6] . ':' . $nfw_stat_arr[7] . ':' .
+		$nfw_stat_arr[8] . ':' . $nfw_stat_arr[9] );
+
 	if (! $fh = fopen($log_file, 'a') ) {
 		return;
 	}
@@ -3364,7 +3400,7 @@ add_filter( 'plugin_action_links', 'ninjafirewall_settings_link', 10, 2);
 
 /* ================================================================== */
 
-function get_blog_timezone() {
+function nfw_get_blogtimezone() {
 
 	// Try to get the user timezone from WP configuration...
 	$tzstring = get_option( 'timezone_string' );
@@ -3382,14 +3418,14 @@ function get_blog_timezone() {
 }
 /* ================================================================== */
 
-function check_email_alert() {
+function nfw_check_emailalert() {
 
 	global $nfw_options;
 
-	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 1 ) ) {
-		$recipient = $nfw_options['alert_email'];
-	} else {
+	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 2 ) ) {
 		$recipient = get_option('admin_email');
+	} else {
+		$recipient = $nfw_options['alert_email'];
 	}
 
 	global $current_user;
@@ -3431,7 +3467,7 @@ function check_email_alert() {
 		);
 
 		// Get timezone :
-		get_blog_timezone();
+		nfw_get_blogtimezone();
 
 		if ( substr_count($a_3, ',') ) {
 			$alert_array[$a_1][0] .= 's';
@@ -3460,37 +3496,23 @@ function nfw_dashboard_widgets() {
 
     wp_add_dashboard_widget( 'nfw_dashboard_welcome', 'NinjaFirewall Statistics', 'nfw_stats_widget' );
  }
+
 function nfw_stats_widget(){
+
 	$critical = $high = $medium = $upload = $total = 0;
-	if (! file_exists( plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log' ) ) {
+	$stat_file = plugin_dir_path(__FILE__) . 'log/stats_' . date( 'Y-m' ) . '.log';
+	if ( file_exists( $stat_file ) ) {
+		$nfw_stat = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 	} else {
-		if (! $fh = @fopen( plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log', 'r') ) {
-			echo '<strong>NinjaFirewall error:</strong> cannot open logfile <code>' . plugin_dir_path(__FILE__) . 'log/firewall_' . date( 'Y-m' ) . '.log</code>';
-			return;
-		}
-		// Retrieve all lines :
-		while (! feof( $fh) ) {
-			$line = fgets( $fh);
-			if (preg_match( '/^\[.+?\]\s+\[(.+?)\]\s+(?:\[.+?\]\s+){3}\[(1|2|3|4|5|6)\]/', $line, $match) ) {
-				if ( $match[2] == 1) {
-					$medium++;
-				} elseif ( $match[2] == 2) {
-					$high++;
-				} elseif ( $match[2] == 3) {
-					$critical++;
-				} elseif ( $match[2] == 5) {
-					$upload++;
-				}
-			}
-		}
-		fclose( $fh);
-		$total = $critical + $high + $medium;
-		if ( $total ) {
-			$coef = 100 / $total;
-			$critical = round( $critical * $coef, 2);
-			$high = round( $high * $coef, 2);
-			$medium = round( $medium * $coef, 2);
-		}
+		$nfw_stat = '0:0:0:0:0:0:0:0:0:0';
+	}
+	list($tmp, $medium, $high, $critical, $tmp, $upload, $tmp, $tmp, $tmp, $tmp) = explode(':', $nfw_stat . ':');
+	$total = $critical + $high + $medium;
+	if ( $total ) {
+		$coef = 100 / $total;
+		$critical = round( $critical * $coef, 2);
+		$high = round( $high * $coef, 2);
+		$medium = round( $medium * $coef, 2);
 	}
 	echo '
 	<table border="0" width="100%">
