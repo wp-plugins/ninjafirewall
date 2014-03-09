@@ -251,7 +251,7 @@ function nfw_upgrade() {
 		if ( $tmp_data ) {
 			// Try to re-create the widget stats file :
 			$stat_file = plugin_dir_path(__FILE__) . 'log/stats_' . date( 'Y-m' ) . '.log';
-			$nfw_stat = '0:0:0:0:0:0:0:0:0:0';
+			$nfw_stat = array('0', '0', '0', '0', '0', '0', '0', '0', '0', '0');
 			$stats_lines = explode( PHP_EOL, $tmp_data );
 			foreach ( $stats_lines as $line ) {
 				if (preg_match( '/^\[.+?\]\s+\[.+?\]\s+(?:\[.+?\]\s+){3}\[([0-9])\]/', $line, $match) ) {
