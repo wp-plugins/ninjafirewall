@@ -16,10 +16,17 @@ $wp_config = '/foo/bar/wp-config.php';
 
 
 // Users of Cloudflare CDN:
-if (! empty($_SERVER["HTTP_CF_CONNECTING_IP"]) ) {
+if (! empty($_SERVER["HTTP_CF_CONNECTING_IP"]) &&
+   filter_var($_SERVER["HTTP_CF_CONNECTING_IP"], FILTER_VALIDATE_IP) ) {
 	$_SERVER["REMOTE_ADDR"] = $_SERVER["HTTP_CF_CONNECTING_IP"];
 }
 
+
+// Users of Incapsula CDN:
+if (! empty($_SERVER["HTTP_INCAP_CLIENT_IP"]) &&
+   filter_var($_SERVER["HTTP_INCAP_CLIENT_IP"], FILTER_VALIDATE_IP) ) {
+	$_SERVER["REMOTE_ADDR"] = $_SERVER["HTTP_INCAP_CLIENT_IP"];
+}
 
 
 // Whitelist/blacklist whatever you want:

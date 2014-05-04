@@ -1,3 +1,8 @@
+Options -Indexes
+##############################################
+# Only *.png files can be accessed directly. #
+# Access to any other files MUST be blocked  #
+##############################################
 Order Deny,Allow
 Deny from all
 <FilesMatch "\.png$">

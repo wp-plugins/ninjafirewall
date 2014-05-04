@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-03-07 21:01:24                                       |
+ | REVISION: 2014-04-25 19:35:42                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -21,11 +21,11 @@
  | GNU General Public License for more details.                        |
  +---------------------------------------------------------------------+
 */
-if ($_SERVER['SCRIPT_FILENAME'] == __FILE__) { die('Forbidden'); }
+if (strpos($_SERVER['SCRIPT_NAME'], '/plugins/ninjafirewall/') !== FALSE) { die('Forbidden !'); }
 if (defined('NFW_STATUS')) { return; }
 
 // Used for benchmarks purpose :
-$nfw_starttime = microtime(true);
+$nfw_['fw_starttime'] = microtime(true);
 
 // Brute-force attack detection :
 if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
@@ -34,15 +34,16 @@ if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
 
 // Optional NinjaFirewall configuration file
 // ( see http://nintechnet.com/nfwp/1.1.3/ ) :
-if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
-	$res = @include($file);
+if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+	$nfw_['res'] = @include($nfw_['file']);
 	// Allow and stop filtering :
-	if ( $res == 'ALLOW' ) {
+	if ( $nfw_['res'] == 'ALLOW' ) {
 		define( 'NFW_STATUS', 20 );
+		unset($nfw_);
 		return;
 	}
 	// Reject immediately :
-	if ( $res == 'BLOCK' ) {
+	if ( $nfw_['res'] == 'BLOCK' ) {
 		header('HTTP/1.1 403 Forbidden');
 		header('Status: 403 Forbidden');
 		die('403 Forbidden');
@@ -61,88 +62,90 @@ if (empty ($wp_config)) {
 if (! file_exists($wp_config) ) {
 	// set the error flag and return :
 	define( 'NFW_STATUS', 1 );
+	unset($nfw_);
+	unset($wp_config);
 	return;
 }
-if (! $fh = fopen($wp_config, 'r') ) {
+if (! $nfw_['fh'] = fopen($wp_config, 'r') ) {
 	define( 'NFW_STATUS', 2 );
+	unset($nfw_);
+	unset($wp_config);
 	return;
 }
+
 // Fetch WP configuration:
-while (! feof($fh)) {
-	$line = fgets($fh);
-	if ( preg_match('/^\s*define\s*\(\s*\'DB_NAME\'\s*,\s*\'(.+?)\'/', $line, $match) ) {
-		$DB_NAME = $match[1];
-	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_USER\'\s*,\s*\'(.+?)\'/', $line, $match) ) {
-		$DB_USER = $match[1];
-	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_PASSWORD\'\s*,\s*\'(.+?)\'/', $line, $match) ) {
-		$DB_PASSWORD = $match[1];
-	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_HOST\'\s*,\s*\'(.+?)\'/', $line, $match) ) {
-		$DB_HOST = $match[1];
-	} elseif ( preg_match('/^\s*\$table_prefix\s*=\s*\'(.+?)\'/', $line, $match) ) {
-		$table_prefix = $match[1];
+while (! feof($nfw_['fh'])) {
+	$nfw_['line'] = fgets($nfw_['fh']);
+	if ( preg_match('/^\s*define\s*\(\s*\'DB_NAME\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+		$nfw_['DB_NAME'] = $nfw_['match'][1];
+	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_USER\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+		$nfw_['DB_USER'] = $nfw_['match'][1];
+	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_PASSWORD\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+		$nfw_['DB_PASSWORD'] = $nfw_['match'][1];
+	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_HOST\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+		$nfw_['DB_HOST'] = $nfw_['match'][1];
+	} elseif ( preg_match('/^\s*\$table_prefix\s*=\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+		$nfw_['table_prefix'] = $nfw_['match'][1];
 	}
 }
-fclose($fh);
-
-if ( (! isset($DB_NAME)) || (! isset($DB_USER)) || (! isset($DB_PASSWORD)) ||	(! isset($DB_HOST)) || (! isset($table_prefix)) ) {
+fclose($nfw_['fh']);
+unset($wp_config);
+if ( (! isset($nfw_['DB_NAME'])) || (! isset($nfw_['DB_USER'])) || (! isset($nfw_['DB_PASSWORD'])) ||	(! isset($nfw_['DB_HOST'])) || (! isset($nfw_['table_prefix'])) ) {
 	define( 'NFW_STATUS', 3 );
+	unset($nfw_);
 	return;
 }
 
 // So far, so good. Connect to the DB:
-@$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASSWORD, $DB_NAME);
-
-// We don't want any PHP script (incl. potential backdoor/shell scripts
-// left on the server) to inherit the DB credentials from us, do we ?
-$DB_HOST = $DB_USER = $DB_PASSWORD = $DB_NAME = '';
+@$nfw_['mysqli'] = new mysqli($nfw_['DB_HOST'], $nfw_['DB_USER'], $nfw_['DB_PASSWORD'], $nfw_['DB_NAME']);
 
 if ( mysqli_connect_error() ) {
 	define( 'NFW_STATUS', 4 );
-	$table_prefix = '';
+	unset($nfw_);
 	return;
 }
-$table_prefix = @$mysqli->real_escape_string($table_prefix);
+$nfw_['table_prefix'] = @$nfw_['mysqli']->real_escape_string($nfw_['table_prefix']);
 
 // Fetch our user options table:
-if (! $result = @$mysqli->query('SELECT * FROM `' . $table_prefix . 'options` WHERE `option_name` = \'nfw_options\'')) {
+if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['table_prefix'] . "options` WHERE `option_name` = 'nfw_options'")) {
 	define( 'NFW_STATUS', 5 );
-	$table_prefix = '';
-	$mysqli->close();
+	$nfw_['mysqli']->close();
+	unset($nfw_);
 	return;
 }
-if (! $options = @$result->fetch_object() ) {
+if (! $nfw_['options'] = @$nfw_['result']->fetch_object() ) {
 	define( 'NFW_STATUS', 6 );
-	$table_prefix = '';
-	$mysqli->close();
+	$nfw_['mysqli']->close();
+	unset($nfw_);
 	return;
 }
-$result->close();
+$nfw_['result']->close();
 
-$nfw_options = unserialize($options->option_value);
+$nfw_['nfw_options'] = unserialize($nfw_['options']->option_value);
 
 // Are we supposed to do anything ?
-if ( empty($nfw_options['enabled']) ) {
-	$table_prefix = '';
-	$mysqli->close();
+if ( empty($nfw_['nfw_options']['enabled']) ) {
+	$nfw_['mysqli']->close();
 	define( 'NFW_STATUS', 20 );
+	unset($nfw_);
 	return;
 }
 
 // Force SSL for admin and logins ?
-if (! empty($nfw_options['force_ssl']) ) {
+if (! empty($nfw_['nfw_options']['force_ssl']) ) {
 	define('FORCE_SSL_ADMIN', true);
 }
 // Disable the plugin and theme editor ?
-if (! empty($nfw_options['disallow_edit']) ) {
+if (! empty($nfw_['nfw_options']['disallow_edit']) ) {
 	define('DISALLOW_FILE_EDIT', true);
 }
 // Disable plugin and theme update/installation ?
-if (! empty($nfw_options['disallow_mods']) ) {
+if (! empty($nfw_['nfw_options']['disallow_mods']) ) {
 	define('DISALLOW_FILE_MODS', true);
 }
 
-// E-mail alerts
-$a_msg = '';
+// Event notifications :
+$nfw_['a_msg'] = '';
 // plugins.php
 if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 	if ( isset( $_REQUEST['action2'] )) {
@@ -154,24 +157,24 @@ if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 	if ( isset( $_REQUEST['action'] )  ) {
 		if ( $_REQUEST['action'] == 'update-selected' ) {
 			if (! empty( $_POST['checked'] ) ) {
-				$a_msg = '1:4:' . @implode(", ", $_POST['checked']);
+				$nfw_['a_msg'] = '1:4:' . @implode(", ", $_POST['checked']);
 			}
 		} elseif ( $_REQUEST['action'] == 'activate' ) {
-			$a_msg = '1:3:' . @$_REQUEST['plugin'];
+			$nfw_['a_msg'] = '1:3:' . @$_REQUEST['plugin'];
 		} elseif ( $_REQUEST['action'] == 'activate-selected' ) {
 			if (! empty( $_POST['checked'] ) ) {
-				$a_msg = '1:3:' . @implode(", ", $_POST['checked']);
+				$nfw_['a_msg'] = '1:3:' . @implode(", ", $_POST['checked']);
 			}
 		} elseif ( $_REQUEST['action'] == 'deactivate' ) {
-			$a_msg = '1:5:' . @$_REQUEST['plugin'];
+			$nfw_['a_msg'] = '1:5:' . @$_REQUEST['plugin'];
 		} elseif ( ( $_REQUEST['action'] == 'deactivate-selected' ) ){
 			if (! empty( $_POST['checked'] ) ) {
-				$a_msg = '1:5:' . @implode(", ", $_POST['checked']);
+				$nfw_['a_msg'] = '1:5:' . @implode(", ", $_POST['checked']);
 			}
 		} elseif ( ( $_REQUEST['action'] == 'delete-selected' ) &&
 			( isset($_REQUEST['verify-delete'])) ) {
 			if (! empty( $_POST['checked'] ) ) {
-				$a_msg = '1:6:' . @implode(", ", $_POST['checked']);
+				$nfw_['a_msg'] = '1:6:' . @implode(", ", $_POST['checked']);
 			}
 		}
 	}
@@ -179,9 +182,9 @@ if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 } elseif ( strpos($_SERVER['SCRIPT_NAME'], '/themes.php' ) !== FALSE ) {
 	if ( isset( $_GET['action'] )  ) {
 		if ( $_GET['action'] == 'activate' ) {
-			$a_msg = '2:3:' . @$_GET['stylesheet'];
+			$nfw_['a_msg'] = '2:3:' . @$_GET['stylesheet'];
 		} elseif ( $_GET['action'] == 'delete' ) {
-			$a_msg = '2:4:' . @$_GET['stylesheet'];
+			$nfw_['a_msg'] = '2:4:' . @$_GET['stylesheet'];
 		}
 	}
 // update.php
@@ -189,20 +192,20 @@ if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 	if ( isset( $_GET['action'] )  ) {
 		if ( $_REQUEST['action'] == 'update-selected' ) {
 			if (! empty( $_POST['checked'] ) ) {
-				$a_msg = '1:4:' . @implode(", ", $_POST['checked']);
+				$nfw_['a_msg'] = '1:4:' . @implode(", ", $_POST['checked']);
 			}
 		} elseif ( $_GET['action'] == 'upgrade-plugin' ) {
-			$a_msg = '1:4:' . @$_REQUEST['plugin'];
+			$nfw_['a_msg'] = '1:4:' . @$_REQUEST['plugin'];
 		} elseif ( $_GET['action'] == 'activate-plugin' ) {
-			$a_msg = '1:3:' . @$_GET['plugins'];
+			$nfw_['a_msg'] = '1:3:' . @$_GET['plugins'];
 		} elseif ( $_GET['action'] == 'install-plugin' ) {
-			$a_msg = '1:2:' . @$_REQUEST['plugin'];
+			$nfw_['a_msg'] = '1:2:' . @$_REQUEST['plugin'];
 		} elseif ( $_GET['action'] == 'upload-plugin' ) {
-			$a_msg = '1:1:' . @$_FILES['pluginzip']['name'];
+			$nfw_['a_msg'] = '1:1:' . @$_FILES['pluginzip']['name'];
 		} elseif ( $_GET['action'] == 'install-theme' ) {
-			$a_msg = '2:2:' . @$_REQUEST['theme'];
+			$nfw_['a_msg'] = '2:2:' . @$_REQUEST['theme'];
 		} elseif ( $_GET['action'] == 'upload-theme' ) {
-			$a_msg = '2:1:' . @$_FILES['themezip']['name'];
+			$nfw_['a_msg'] = '2:1:' . @$_FILES['themezip']['name'];
 		}
 	}
 // update-core.php
@@ -210,86 +213,86 @@ if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 	if ( isset( $_GET['action'] )  ) {
 		if ( $_GET['action'] == 'do-plugin-upgrade' ) {
 			if (! empty( $_POST['checked'] ) ) {
-				$a_msg = '1:4:' . @implode(", ", $_POST['checked']);
+				$nfw_['a_msg'] = '1:4:' . @implode(", ", $_POST['checked']);
 			}
 		} elseif ( $_GET['action'] == 'do-core-upgrade' ) {
-			$a_msg = '3:1:' . @$_POST['version'];
+			$nfw_['a_msg'] = '3:1:' . @$_POST['version'];
 		}
 	}
 }
-if ( $a_msg ) {
+if ( $nfw_['a_msg'] ) {
 	// Enable alerts flag :
-	define('NFW_ALERT', $a_msg);
+	define('NFW_ALERT', $nfw_['a_msg']);
 }
 
 // Do not scan/filter WordPress admin (if logged in) ?
 if (! session_id() ) { session_start(); }
 if (! empty($_SESSION['nfw_goodguy']) ) {
-	$table_prefix = '';
-	$mysqli->close();
+	$nfw_['mysqli']->close();
 	// for testing purpose (used during the installation process) :
 	if (! empty( $_POST['nfw_test'] ) ) {
 		define( 'NFW_IT_WORKS', true );
 	}
 	define( 'NFW_STATUS', 20 );
+	unset($nfw_);
 	return;
 }
 
 // Hide PHP notice/error messages ?
-if (! empty($nfw_options['php_errors']) ) {
+if (! empty($nfw_['nfw_options']['php_errors']) ) {
 	@error_reporting(0);
 	@ini_set('display_errors', 0);
 }
 
 // Ignore localhost & private IP address spaces ?
-if (! empty($nfw_options['allow_local_ip']) && preg_match("/^(?:::ffff:)?(?:127|10|172\.(?:1[6-9]|2[0-9]|3[0-1])|192\.168)\./", $_SERVER['REMOTE_ADDR']) ) {
-	$table_prefix = '';
-	$mysqli->close();
+if (! empty($nfw_['nfw_options']['allow_local_ip']) && ! filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) ) {
+	$nfw_['mysqli']->close();
+	unset($nfw_);
 	define( 'NFW_STATUS', 20 );
 	return;
 }
 
 // HTTP_HOST is an IP ?
-if ( (! empty($nfw_options['no_host_ip'])) && (preg_match('/^[\d.:]+$/', $_SERVER['HTTP_HOST'])) ) {
+if (! empty($nfw_['nfw_options']['no_host_ip']) && @filter_var(parse_url('http://'.$_SERVER['HTTP_HOST'], PHP_URL_HOST), FILTER_VALIDATE_IP) ) {
 	nfw_log('HTTP_HOST is an IP', $_SERVER['HTTP_HOST'], 1, 0);
    nfw_block();
 }
 
 // Scan HTTP traffic only... ?
-if ( (@$nfw_options['scan_protocol'] == 1) && ($_SERVER['SERVER_PORT'] == 443) ) {
-	$table_prefix = '';
-	$mysqli->close();
+if ( (@$nfw_['nfw_options']['scan_protocol'] == 1) && ($_SERVER['SERVER_PORT'] == 443) ) {
+	$nfw_['mysqli']->close();
+	unset($nfw_);
 	define( 'NFW_STATUS', 20 );
 	return;
 }
 // ...or HTTPS only ?
-if ( (@$nfw_options['scan_protocol'] == 2) && ($_SERVER['SERVER_PORT'] != 443) ) {
-	$table_prefix = '';
-	$mysqli->close();
+if ( (@$nfw_['nfw_options']['scan_protocol'] == 2) && ($_SERVER['SERVER_PORT'] != 443) ) {
+	$nfw_['mysqli']->close();
 	define( 'NFW_STATUS', 20 );
+	unset($nfw_);
 	return;
 }
 
 // block POST without Referer header ?
-if ( (! empty($nfw_options['referer_post']) ) && ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_SERVER['HTTP_REFERER'])) ) {
+if ( (! empty($nfw_['nfw_options']['referer_post']) ) && ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_SERVER['HTTP_REFERER'])) ) {
 	nfw_log('POST method without Referer header', $_SERVER['REQUEST_METHOD'], 1, 0);
    nfw_block();
 }
 
 // Block access to WordPress XML-RPC API ?
-if ( (! empty($nfw_options['no_xmlrpc'])) && (strpos($_SERVER['SCRIPT_NAME'], $nfw_options['no_xmlrpc']) !== FALSE) ) {
+if ( (! empty($nfw_['nfw_options']['no_xmlrpc'])) && (strpos($_SERVER['SCRIPT_NAME'], $nfw_['nfw_options']['no_xmlrpc']) !== FALSE) ) {
 	nfw_log('Access to WordPress XML-RPC API', $_SERVER['SCRIPT_NAME'], 1, 0);
    nfw_block();
 }
 
 // POST request in the themes folder ?
-if ( (! empty($nfw_options['no_post_themes'])) && ($_SERVER['REQUEST_METHOD'] == 'POST') && (strpos($_SERVER['SCRIPT_NAME'], $nfw_options['no_post_themes']) !== FALSE) ) {
+if ( (! empty($nfw_['nfw_options']['no_post_themes'])) && ($_SERVER['REQUEST_METHOD'] == 'POST') && (strpos($_SERVER['SCRIPT_NAME'], $nfw_['nfw_options']['no_post_themes']) !== FALSE) ) {
 	nfw_log('POST request in the themes folder', $_SERVER['SCRIPT_NAME'], 2, 0);
    nfw_block();
 }
 
 // Block direct access to any PHP file located in wp_dir :
-if ( (! empty($nfw_options['wp_dir'])) && (preg_match( '`' . $nfw_options['wp_dir'] . '`', $_SERVER['SCRIPT_NAME'])) ) {
+if ( (! empty($nfw_['nfw_options']['wp_dir'])) && (preg_match( '`' . $nfw_['nfw_options']['wp_dir'] . '`', $_SERVER['SCRIPT_NAME'])) ) {
 	nfw_log('Forbidden direct access to PHP script', $_SERVER['SCRIPT_NAME'], 2, 0);
    nfw_block();
 }
@@ -298,55 +301,55 @@ if ( (! empty($nfw_options['wp_dir'])) && (preg_match( '`' . $nfw_options['wp_di
 nfw_check_upload();
 
 // Fetch our rules table :
-if (! $result = @$mysqli->query('SELECT * FROM `' . $table_prefix . 'options` WHERE `option_name` = \'nfw_rules\'')) {
+if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['table_prefix'] . "options` WHERE `option_name` = 'nfw_rules'")) {
 	define( 'NFW_STATUS', 7 );
-	$table_prefix = '';
-	$mysqli->close();
+	$nfw_['mysqli']->close();
+	unset($nfw_);
 	return;
 }
 
-$table_prefix = '';
-
-if (! $rules = @$result->fetch_object() ) {
+if (! $nfw_['rules'] = @$nfw_['result']->fetch_object() ) {
 	define( 'NFW_STATUS', 8 );
-	$mysqli->close();
+	$nfw_['mysqli']->close();
+	unset($nfw_);
 	return;
 }
-$result->close();
+$nfw_['result']->close();
 
 // Parse all requests and server variables :
-nfw_check_request( unserialize($rules->option_value) );
+nfw_check_request( unserialize($nfw_['rules']->option_value), $nfw_['nfw_options'] );
 
 // Sanitise requests/variables if needed :
-if (! empty($nfw_options['get_sanitise']) && ! empty($_GET) ){
+if (! empty($nfw_['nfw_options']['get_sanitise']) && ! empty($_GET) ){
 	$_GET = nfw_sanitise( $_GET, 1, 'GET');
 }
-if (! empty($nfw_options['post_sanitise']) && ! empty($_POST) ){
+if (! empty($nfw_['nfw_options']['post_sanitise']) && ! empty($_POST) ){
 	$_POST = nfw_sanitise( $_POST, 1, 'POST');
 }
-if (! empty($nfw_options['request_sanitise']) && ! empty($_REQUEST) ){
+if (! empty($nfw_['nfw_options']['request_sanitise']) && ! empty($_REQUEST) ){
 	$_REQUEST = nfw_sanitise( $_REQUEST, 1, 'REQUEST');
 }
-if (! empty($nfw_options['cookies_sanitise']) && ! empty($_COOKIE) ) {
+if (! empty($nfw_['nfw_options']['cookies_sanitise']) && ! empty($_COOKIE) ) {
 	$_COOKIE = nfw_sanitise( $_COOKIE, 1, 'COOKIE');
 }
-if (! empty($nfw_options['ua_sanitise']) && ! empty($_SERVER['HTTP_USER_AGENT']) ) {
+if (! empty($nfw_['nfw_options']['ua_sanitise']) && ! empty($_SERVER['HTTP_USER_AGENT']) ) {
 	$_SERVER['HTTP_USER_AGENT'] = nfw_sanitise( $_SERVER['HTTP_USER_AGENT'], 1, 'HTTP_USER_AGENT');
 }
-if (! empty($nfw_options['referer_sanitise']) && ! empty($_SERVER['HTTP_REFERER']) ) {
+if (! empty($nfw_['nfw_options']['referer_sanitise']) && ! empty($_SERVER['HTTP_REFERER']) ) {
 	$_SERVER['HTTP_REFERER'] = nfw_sanitise( $_SERVER['HTTP_REFERER'], 1, 'HTTP_REFERER');
 }
-if (! empty($nfw_options['php_path_i']) && ! empty($_SERVER['PATH_INFO']) ) {
+if (! empty($nfw_['nfw_options']['php_path_i']) && ! empty($_SERVER['PATH_INFO']) ) {
 	$_SERVER['PATH_INFO'] = nfw_sanitise( $_SERVER['PATH_INFO'], 2, 'PATH_INFO');
 }
-if (! empty($nfw_options['php_path_t']) && ! empty($_SERVER['PATH_TRANSLATED']) ) {
+if (! empty($nfw_['nfw_options']['php_path_t']) && ! empty($_SERVER['PATH_TRANSLATED']) ) {
 	$_SERVER['PATH_TRANSLATED'] = nfw_sanitise( $_SERVER['PATH_TRANSLATED'], 2, 'PATH_TRANSLATED');
 }
-if (! empty($nfw_options['php_self']) && ! empty($_SERVER['PHP_SELF']) ) {
+if (! empty($nfw_['nfw_options']['php_self']) && ! empty($_SERVER['PHP_SELF']) ) {
 	$_SERVER['PHP_SELF'] = nfw_sanitise( $_SERVER['PHP_SELF'], 2, 'PHP_SELF');
 }
 
-@$mysqli->close();
+@$nfw_['mysqli']->close();
+unset($nfw_);
 define( 'NFW_STATUS', 20 );
 // That's all !
 return;
@@ -357,13 +360,13 @@ function nfw_check_upload() {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	global $nfw_options;
+	global $nfw_;
 
 	// Fetch uploaded files, if any :
 	$f_uploaded = nfw_fetch_uploads();
 
 	// Uploads are disallowed :
-	if ( empty($nfw_options['uploads']) ) {
+	if ( empty($nfw_['nfw_options']['uploads']) ) {
 		$tmp = '';
 		foreach ($f_uploaded as $key => $value) {
 			// Empty field ?
@@ -380,7 +383,7 @@ function nfw_check_upload() {
 		foreach ($f_uploaded as $key => $value) {
 			if (! $f_uploaded[$key]['name']) { continue; }
 			// Sanitise filename ?
-			if (! empty($nfw_options['sanitise_fn']) ) {
+			if (! empty($nfw_['nfw_options']['sanitise_fn']) ) {
 				$tmp = '';
 				$f_uploaded[$key]['name'] = preg_replace('/[^\w\.\-]/i', 'X', $f_uploaded[$key]['name'], -1, $count);
 				if ($count) {
@@ -429,11 +432,10 @@ function nfw_fetch_uploads() {
 
 /* ================================================================== */
 
-function nfw_check_request( $nfw_rules ) {
+function nfw_check_request( $nfw_rules, $nfw_options ) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	global $nfw_options;
 	$b64_post = array();
 
 	foreach ($nfw_rules as $rules_id => $rules_values) {
@@ -534,7 +536,7 @@ function nfw_sanitise( $str, $how, $msg ) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	global $mysqli;
+	global $nfw_;
 
 	if (! isset($str) ) {
 		return null;
@@ -556,7 +558,7 @@ function nfw_sanitise( $str, $how, $msg ) {
 		//	Applies to $_SERVER['PATH_INFO'], $_SERVER['PATH_TRANSLATED']
 		//	and $_SERVER['PHP_SELF']
 		if ($how == 1) {
-			$str2 = $mysqli->real_escape_string($str);
+			$str2 = $nfw_['mysqli']->real_escape_string($str);
 			$str2 = str_replace('`', '\`', $str2);
 		} else {
 			$str2 = str_replace(	array('\\', "'", '"', "\x0d", "\x0a", "\x00", "\x1a", '`', '<', '>'),
@@ -594,18 +596,14 @@ function nfw_block() {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	global $nfw_options;
-	global $num_incident;
-	global $mysqli;
-	global $table_prefix;
+	global $nfw_;
 
 	// We don't block anyone if we are running in debugging mode :
-	if (! empty($nfw_options['debug']) ) {
+	if (! empty($nfw_['nfw_options']['debug']) ) {
 		return;
 	}
 
-	$table_prefix = '';
-	@$mysqli->close();
+	@$nfw_['mysqli']->close();
 
 	$http_codes = array(
       400 => '400 Bad Request', 403 => '403 Forbidden',
@@ -614,23 +612,18 @@ function nfw_block() {
    );
 
 	// Prepare the page to display to the blocked user :
-	$tmp = str_replace( '%%NUM_INCIDENT%%', $num_incident,  $nfw_options['blocked_msg'] );
-	$ninja_logo = substr( __FILE__, 0, -16) . 'images/ninjafirewall_75.png';
-	if (file_exists( $ninja_logo ) ) {
-		$tmp = @str_replace( '%%NINJA_LOGO%%', '<img title="NinjaFirewall" src="data:image/png;base64,' .
-		base64_encode( file_get_contents( $ninja_logo ) ) . '" width="75" height="75">', $tmp );
-	} else {
-		$tmp = @str_replace( '%%NINJA_LOGO%%', '', $tmp );
-	}
+	if (empty($nfw_['num_incident']) ) { $nfw_['num_incident'] = '000000'; }
+	$tmp = str_replace( '%%NUM_INCIDENT%%', $nfw_['num_incident'],  $nfw_['nfw_options']['blocked_msg'] );
+	$tmp = @str_replace( '%%NINJA_LOGO%%', '<img title="NinjaFirewall" src="' . $nfw_['nfw_options']['logo'] . '" width="75" height="75">', $tmp );
 	$tmp = str_replace( '%%REM_ADDRESS%%', $_SERVER['REMOTE_ADDR'], $tmp );
 
 	if (! headers_sent() ) {
-		header('HTTP/1.0 ' . $http_codes[$nfw_options['ret_code']] );
-		header('Status: ' .  $http_codes[$nfw_options['ret_code']] );
+		header('HTTP/1.0 ' . $http_codes[$nfw_['nfw_options']['ret_code']] );
+		header('Status: ' .  $http_codes[$nfw_['nfw_options']['ret_code']] );
 	}
 
 	echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' . "\n" .
-		'<html><head><title>NinjaFirewall: ' . $http_codes[$nfw_options['ret_code']] .
+		'<html><head><title>NinjaFirewall: ' . $http_codes[$nfw_['nfw_options']['ret_code']] .
 		'</title><style>body{font-family:sans-serif;font-size:13px;color:#000000;}</style></head><body bgcolor="white">' . $tmp . '</body></html>';
 	exit;
 }
@@ -641,25 +634,23 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	global $nfw_options;
-	global $num_incident;
-	global $nfw_starttime;
+	global $nfw_;
 
 	// Info/sanitise ? Don't block and do not issue any incident number :
 	if ( $loglevel == 6) {
-		$num_incident = '0000000';
+		$nfw_['num_incident'] = '0000000';
 		$http_ret_code = '200 OK';
 	} else {
 		// Debugging ? Don't block and do not issue any incident number
 		// but set loglevel to 7 (will display 'DEBUG_ON' in log) :
-		if (! empty($nfw_options['debug']) ) {
-			$num_incident = '0000000';
+		if (! empty($nfw_['nfw_options']['debug']) ) {
+			$nfw_['num_incident'] = '0000000';
 			$loglevel = 7;
 			$http_ret_code = '200 OK';
 		// Create a random incident number :
 		} else {
-			$num_incident = mt_rand(1000000, 9000000);
-			$http_ret_code = $nfw_options['ret_code'];
+			$nfw_['num_incident'] = mt_rand(1000000, 9000000);
+			$http_ret_code = $nfw_['nfw_options']['ret_code'];
 		}
 	}
 
@@ -684,8 +675,8 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	$cur_month = date('Y-m');
 
 	$log_dir = substr(__FILE__, 0, -16) . 'log/';
-	$stat_file = $log_dir. 'stats_' . $cur_month . '.log';
-	$log_file = $log_dir. 'firewall_' . $cur_month . '.log';
+	$stat_file = $log_dir. 'stats_' . $cur_month . '.php';
+	$log_file = $log_dir. 'firewall_' . $cur_month . '.php';
 
 	// Update stats :
 	if ( file_exists( $stat_file ) ) {
@@ -706,8 +697,8 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	}
 
    fwrite( $fh,
-      '[' . time() . '] ' . '[' . round( (microtime(true) - $nfw_starttime), 5) . '] ' .
-      '[' . $_SERVER['SERVER_NAME'] . '] ' . '[#' . $num_incident . '] ' .
+      '[' . time() . '] ' . '[' . round( (microtime(true) - $nfw_['fw_starttime']), 5) . '] ' .
+      '[' . $_SERVER['SERVER_NAME'] . '] ' . '[#' . $nfw_['num_incident'] . '] ' .
       '[' . $ruleid . '] ' .
       '[' . $loglevel . '] ' . '[' . $_SERVER['REMOTE_ADDR'] . '] ' .
       '[' . $http_ret_code . '] ' . '[' . $_SERVER['REQUEST_METHOD'] . '] ' .
@@ -729,7 +720,8 @@ function nfw_bfd() {
 		return;
 	}
 
-	global $nfw_options;
+	global $nfw_;
+
 	$now = time();
 	// Get config :
 	require($bf_conf_dir . '/nfwbfd.php');
@@ -771,7 +763,7 @@ function nfw_bfd() {
 				unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
 				// Setup HTTP ret code here, because we do not have access
 				// to the DB yet :
-				$nfw_options['ret_code'] = '401';
+				$nfw_['nfw_options']['ret_code'] = '401';
 				nfw_log('Brute-force attack detected', 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 2, 0);
 				// Force HTTP authentication :
 				nfw_check_auth($auth_name, $auth_pass, $auth_msg);
@@ -824,4 +816,3 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 
 /* ================================================================== */
 // EOF
-?>
