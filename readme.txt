@@ -1,9 +1,9 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet
-Tags: attack, backdoor, botnet, bruteforce, brute force, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XSS
+Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, XSS
 Requires at least: 3.3.0
-Tested up to: 3.8.1
-Stable tag: 1.1.8
+Tested up to: 3.9.0
+Stable tag: 1.1.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 * Full standalone web application firewall
 * Multi-site support
+* IPv6 compatible
 * Protects against RFI, LFI, XSS, code execution, SQL injections, brute-force scanners, shell scripts, backdoors and many other threats
 * Scans and/or sanitises GET / POST requests, HTTP / HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
 * Sanitises variables names and values
@@ -28,6 +29,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Blocks suspicious bots and scanners
 * Hides PHP error and notice messages
 * Blocks direct access to PHP scripts located inside specific directories
+* Blocks access to WordPress XML-RPC API
 * Whitelist option for WordPress administrator(s), localhost and private IP address spaces
 * Configurable HTTP return code and message
 * Rules editor to enable/disable built-in security rules
@@ -67,12 +69,74 @@ If you need help, click on the *Help* menu tab located in the upper right corner
 It does not require a registration process or an activation key to be installed or used.
 Because **we do not collect any user data**, we do not even know that you are using (and hopefully enjoying!) our product.
 
+= Need more security ? =
+
+Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall.com/wordpress/nfwplus.php "NinjaFirewall WP+")
+
+* Unix shared memory use for inter-process communication and blazing fast performances.
+* IP-based Access Control.
+* Role-based Access Control.
+* Country-based Access Control via geolocation.
+* URL-based Access Control.
+* Bot-based Access Control.
+* Antispam for comment and user regisration forms.
+* Rate limiting option to block aggressive bots, crawlers, web scrapers and HTTP DoS attacks.
+* Response body filter to scan the output of the HTML page right before it is sent to your visitors browser.
+* Better File uploads management.
+* Better logs management.
+* Full IPv6 compatibility.
+
+[NinjaFirewall WP+](http://ninjafirewall.com/wordpress/nfwplus.php "NinjaFirewall WP+"), the supercharged edition.
+
+
 = Requirements =
 
 * WordPress 3.3 or higher
 * PHP 5.3 or higher
 * Apache / Nginx / LiteSpeed
 * Unix-like OS (Linux, BSD) only
+
+== Frequently Asked Questions ==
+
+= Why is NinjaFirewall different from other security plugins for WordPress ? =
+
+NinjaFirewall sits between the attacker and WordPress. It can filter requests before they reach your blog and any of its plugins. This is how it works :
+
+`Attacker > HTTP server > PHP > NinjaFirewall > WordPress > Plugins`
+
+And this is how all WordPress plugins work :
+
+`Attacker > HTTP server > PHP > WordPress > Plugins`
+
+= Do I need root/administrator privileges to install NinjaFirewall ? =
+
+NinjaFirewall does not require any administrator privileges and is fully compatible with shared hosting accounts. You can install it from your WordPress admin console, just like a regular plugin.
+
+
+= Does it work with Nginx ? =
+
+NinjaFirewall works with any Unix-based HTTP server (Apache, Nginx, LiteSpeed etc). Please [follow these steps](http://wordpress.org/support/topic/nginx-instructions "").
+
+= Do I need to alter my PHP scripts ? =
+
+You do not need to make any modifications to your scripts. NinjaFirewall hooks all requests before they reach your scripts. It will even work with encoded scripts (ionCube, ZendGuard, SourceGuardian etc).
+
+= I moved my wp-config.php file to another directory. Will it work with NinjaFirewall ? =
+
+Since version 1.1.3, you can use an optional configuration file to tell NinjaFirewall where is located your WordPress configuration file, wp-config.php, if you moved it to another directory. Please [follow these steps](http://nintechnet.com/nfwp/1.1.3/ "").
+
+= Will NinjaFirewall detect the correct IP of my visitors if I am behind a CDN service like Cloudflare ? =
+
+You can use an optional configuration file to tell NinjaFirewall which IP to use. Please [follow these steps](http://nintechnet.com/nfwp/1.1.3/ "").
+
+= Will it slow down my site ? =
+
+Your visitors will not notice any difference with or without NinjaFirewall. From WordPress administration console, you can click "NinjaFirewall > Status" menu to see the benchmarks and statistics (the fastest, slowest and average time per request). NinjaFirewall is very fast, optimised, compact, requires very low system resources and [outperforms all other security plugins](http://nintechnet.com/wordpress-brute-force-detection-plugins-benchmarks.html "").
+By blocking dangerous requests and bots before WordPress is loaded, it will save bandwidth and reduce server load.
+
+= Is there any Windows version ? =
+
+NinjaFirewall works on Unix-like servers only. There is no Windows version and we do not expect to release any.
 
 
 == Installation ==
@@ -93,10 +157,17 @@ Because **we do not collect any user data**, we do not even know that you are us
 
 == Upgrade Notice ==
 
-= 1.1.8 =
+= 1.1.9 =
 This update installs a new set of security rules and fixes a few issues. See Changelog for more details.
 
 == Changelog ==
+
+= 1.1.9 =
+* NinjaFirewall is now fully compatible with IPv6.
+* All logs will have a .php extension in order to be protected by NinjaFirewall if the HTTP server does not support .htaccess (Nginx, Lighttpd, Cherokee, OpenLiteSpeed etc).
+* Fixed a small JS issue in the "Login Protection" page (the 'onChange' event wasn't working well with IE browsers).
+* The firewall blocked message will now return by default around 700 bytes only, instead of 8Kb.
+* Introducing a new supercharded edition of NinjaFirewall (see "WP+ Edition" page).
 
 = 1.1.8 =
 * Updated firewall rules.
@@ -183,4 +254,3 @@ This update installs a new set of security rules and fixes a few issues. See Cha
 
 = 1.1.5 =
 This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
-

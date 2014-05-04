@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-03-07 21:00:38                                       |
+ | REVISION: 2014-04-25 19:41:09                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -49,9 +49,15 @@ function nfw_install_1() {
 ?>
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(<?php echo plugins_url() ?>/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
+	<h2>NinjaFirewall (WP edition)</h2>
 	<br />
-	<p>Thank you for using NinjaFirewall (<font color=#21759B>WP</font> edition)&nbsp;!</p>
+	<?php
+		if (file_exists( dirname(plugin_dir_path(__FILE__)) . '/nfwplus') ) {
+		echo '<br /><div class="error settings-error"><p><strong>Error : </strong>You have a copy of NinjaFirewall (<font color=#21759B>WP+</font> edition) installed.<br />Please <strong>uninstall it completely</strong> before attempting to install NinjaFirewall (WP edition).</p></div></div></div></div></div></div></body></html>';
+		exit;
+	}
+	?>
+	<p>Thank you for using NinjaFirewall (WP edition)&nbsp;!</p>
 	<p>This installer will help you to make the setup process as quick and easy as possible. But before doing so, please read carefully the following lines:</p>
 	<p>Although NinjaFirewall looks like a regular plugin, it is not. It can be installed and configured from WordPress admin console, but it is a stand-alone Web Application Firewall that sits in front of WordPress. That means that it will hook, scan, reject and/or sanitise any HTTP/HTTPS request sent to a PHP script before it reaches WordPress and any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers backdoors &amp; shell scripts will be filtered by NinjaFirewall.</p>
 	<p>That's cool and makes NinjaFirewall a true firewall. And probably the most powerful security applications for WordPress. But just like any firewall, if you misuse it, you can get into serious problems and crash your site.</p>
@@ -60,7 +66,7 @@ function nfw_install_1() {
 	Do NOT attempt to perform any of the above operations using another application ( FTP, cPanel, Plesk etc), or to modify, rename, move, edit, or overwrite its files, EVEN when it is disabled.
 	<br />
 	<br />
-	<center><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ ) ?>" border="0" height="16" width="16">&nbsp;<strong>Failure to do so will almost always cause you to be locked out of your own site and/or to crash it</strong><br />&nbsp;</center>
+	<center><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ ) ?>" border="0" height="16" width="16">&nbsp;<strong>Failure to do so will almost always cause you to be locked out of your own site and/or to crash it.</strong><br />&nbsp;</center>
 	</div>
 	<br />
 	<h3>Privacy Policy</h3>
@@ -73,7 +79,7 @@ function nfw_install_1() {
 	<h3>Installation help &amp; troubleshooting</h3>
 	If you need some help regarding the installation, please consult our <a href="http://ninjafirewall.com/wordpress/help.php">site</a>.
 	<br />
-	We can install and configure your copy of NinjaFirewall (WP edition) <strong>for US$9.99 only</strong>&nbsp;! Send us your request using our secure <a class="links" href="https://secure.ninjafirewall.com/wordpress/contact.php?q=install">contact form</a>.
+	We can install and configure your copy of NinjaFirewall (WP edition) <strong>for USD 9.99 only</strong>&nbsp;! Send us your request using our secure <a class="links" href="https://secure.nintechnet.com/helpdesk/index.php">contact form</a>.
 	<br />
 	If you need technical support, please use the <a href="http://wordpress.org/support/plugin/ninjafirewall">support forum</a> at WordPress.org site.
 	<br />
@@ -102,7 +108,7 @@ function nfw_install_2a( $err ) {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
+	<h2>NinjaFirewall (WP edition)</h2>
 	<br />
 	<br />';
 	// error ?
@@ -111,7 +117,7 @@ function nfw_install_2a( $err ) {
 	}
 	echo '<br />
 	<form method="post">
-	<p>Your WordPress directory (<code>' . ABSPATH . '</code>) is different from your website document root (<code>' . getenv('DOCUMENT_ROOT') . '</code>). Because it is possible to install WordPress into a subdirectory, but have the blog exist in the site root, NinjaFirewall needs to know its exact location.</p>
+	<p>Your WordPress directory (<code>' . ABSPATH . '</code>) is different from your website document root (<code>' . getenv('DOCUMENT_ROOT') . '/</code>). Because it is possible to install WordPress into a subdirectory, but have the blog exist in the site root, NinjaFirewall needs to know its exact location.</p>
 	<p>Please edit the path below <strong style="color:red">only</strong> if you have manually modified your WordPress root directory as described in the <a href="http://codex.wordpress.org/Giving_WordPress_Its_Own_Directory" target="_blank">Giving WordPress Its Own Directory</a> article.</p>
 	<p><strong style="color:red">Most users should not change this value.</strong></p>
 	<p>Path to WordPress root directory: <input class="regular-text code" type="text" name="abspath" value="' . ABSPATH . '"></p>
@@ -153,7 +159,7 @@ function nfw_install_2( $err ) {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
+	<h2>NinjaFirewall (WP edition)</h2>
 	<br />
 	<br />';
 
@@ -462,7 +468,7 @@ function nfw_install_2( $err ) {
 		<input class="button-primary" type="submit" name="config_button" value="' . $button_title . '">
 	</form>
 	</div>
-	<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;Need help with the installation ? We can install and configure your copy of NinjaFirewall (WP edition) <strong>for US$9.99 only</strong>&nbsp;!<br />Send us your request using our secure <a class="links" href="https://secure.ninjafirewall.com/wordpress/contact.php?q=install">contact form</a>.</p>';
+	<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;Need help with the installation ? We can install and configure your copy of NinjaFirewall (WP edition) <strong>for USD 9.99 only</strong>&nbsp;!<br />Send us your request using our secure <a class="links" href="https://secure.nintechnet.com/helpdesk/index.php">contact form</a>.</p>';
 
 }
 
@@ -602,7 +608,7 @@ function nfw_install_3() {
 	echo '
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url(' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>NinjaFirewall (<font color=#21759B>WP</font> edition)</h2>
+	<h2>NinjaFirewall (WP edition)</h2>
 	<br />
 	<br />';
 
@@ -651,6 +657,7 @@ function nfw_default_conf() {
 
 	// New ones :
 	$nfw_options_new = array(
+		'logo'				=> plugins_url() . '/ninjafirewall/images/ninjafirewall_75.png',
 		'enabled'			=> 1,
 		'ret_code'			=> 403,
 		'blocked_msg'		=> NFW_DEFAULT_MSG,
