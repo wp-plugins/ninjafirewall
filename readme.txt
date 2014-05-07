@@ -108,9 +108,9 @@ And this is how all WordPress plugins work :
 
 `Attacker > HTTP server > PHP > WordPress > Plugins`
 
-= Do I need root/administrator privileges to install NinjaFirewall ? =
+= Do I need root privileges to install NinjaFirewall ? =
 
-NinjaFirewall does not require any administrator privileges and is fully compatible with shared hosting accounts. You can install it from your WordPress admin console, just like a regular plugin.
+NinjaFirewall does not require any root privileges and is fully compatible with shared hosting accounts. You can install it from your WordPress admin console, just like a regular plugin.
 
 
 = Does it work with Nginx ? =
