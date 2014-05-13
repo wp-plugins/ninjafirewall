@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.1.9
+Version: 1.2.0
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,10 +19,10 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-05-04 00:24:03                                       |
+ | REVISION: 2014-05-13 15:17:32                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.1.9' );
+define( 'NFW_ENGINE_VERSION', '1.2.0' );
 define( 'NFW_RULES_VERSION',  '20140504' );
  /*
  +---------------------------------------------------------------------+
@@ -334,7 +334,7 @@ add_action( 'wp_login', 'nfw_login_hook', 10, 2 );
 
 function nfw_send_loginemail( $user_login, $whoami ) {
 
-	global $nfw_options;
+	$nfw_options = get_option( 'nfw_options' );
 
 	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 2 ) ) {
 		$recipient = get_option('admin_email');

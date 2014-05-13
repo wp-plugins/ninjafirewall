@@ -2,8 +2,8 @@
 Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, XSS
 Requires at least: 3.3.0
-Tested up to: 3.9.0
-Stable tag: 1.1.9
+Tested up to: 3.9.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,10 @@ Monitored events:
 
 NinjaFirewall is very fast, optimised, compact, and requires very low system resource.
 Don't believe us? See for yourself: download and install [GoDaddy's P3 Plugin Performance Profiler](http://wordpress.org/plugins/p3-profiler/ "") and compare NinjaFirewall performances with other security plugins.
+
+= Non-Intrusive User Interface =
+
+NinjaFirewall looks and feels like a built-in WordPress feature. It does not contain intrusive banners, warnings or flashy colors. It uses the WordPress simple and clean interface and is also smartphone-friendly.
 
 = Contextual Help =
 
@@ -147,20 +151,23 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Screenshots ==
 
-1. NinjaFirewall stats page.
-2. NinjaFirewall options page.
-3. NinjaFirewall Policies 1/4
-4. NinjaFirewall Policies 2/4
-5. NinjaFirewall Policies 3/4
-6. NinjaFirewall Policies 4/4
-7. NinjaFirewall log
+1. NinjaFirewall Options page.
+2. NinjaFirewall Policies page.
+3. NinjaFirewall Statistics page.
+4. NinjaFirewall Brute Force Protection page.
+5. NinjaFirewall event Notifications page.
+6. NinjaFirewall Log page.
+7. NinjaFirewall Contextual Help.
 
 == Upgrade Notice ==
 
-= 1.1.9 =
+= 1.2.0 =
 This update installs a new set of security rules and fixes a few issues. See Changelog for more details.
 
 == Changelog ==
+
+= 1.2.0 =
+* Fixed a bug introduced in v1.1.9 : login alerts were not sent. Sorry for the inconvenience.
 
 = 1.1.9 =
 * NinjaFirewall is now fully compatible with IPv6.
