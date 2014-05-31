@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.2.0
+Version: 1.2.1
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,10 +19,10 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-05-13 15:17:32                                       |
+ | REVISION: 2014-05-29 16:08:41                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.2.0' );
+define( 'NFW_ENGINE_VERSION', '1.2.1' );
 define( 'NFW_RULES_VERSION',  '20140504' );
  /*
  +---------------------------------------------------------------------+
@@ -201,6 +201,11 @@ function nfw_upgrade() {
 		if ( empty( $nfw_options['logo']) ) {
 			$nfw_options['logo'] = plugins_url() . '/ninjafirewall/images/ninjafirewall_75.png';
 		}
+		// v1.2.1 update -------------------------------------------------
+		if ( empty( $nfw_options['fg_mtime']) ) {
+			$nfw_options['fg_enable'] = 0;
+			$nfw_options['fg_mtime'] = 1;
+		}
 		// ---------------------------------------------------------------
 	}
 
@@ -316,6 +321,9 @@ function nfw_login_hook( $user_login, $user ) {
 		}
 	}
 
+	// Do some housework if needed :
+	nfw_housework();
+
 	if ( $admin_flag == 2 ) {
 		if (! empty( $nfw_options['wl_admin']) ) {
 			// Set the goodguy flag :
@@ -329,7 +337,26 @@ function nfw_login_hook( $user_login, $user ) {
 }
 
 add_action( 'wp_login', 'nfw_login_hook', 10, 2 );
+/* ================================================================== */
 
+function nfw_housework() {
+
+	// Clean/delete cache folder & temp files :
+
+	$nfw_options = get_option( 'nfw_options' );
+
+	// File Guard temp files :
+	if (! empty( $nfw_options['fg_enable']) ) {
+		$path = plugin_dir_path(__FILE__) . '/log/cache/';
+		foreach( glob($path . "fg_*.php") as $file) {
+			$stat = stat( $file );
+			// Delete it if is too old :
+			if ( time() - $nfw_options['fg_mtime'] * 3660 > $stat['ctime'] ) {
+				unlink($file);
+			}
+		}
+	}
+}
 /* ================================================================== */
 
 function nfw_send_loginemail( $user_login, $whoami ) {
@@ -454,6 +481,11 @@ function ninjafirewall_admin_menu() {
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Firewall Policies', 'Firewall Policies', 'manage_options',
 		'nfsubpolicies', 'nf_sub_policies' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubpolicies' );
+
+	// File Guard menu :
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: File Guard', 'File Guard', 'manage_options',
+		'nfsubfileguard', 'nf_sub_fileguard' );
+	add_action( 'load-' . $menu_hook, 'help_nfsubfileguard' );
 
 	// Network menu (multisite only) :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Network', 'Network', 'manage_network',
@@ -1207,10 +1239,10 @@ function ssl_warn() {
 		$get_sanitise = 1;
 	}
 	?>
-	<h3>HTTP GET variables</h3>
+	<h3>HTTP GET variable</h3>
 	<table class="form-table">
 		<tr>
-			<th scope="row">Scan <code>GET</code> variables</th>
+			<th scope="row">Scan <code>GET</code> variable</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[get_scan]" value="1"<?php checked( $get_scan, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1220,7 +1252,7 @@ function ssl_warn() {
 			</td>
 		</tr>
 		<tr>
-			<th scope="row">Sanitise <code>GET</code> variables</th>
+			<th scope="row">Sanitise <code>GET</code> variable</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[get_sanitise]" value="1"<?php checked( $get_sanitise, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1248,10 +1280,10 @@ function ssl_warn() {
 		$post_b64 = 1;
 	}
 	?>
-	<h3>HTTP POST variables</h3>
+	<h3>HTTP POST variable</h3>
 	<table class="form-table">
 		<tr valign="top">
-			<th scope="row">Scan <code>POST</code> variables</th>
+			<th scope="row">Scan <code>POST</code> variable</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[post_scan]" value="1"<?php checked( $post_scan, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1261,7 +1293,7 @@ function ssl_warn() {
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row">Sanitise <code>POST</code> variables</th>
+			<th scope="row">Sanitise <code>POST</code> variable</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120" style="vertical-align:top;">
 				<label><input type="radio" name="nfw_options[post_sanitise]" value="1"<?php checked( $post_sanitise, 1 ) ?>>&nbsp;Yes</label>
@@ -1271,7 +1303,7 @@ function ssl_warn() {
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row">Decode base64-encoded <code>POST</code> variables</th>
+			<th scope="row">Decode base64-encoded <code>POST</code> variable</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[post_b64]" value="1"<?php checked( $post_b64, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1289,10 +1321,10 @@ function ssl_warn() {
 		$request_sanitise = 1;
 	}
 	?>
-	<h3>HTTP REQUEST variables</h3>
+	<h3>HTTP REQUEST variable</h3>
 	<table class="form-table">
 		<tr>
-			<th scope="row">Sanitise <code>REQUEST</code> variables</th>
+			<th scope="row">Sanitise <code>REQUEST</code> variable</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[request_sanitise]" value="1"<?php checked( $request_sanitise, 1 ) ?>>&nbsp;Yes</label>
@@ -1483,13 +1515,13 @@ function ssl_warn() {
 			</td>
 		</tr>
 		<tr>
-			<th scope="row">Do not scan traffic coming from localhost (127.0.0.1) and private IP address spaces</th>
+			<th scope="row">Scan traffic coming from localhost and private IP address spaces</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
-				<label><input type="radio" name="nfw_options[allow_local_ip]" value="1"<?php checked( $allow_local_ip, 1 ) ?>>&nbsp;Yes (default)</label>
-			</td>
+				<label><input type="radio" name="nfw_options[allow_local_ip]" value="0"<?php checked( $allow_local_ip, 0 ) ?>>&nbsp;Yes</label>
+				</td>
 			<td align="left">
-				<label><input type="radio" name="nfw_options[allow_local_ip]" value="0"<?php checked( $allow_local_ip, 0 ) ?>>&nbsp;No</label>
+				<label><input type="radio" name="nfw_options[allow_local_ip]" value="1"<?php checked( $allow_local_ip, 1 ) ?>>&nbsp;No (default)</label>
 			</td>
 		</tr>
 	</table>
@@ -2265,6 +2297,128 @@ function nf_sub_policies_default() {
 
 /* ================================================================== */
 
+function nf_sub_fileguard() {
+
+	// File Guard :
+
+	if (! current_user_can( 'manage_options' ) ) {
+		wp_die( 'You do not have sufficient permissions to access this page.',
+			'', array( 'response' => 403 ) );
+	}
+
+	$nfw_options = get_option( 'nfw_options' );
+
+	?>
+	<script>
+	function toogle_table(off) {
+		if ( off == 1 ) {
+			document.getElementById('fg_table').style.display = '';
+		} else if ( off == 2 ) {
+			document.getElementById('fg_table').style.display = 'none';
+		}
+		return;
+	}
+	function is_number(id) {
+		var e = document.getElementById(id);
+		if (! e.value ) { return }
+		if (! /^[1-9][0-9]?$/.test(e.value) ) {
+			alert("Please enter a number from 1 to 99.");
+			e.value = e.value.substring(0, e.value.length-1);
+		}
+	}
+	function check_fields() {
+		if (! document.nfwfilefuard.elements["nfw_options[fg_mtime]"]){
+			alert("Please enter a number from 1 to 99.");
+			return false;
+		}
+		return true;
+	}
+	</script>
+
+	<div class="wrap">
+		<div style="width:54px;height:52px;background-image:url(<?php echo plugins_url() ?>/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
+		<h2>File Guard</h2>
+		<br />
+	<?php
+
+	// Ensure cache folder is writable :
+	if (! is_writable( plugin_dir_path(__FILE__) . '/log/cache/') ) {
+		echo '<div class="error settings-error"><p><strong>The cache directory ('. plugin_dir_path(__FILE__) . '/log/cache/) is not writable. Please change its permissions (0777 or equivalent).</strong></p></div>';
+	}
+
+	// Saved ?
+	if ( isset( $_POST['nfw_options']) ) {
+		nf_sub_fileguard_save();
+		$nfw_options = get_option( 'nfw_options' );
+		echo '<div class="updated settings-error"><p><strong>Your changes have been saved.</strong></p></div>';
+	}
+
+	if ( empty($nfw_options['fg_enable']) ) {
+		$nfw_options['fg_enable'] = 0;
+	} else {
+		$nfw_options['fg_enable'] = 1;
+	}
+	if ( empty($nfw_options['fg_mtime']) || ! preg_match('/^[1-9][0-9]?$/', $nfw_options['fg_mtime']) ) {
+		$nfw_options['fg_mtime'] = 1;
+	}
+
+	?>
+	<br />
+	<form method="post" name="nfwfilefuard" onSubmit="return check_fields();">
+		<table class="form-table">
+			<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
+				<th scope="row">Enable File Guard</th>
+				<td align="left">
+				<label><input type="radio" id="fgenable" name="nfw_options[fg_enable]" value="1"<?php checked($nfw_options['fg_enable'], 1) ?> onclick="toogle_table(1);">&nbsp;Yes</label>
+				</td>
+				<td align="left">
+				<label><input type="radio" name="nfw_options[fg_enable]" value="0"<?php checked($nfw_options['fg_enable'], 0) ?> onclick="toogle_table(2);">&nbsp;No (default)</label>
+				</td>
+			</tr>
+		</table>
+
+		<br />
+
+		<table class="form-table" border="0" id="fg_table"<?php echo $nfw_options['fg_enable'] == 1 ? '' : ' style="display:none"' ?>>
+			<tr valign="top">
+				<th scope="row">Real-time detection</th>
+				<td align="left">
+					Monitor file activity and send an alert when someone is accessing a PHP script that was modified or created less than <input maxlength="2" size="2" value="<?php echo $nfw_options['fg_mtime'] ?>" name="nfw_options[fg_mtime]" id="mtime" onkeyup="is_number('mtime')" type="text" title="Enter a value from 1 to 99" /> hour(s) ago.
+				</td>
+			</tr>
+		</table>
+		<br />
+		<input class="button-primary" type="submit" name="Save" value="Save File Guard options" />
+	</form>
+	</div>
+<?php
+
+}
+
+/* ================================================================== */
+
+function nf_sub_fileguard_save() {
+
+	$nfw_options = get_option( 'nfw_options' );
+
+	// Disable or enable the File Guard ?
+	if ( empty($_POST['nfw_options']['fg_enable']) ) {
+		$nfw_options['fg_enable'] = 0;
+	} else {
+		$nfw_options['fg_enable'] = $_POST['nfw_options']['fg_enable'];
+	}
+
+	if ( empty($_POST['nfw_options']['fg_mtime']) || ! preg_match('/^[1-9][0-9]?$/', $_POST['nfw_options']['fg_mtime']) ) {
+		$nfw_options['fg_mtime'] = 1;
+	} else {
+		$nfw_options['fg_mtime'] = $_POST['nfw_options']['fg_mtime'];
+	}
+	// Update :
+	update_option( 'nfw_options', $nfw_options );
+
+}
+/* ================================================================== */
+
 function nf_sub_network() {
 
 	// Network menu (multi-site only) :
@@ -2713,7 +2867,7 @@ function nf_sub_loginprot() {
 		if ( ( empty($auth_name) ) ||  ( @strlen( $auth_pass ) != 40 ) ) {
 			$auth_name= '';
 		}
-		if ( ( empty($auth_msg) ) || ( @strlen( $auth_msg ) > 100 ) ) {
+		if ( ( empty($auth_msg) ) || ( @strlen( $auth_msg ) > 150 ) ) {
 			$auth_msg = 'Access restricted';
 		}
 	}
@@ -2813,8 +2967,8 @@ function nf_sub_loginprot() {
 			<td align="left">
 				User:&nbsp;<input maxlength="20" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" title="Enter user name (from 6 to 20 characters)" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="20" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" title="Enter password (from 6 to 20 characters)" />
 				<br /><span class="description">&nbsp;User and Password must be from 6 to 20 characters.</span>
-				<br /><br />Message (max. 100 characters):<br />
-				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="100" size="50" name="nfw_options[auth_msg]">
+				<br /><br />Message (max. 150 characters):<br />
+				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="150" size="50" name="nfw_options[auth_msg]">
 			</td>
 		</tr>
 	</table>
@@ -2924,10 +3078,11 @@ function nf_sub_loginprot_save() {
 	} elseif ( (strlen($_POST['nfw_options']['auth_pass']) < 6 ) || (strlen($_POST['nfw_options']['auth_pass']) > 20 ) ) {
 		return( 'Error : password must be from 6 to 20 characters.');
 	} else {
-		$auth_pass = sha1( $_POST['nfw_options']['auth_pass'] );
+		// Use stripslashes() to prevent WordPress from escaping the password:
+		$auth_pass = sha1( stripslashes( $_POST['nfw_options']['auth_pass'] ) );
 	}
 
-	if ( ( empty($_POST['nfw_options']['auth_msg']) ) || ( @strlen( $_POST['nfw_options']['auth_msg'] ) > 100 ) ) {
+	if ( ( empty($_POST['nfw_options']['auth_msg']) ) || ( @strlen( $_POST['nfw_options']['auth_msg'] ) > 150 ) ) {
 		$auth_msg = 'Access restricted';
 	} else {
 		$auth_msg = str_replace( array('\\', "'", '"', '<', '>', '&'),	"",  stripslashes( $_POST['nfw_options']['auth_msg']) );

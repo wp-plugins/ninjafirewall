@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-04-25 19:41:09                                       |
+ | REVISION: 2014-05-30 00:02:58                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -65,23 +65,23 @@ function nfw_install_1() {
 	<br />
 	Do NOT attempt to perform any of the above operations using another application ( FTP, cPanel, Plesk etc), or to modify, rename, move, edit, or overwrite its files, EVEN when it is disabled.
 	<br />
+	Do NOT attempt to migrate your site with NinjaFirewall installed. Uninstall it, migrate your site and reinstall it.
+	<br />
 	<br />
 	<center><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ ) ?>" border="0" height="16" width="16">&nbsp;<strong>Failure to do so will almost always cause you to be locked out of your own site and/or to crash it.</strong><br />&nbsp;</center>
 	</div>
 	<br />
 	<h3>Privacy Policy</h3>
-	<a href="http://nintechnet.com/" title="nintechnet.com">NinTechNet</a> strictly follows the WordPress <a href="http://wordpress.org/plugins/about/guidelines/">Plugin Developer guidelines</a>&nbsp;: our software, NinjaFirewall (WP edition), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.<br />Because <strong>we do not collect any user data</strong>, we do not even know that you are using (and hopefully enjoying!) our product.
+	<a href="http://nintechnet.com/" title="nintechnet.com">NinTechNet</a> strictly follows the WordPress <a href="http://wordpress.org/plugins/about/guidelines/">Plugin Developer guidelines</a>&nbsp;: our software, NinjaFirewall (WP edition), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.<br />Because <strong>we do not collect any user data</strong>, we do not even know that you are using (and hopefully enjoying&nbsp;!) our product.
 	<br />
 	<h3>License</h3>
 	This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 	<br />
 	This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details (LICENSE.TXT).<br />&nbsp;
 	<h3>Installation help &amp; troubleshooting</h3>
+	If you need technical support, please use our <a href="http://wordpress.org/support/plugin/ninjafirewall">support forum</a> at WordPress.org site.
+	<br />
 	If you need some help regarding the installation, please consult our <a href="http://ninjafirewall.com/wordpress/help.php">site</a>.
-	<br />
-	We can install and configure your copy of NinjaFirewall (WP edition) <strong>for USD 9.99 only</strong>&nbsp;! Send us your request using our secure <a class="links" href="https://secure.nintechnet.com/helpdesk/index.php">contact form</a>.
-	<br />
-	If you need technical support, please use the <a href="http://wordpress.org/support/plugin/ninjafirewall">support forum</a> at WordPress.org site.
 	<br />
 	<br />
 	<form method="post">
@@ -118,7 +118,7 @@ function nfw_install_2a( $err ) {
 	echo '<br />
 	<form method="post">
 	<p>Your WordPress directory (<code>' . ABSPATH . '</code>) is different from your website document root (<code>' . getenv('DOCUMENT_ROOT') . '/</code>). Because it is possible to install WordPress into a subdirectory, but have the blog exist in the site root, NinjaFirewall needs to know its exact location.</p>
-	<p>Please edit the path below <strong style="color:red">only</strong> if you have manually modified your WordPress root directory as described in the <a href="http://codex.wordpress.org/Giving_WordPress_Its_Own_Directory" target="_blank">Giving WordPress Its Own Directory</a> article.</p>
+	<p>Please edit the path below only if you have manually modified your WordPress root directory as described in the <a href="http://codex.wordpress.org/Giving_WordPress_Its_Own_Directory" target="_blank">Giving WordPress Its Own Directory</a> article.</p>
 	<p><strong style="color:red">Most users should not change this value.</strong></p>
 	<p>Path to WordPress root directory: <input class="regular-text code" type="text" name="abspath" value="' . ABSPATH . '"></p>
 	<br />
@@ -467,8 +467,7 @@ function nfw_install_2( $err ) {
 		<input type="hidden" name="nfw_test" value="1">
 		<input class="button-primary" type="submit" name="config_button" value="' . $button_title . '">
 	</form>
-	</div>
-	<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16">&nbsp;Need help with the installation ? We can install and configure your copy of NinjaFirewall (WP edition) <strong>for USD 9.99 only</strong>&nbsp;!<br />Send us your request using our secure <a class="links" href="https://secure.nintechnet.com/helpdesk/index.php">contact form</a>.</p>';
+	</div>';
 
 }
 
@@ -714,7 +713,10 @@ function nfw_default_conf() {
 		'enum_archives'	=> 0,
 		'enum_login'		=> 1,
 		// v1.1.6 :
-		'request_sanitise'=> 0
+		'request_sanitise'=> 0,
+		// v1.2.1 :
+		'fg_enable'			=>	0,
+		'fg_mtime'			=>	1,
 	);
 
 	// save new options but do not overwrite existing ones :
