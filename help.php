@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-03-07 21:00:24                                       |
+ | REVISION: 2014-05-27 21:00:24                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -44,8 +44,7 @@ function help_nfsubmain() {
 	get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
 	'<p>' . __( '<a href="http://ninjafirewall.com/wordpress/help.php" target="_blank">Installation help &amp; troubleshooting</a>' ) . '</p>' .
-	'<p>' . __( '<a href="http://wordpress.org/support/plugin/ninjafirewall/" target="_blank">Support Forums</a>' ) . '</p>' .
-	'<p>' . __( '<a href="https://secure.ninjafirewall.com/wordpress/contact.php?q=install" target="_blank">Installation Request</a>' ) . '</p>'
+	'<p>' . __( '<a href="http://wordpress.org/support/plugin/ninjafirewall/" target="_blank">Support Forums</a>' ) . '</p>'
 )	;
 
 }
@@ -122,15 +121,15 @@ function help_nfsubpolicies() {
 		<li>File Uploads:<span class="description"> whether to allow/disallow file uploads.</span></li>
 		<li>Sanitise filenames:<span class="description"> any character that is not a letter <code>a-zA-Z</code>, a digit <code>0-9</code>, a dot <code>.</code>, a hyphen <code>-</code> or an underscore <code>_</code> will be removed from the filename and replaced with the <code>X</code> character.</span></li>
 
-		<strong>HTTP GET variables</strong>
-		<li>Whether to scan and/or sanitise <code>GET</code> variables.</li>
+		<strong>HTTP GET variable</strong>
+		<li>Whether to scan and/or sanitise the <code>GET</code> variable.</li>
 
-		<strong>HTTP POST variables</strong>
-		<li>Whether to scan and/or sanitise <code>POST</code> variables.</li>
-		<li>Decode base64-encoded <code>POST</code> variables:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for <code>POST</code> variables.</span></li>
+		<strong>HTTP POST variable</strong>
+		<li>Whether to scan and/or sanitise the <code>POST</code> variable.</li>
+		<li>Decode base64-encoded <code>POST</code> variable:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for the <code>POST</code> variable.</span></li>
 
-		<strong>HTTP REQUEST variables</strong>
-		<li>Whether to sanitise <code>REQUEST</code> variables.</li>
+		<strong>HTTP REQUEST variable</strong>
+		<li>Whether to sanitise the <code>REQUEST</code> variable.</li>
 
 		<strong>Cookies</strong>
 		<li>Whether to scan and/or sanitise <code>Cookies</code> requests.</li>
@@ -146,7 +145,7 @@ function help_nfsubpolicies() {
 		<strong>IPs</strong>
 		<li>Block localhost IP in <code>GET/POST</code> requests:<span class="description"> this option will block any <code>GET</code> or <code>POST</code> request containing the localhost IP (127.0.0.1). It can be useful to block SQL dumpers and various hacker\'s shell scripts.</span></li>
 		<li>Block HTTP requests with an IP in the <code>Host</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . $_SERVER['SERVER_ADDR'] . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
-		<li>Do not scan traffic coming from localhost (127.0.0.1) and private IP address spaces:<span class="description"> this option will ignore traffic from all non-routable private IPs (10.0.0.0 to 10.255.255.255, 172.16.0.0 to 172.31.255.255 and 192.168.0.0 to 192.168.255.255) as well as the localhost IP.</span></li>
+		<li>Scan traffic coming from localhost and private IP address spaces:<span class="description"> this option will ignore traffic from all non-routable private IPs (IPv4 and IPv6) as well as the localhost IP.</span></li>
 
 		<strong>PHP</strong>
 		<li>Block PHP built-in wrappers:<span class="description"> PHP has several wrappers for use with the filesystem functions. It is possible for an attacker to use them to bypass firewalls and various IDS to exploit remote and local file inclusions. This option lets you block any script attempting to pass a <code>php://</code>or a <code>data://</code> stream inside a <code>GET</code> or <code>POST</code> request, cookies, user agent and referrer variables.</span></li>
@@ -163,7 +162,7 @@ function help_nfsubpolicies() {
 		<li>Protect against username enumeration:<span class="description"> it is possible to enumerate usernames either through the WordPress author archives or the login page. Although this is not a vulnerability but a WordPress feature, some hackers use it to retrieve usernames in order to launch more accurate brute-force attacks. NinjaFirewall will not block the request but, if it is a failed login attempt, it will sanitise the error message returned by WordPress and, if it is an author archives scan, it will invalidate it and redirect the user to the blog index page.</span></li>
 		<li>Block access to WordPress XML-RPC API:<span class="description"> XML-RPC is a remote procedure call (RPC) protocol which uses XML to encode its calls and HTTP as a transport mechanism. WordPress has an XMLRPC API that can be accessed through the <code>xmlrpc.php</code> file. Since WordPress version 3.5, it is always activated and cannot be turned off. NinjaFirewall allows you to block any access to that file. This option is not enabled by default.</span></li>
 		<li>Block <code>POST</code> requests in the themes folder <code>/wp-content/themes</code>:<span class="description"> this option can be useful to block hackers from installing backdoor in the PHP theme files. However, because some custom themes may include an HTML form (contact, search form etc), this option is not enabled by default.</span></li>
-		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear. <font color="red"><strong>Warning:</strong></font> ensure that you can access your admin console from HTTPS (<a href="' . admin_url('/','https') . '" target="_blank">' . admin_url('/','https') . '</a>) <strong>before</strong> enabling this option, otherwise you will lock yourself out of your site&nbsp;!</span></li>
+		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear. <font color="red"><strong>Warning:</strong></font> ensure that you can access your admin console from HTTPS (<a href="' . admin_url('/','https') . '" target="_blank">' . admin_url('/','https') . '</a>) before enabling this option, otherwise you will lock yourself out of your site&nbsp;!</span></li>
 		<li>Disable the plugin and theme editor <code>DISALLOW_FILE_EDIT</code>:<span class="description"> disabling the plugin and theme editor provides an additional layer of security if a hacker gains access to a well-privileged user account.</span></li>
 		<li>Disable plugin and theme update/installation <code>DISALLOW_FILE_MODS</code>:<span class="description"> this option will block users being able to use the plugin and theme installation/update functionality from the WordPress admin area. Setting this constant also disables the Plugin and Theme editor.</span></li>
 
@@ -178,6 +177,19 @@ function help_nfsubpolicies() {
 }
 /* ================================================================== */
 
+function help_nfsubfileguard() {
+
+	// Web Filter :
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'fileguard01',
+		'title'     => 'File Guard',
+		'content'   => '<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
+		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailled alert (script name, IP, request, date and time).
+		<p>Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.</p>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</p>'
+	) );
+}
+/* ================================================================== */
 function help_nfsubnetwork() {
 
 	// Network (multisite version only) :

@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, XSS
 Requires at least: 3.3.0
 Tested up to: 3.9.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Scans and/or sanitises GET / POST requests, HTTP / HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
 * Sanitises variables names and values
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
+* Real-time detection (File Guard)
 * Blocks username enumeration scanning attempts through the author archives and the login page
 * Blocks/allows uploads, sanitises uploaded file names
 * Blocks suspicious bots and scanners
@@ -90,7 +91,7 @@ Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall
 * Better logs management.
 * Full IPv6 compatibility.
 
-[NinjaFirewall WP+](http://ninjafirewall.com/wordpress/nfwplus.php "NinjaFirewall WP+"), the supercharged edition.
+[Learn more](http://ninjafirewall.com/wordpress/nfwplus.php "") about the WP+ edition unique features. [Compare](http://ninjafirewall.com/wordpress/overview.php "") the WP and WP+ editions.
 
 
 = Requirements =
@@ -106,15 +107,17 @@ Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall
 
 NinjaFirewall sits between the attacker and WordPress. It can filter requests before they reach your blog and any of its plugins. This is how it works :
 
-`Attacker > HTTP server > PHP > NinjaFirewall > WordPress > Plugins`
+`Attacker > HTTP server > PHP > NinjaFirewall > WordPress`
 
 And this is how all WordPress plugins work :
 
 `Attacker > HTTP server > PHP > WordPress > Plugins`
 
+Unlike other security plugins, it will protect all PHP scripts, including those that aren't part of the WordPress package.
+
 = Do I need root privileges to install NinjaFirewall ? =
 
-NinjaFirewall does not require any root privileges and is fully compatible with shared hosting accounts. You can install it from your WordPress admin console, just like a regular plugin.
+NinjaFirewall does not require any root privilege and is fully compatible with shared hosting accounts. You can install it from your WordPress admin console, just like a regular plugin.
 
 
 = Does it work with Nginx ? =
@@ -161,10 +164,16 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Upgrade Notice ==
 
-= 1.2.0 =
-This update installs a new set of security rules and fixes a few issues. See Changelog for more details.
+= 1.2.1 =
+This update fixes a few issues. See Changelog for more details.
 
 == Changelog ==
+
+= 1.2.1 =
+* Added a new feature that can detect, in real-time, any access to a PHP file that was recently modified/created, and can alert the administrator (see new "File Guard" menu and its contextual help).
+* Added a call to `stripslashes()` to prevent WordPress from escaping quotes in the "Login Protection" password.
+* The length of the "Login Protection" message (realm) was increased from 100 to 150 characters.
+* Removed a small piece of code from the "Login Protection" that could block some browsers.
 
 = 1.2.0 =
 * Fixed a bug introduced in v1.1.9 : login alerts were not sent. Sorry for the inconvenience.

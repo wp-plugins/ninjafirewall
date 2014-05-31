@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-04-25 19:35:42                                       |
+ | REVISION: 2014-05-29 01:48:51                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -27,11 +27,6 @@ if (defined('NFW_STATUS')) { return; }
 // Used for benchmarks purpose :
 $nfw_['fw_starttime'] = microtime(true);
 
-// Brute-force attack detection :
-if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
-	nfw_bfd();
-}
-
 // Optional NinjaFirewall configuration file
 // ( see http://nintechnet.com/nfwp/1.1.3/ ) :
 if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
@@ -48,6 +43,11 @@ if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninj
 		header('Status: 403 Forbidden');
 		die('403 Forbidden');
 	}
+}
+
+// Brute-force attack detection :
+if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
+	nfw_bfd();
 }
 
 // We need to get access to the database but we cannot include/require()
@@ -252,12 +252,6 @@ if (! empty($nfw_['nfw_options']['allow_local_ip']) && ! filter_var($_SERVER['RE
 	return;
 }
 
-// HTTP_HOST is an IP ?
-if (! empty($nfw_['nfw_options']['no_host_ip']) && @filter_var(parse_url('http://'.$_SERVER['HTTP_HOST'], PHP_URL_HOST), FILTER_VALIDATE_IP) ) {
-	nfw_log('HTTP_HOST is an IP', $_SERVER['HTTP_HOST'], 1, 0);
-   nfw_block();
-}
-
 // Scan HTTP traffic only... ?
 if ( (@$nfw_['nfw_options']['scan_protocol'] == 1) && ($_SERVER['SERVER_PORT'] == 443) ) {
 	$nfw_['mysqli']->close();
@@ -273,6 +267,46 @@ if ( (@$nfw_['nfw_options']['scan_protocol'] == 2) && ($_SERVER['SERVER_PORT'] !
 	return;
 }
 
+// File Guard :
+if (! empty($nfw_['nfw_options']['fg_enable']) ) {
+	// Stat() the requested script :
+	if ( $nfw_['nfw_options']['fg_stat'] = stat( $_SERVER['SCRIPT_FILENAME'] ) ) {
+		// Was is created/modified lately ?
+		if ( time() - $nfw_['nfw_options']['fg_mtime'] * 3660 < $nfw_['nfw_options']['fg_stat']['ctime'] ) {
+			// Did we check it already ?
+			if (! file_exists( dirname(__DIR__) . '/log/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php' ) ) {
+				// We need to alert the admin :
+				if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
+					$nfw_['nfw_options']['tzstring'] = 'UTC';
+				}
+				date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+				$nfw_['nfw_options']['m_headers'] = 'From: "NinjaFirewall" <postmaster@'. $_SERVER['SERVER_NAME'] . ">\r\n\r\n";
+				$nfw_['nfw_options']['m_subject'] = '[NinjaFirewall] Alert: File Guard detection';
+				$nfw_['nfw_options']['m_msg'] = 	'Someone accessed a script that was modified or created less than ' .
+					$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
+					'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n" .
+					'SERVER_NAME    : ' . $_SERVER['SERVER_NAME'] . "\n" .
+					'SCRIPT_FILENAME: ' . $_SERVER['SCRIPT_FILENAME'] . "\n" .
+					'REQUEST_URI    : ' . $_SERVER['REQUEST_URI'] . "\n" .
+					'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n\n" .
+					'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
+					'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
+				mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
+				// Remember it so that we don't spam the admin each time the script is requested :
+				touch(dirname(__DIR__) . '/log/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php');
+				// Log it :
+				nfw_log('Access to a script modified/created less than ' . $nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago', $_SERVER['SCRIPT_FILENAME'], 2, 0);
+			}
+		}
+	}
+}
+
+// HTTP_HOST is an IP ?
+if (! empty($nfw_['nfw_options']['no_host_ip']) && @filter_var(parse_url('http://'.$_SERVER['HTTP_HOST'], PHP_URL_HOST), FILTER_VALIDATE_IP) ) {
+	nfw_log('HTTP_HOST is an IP', $_SERVER['HTTP_HOST'], 1, 0);
+   nfw_block();
+}
+
 // block POST without Referer header ?
 if ( (! empty($nfw_['nfw_options']['referer_post']) ) && ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_SERVER['HTTP_REFERER'])) ) {
 	nfw_log('POST method without Referer header', $_SERVER['REQUEST_METHOD'], 1, 0);
@@ -281,7 +315,7 @@ if ( (! empty($nfw_['nfw_options']['referer_post']) ) && ($_SERVER['REQUEST_METH
 
 // Block access to WordPress XML-RPC API ?
 if ( (! empty($nfw_['nfw_options']['no_xmlrpc'])) && (strpos($_SERVER['SCRIPT_NAME'], $nfw_['nfw_options']['no_xmlrpc']) !== FALSE) ) {
-	nfw_log('Access to WordPress XML-RPC API', $_SERVER['SCRIPT_NAME'], 1, 0);
+	nfw_log('Access to WordPress XML-RPC API', $_SERVER['SCRIPT_NAME'], 2, 0);
    nfw_block();
 }
 
@@ -375,7 +409,7 @@ function nfw_check_upload() {
       }
       if ( $tmp ) {
 			// Log and block :
-			nfw_log('File upload attempt', rtrim($tmp, ' '), 2, 0);
+			nfw_log('File upload attempt', rtrim($tmp, ' '), 3, 0);
 			nfw_block();
 		}
 	// Uploads are allowed :
@@ -764,7 +798,7 @@ function nfw_bfd() {
 				// Setup HTTP ret code here, because we do not have access
 				// to the DB yet :
 				$nfw_['nfw_options']['ret_code'] = '401';
-				nfw_log('Brute-force attack detected', 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 2, 0);
+				nfw_log('Brute-force attack detected', 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 3, 0);
 				// Force HTTP authentication :
 				nfw_check_auth($auth_name, $auth_pass, $auth_msg);
 				return;
@@ -775,20 +809,6 @@ function nfw_bfd() {
 		$fstat = stat( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
 		if ( ($now - $fstat['mtime']) > $bf_bantime * 60 ) {
 			unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
-		}
-	}
-
-	// If this is an attempt to log in, ensure all variables, values and
-	// cookies are okay, otherwise we reject it right away :
-	if ( ($_SERVER['REQUEST_METHOD'] == 'POST') && (! isset($_REQUEST['action'])) ) {
-		if ( (empty($_POST['log'])) || (empty($_POST['pwd'])) || (empty($_POST['wp-submit'])) ||
-			(empty($_POST['testcookie'])) || (empty($_COOKIE['wordpress_test_cookie'])) ) {
-			// Record it :
-			@file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND);
-			// Force HTTP authentication :
-			nfw_check_auth($auth_name, $auth_pass, $auth_msg);
-			return;
-
 		}
 	}
 
