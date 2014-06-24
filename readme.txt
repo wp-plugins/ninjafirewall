@@ -170,7 +170,7 @@ This update fixes a few issues. See Changelog for more details.
 == Changelog ==
 
 = 1.2.2 =
-* Added protection against the new ThimThumb 0-day vulnerability (http://seclists.org/fulldisclosure/2014/Jun/117). UPGRADE IMMEDIATELY !
+* Added protection against the new ThimThumb 0-day vulnerability (http://seclists.org/fulldisclosure/2014/Jun/117). UPGRADE IMMEDIATELY.
 
 = 1.2.1 =
 * Added a new feature that can detect, in real-time, any access to a PHP file that was recently modified/created, and can alert the administrator (see new "File Guard" menu and its contextual help).
