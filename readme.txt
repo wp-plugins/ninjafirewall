@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, XSS
 Requires at least: 3.3.0
 Tested up to: 3.9.1
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -164,10 +164,13 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Upgrade Notice ==
 
-= 1.2.1 =
+= 1.2.2 =
 This update fixes a few issues. See Changelog for more details.
 
 == Changelog ==
+
+= 1.2.2 =
+* Added protection against the new ThimThumb 0-day vulnerability (http://seclists.org/fulldisclosure/2014/Jun/117). UPGRADE IMMEDIATELY !
 
 = 1.2.1 =
 * Added a new feature that can detect, in real-time, any access to a PHP file that was recently modified/created, and can alert the administrator (see new "File Guard" menu and its contextual help).
