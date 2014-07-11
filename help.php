@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-05-27 21:00:24                                       |
+ | REVISION: 2014-07-11 14:18:55                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -145,7 +145,7 @@ function help_nfsubpolicies() {
 		<strong>IPs</strong>
 		<li>Block localhost IP in <code>GET/POST</code> requests:<span class="description"> this option will block any <code>GET</code> or <code>POST</code> request containing the localhost IP (127.0.0.1). It can be useful to block SQL dumpers and various hacker\'s shell scripts.</span></li>
 		<li>Block HTTP requests with an IP in the <code>Host</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . $_SERVER['SERVER_ADDR'] . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
-		<li>Scan traffic coming from localhost and private IP address spaces:<span class="description"> this option will ignore traffic from all non-routable private IPs (IPv4 and IPv6) as well as the localhost IP.</span></li>
+		<li>Scan traffic coming from localhost and private IP address spaces:<span class="description"> this option will allow the firewall to scan traffic from all non-routable private IPs (IPv4 and IPv6) as well as the localhost IP. We recommend to keep it enabled if you have a private network (2 or more servers interconnected).</span></li>
 
 		<strong>PHP</strong>
 		<li>Block PHP built-in wrappers:<span class="description"> PHP has several wrappers for use with the filesystem functions. It is possible for an attacker to use them to bypass firewalls and various IDS to exploit remote and local file inclusions. This option lets you block any script attempting to pass a <code>php://</code>or a <code>data://</code> stream inside a <code>GET</code> or <code>POST</code> request, cookies, user agent and referrer variables.</span></li>
@@ -184,7 +184,7 @@ function help_nfsubfileguard() {
 		'id'        => 'fileguard01',
 		'title'     => 'File Guard',
 		'content'   => '<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
-		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailled alert (script name, IP, request, date and time).
+		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time).
 		<p>Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.</p>
 		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</p>'
 	) );
@@ -224,11 +224,14 @@ function help_nfsublogin() {
 		<div style="height:250px;">
 		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the login protection from this page too.</span></p>
 
-		<p>By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.</p>
+		<p>By processing incoming HTTP requests <strong>before your blog and any of its plugins</strong>, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
+		<br />
+		The protection applies to the <code>wp-login.php</code> script and can also include the <code>xmlrpc.php</code> one. We recommend to enable it for both scripts.</p>
+
 		<p>You can select to enable the protection only if an attack is detected or to keep it always activated:</p>
 
 		<strong>Yes, if under attack :</strong>
-		<br />When too many login attempts are detected, it password-protects the login page (<code>wp-login.php</code>) immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).<br />
+		<br />When too many login attempts are detected, it password-protects the login page immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).<br />
 		<ul>
 		<li>Protect the login page against:<span class="description"> select the type of requests (<code>GET</code> and/or <code>POST</code>) to monitor.</span></li>
 		<li>Password-protect the login page:<span class="description"> enter the suitable threshold that will trigger the protection.</span></li>

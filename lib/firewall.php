@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-05-29 01:48:51                                       |
+ | REVISION: 2014-07-11 13:49:24                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -45,9 +45,11 @@ if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninj
 	}
 }
 
-// Brute-force attack detection :
+// Brute-force attack detection on login page and/or XMLRPC :
 if ( strpos($_SERVER['SCRIPT_NAME'], 'wp-login.php' ) !== FALSE ) {
-	nfw_bfd();
+	nfw_bfd(1);
+} elseif ( strpos($_SERVER['SCRIPT_NAME'], 'xmlrpc.php' ) !== FALSE ) {
+	nfw_bfd(2);
 }
 
 // We need to get access to the database but we cannot include/require()
@@ -99,7 +101,7 @@ if ( (! isset($nfw_['DB_NAME'])) || (! isset($nfw_['DB_USER'])) || (! isset($nfw
 // So far, so good. Connect to the DB:
 @$nfw_['mysqli'] = new mysqli($nfw_['DB_HOST'], $nfw_['DB_USER'], $nfw_['DB_PASSWORD'], $nfw_['DB_NAME']);
 
-if ( mysqli_connect_error() ) {
+if ($nfw_['mysqli']->connect_error) {
 	define( 'NFW_STATUS', 4 );
 	unset($nfw_);
 	return;
@@ -647,7 +649,7 @@ function nfw_block() {
 
 	// Prepare the page to display to the blocked user :
 	if (empty($nfw_['num_incident']) ) { $nfw_['num_incident'] = '000000'; }
-	$tmp = str_replace( '%%NUM_INCIDENT%%', $nfw_['num_incident'],  $nfw_['nfw_options']['blocked_msg'] );
+	$tmp = str_replace( '%%NUM_INCIDENT%%', $nfw_['num_incident'],  base64_decode($nfw_['nfw_options']['blocked_msg']) );
 	$tmp = @str_replace( '%%NINJA_LOGO%%', '<img title="NinjaFirewall" src="' . $nfw_['nfw_options']['logo'] . '" width="75" height="75">', $tmp );
 	$tmp = str_replace( '%%REM_ADDRESS%%', $_SERVER['REMOTE_ADDR'], $tmp );
 
@@ -658,7 +660,7 @@ function nfw_block() {
 
 	echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' . "\n" .
 		'<html><head><title>NinjaFirewall: ' . $http_codes[$nfw_['nfw_options']['ret_code']] .
-		'</title><style>body{font-family:sans-serif;font-size:13px;color:#000000;}</style></head><body bgcolor="white">' . $tmp . '</body></html>';
+		'</title><style>body{font-family:sans-serif;font-size:13px;color:#000000;}</style><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body bgcolor="white">' . $tmp . '</body></html>';
 	exit;
 }
 
@@ -744,7 +746,7 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 
 /* ================================================================== */
 
-function nfw_bfd() {
+function nfw_bfd($where) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
@@ -760,6 +762,11 @@ function nfw_bfd() {
 	// Get config :
 	require($bf_conf_dir . '/nfwbfd.php');
 
+	// Should it apply to the xmlrpc.php script as well ?
+	if ( $where == 2 && empty($bf_xmlrpc) ) {
+		return;
+	}
+
 	// Shall we always force HTTP authentication ?
 	if ( $bf_enable == 2 ) {
 		nfw_check_auth($auth_name, $auth_pass, $auth_msg);
@@ -767,16 +774,16 @@ function nfw_bfd() {
 	}
 
 	// Has protection already been triggered ?
-	if ( file_exists($bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand) ) {
+	if ( file_exists($bf_conf_dir . '/nfwblocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand) ) {
 		// Ensure the banning period is not over :
-		$fstat = stat( $bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand );
+		$fstat = stat( $bf_conf_dir . '/nfwblocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand );
 		if ( ($now - $fstat['mtime']) < $bf_bantime * 60 ) {
 			// User authentication required :
 			nfw_check_auth($auth_name, $auth_pass, $auth_msg);
 			return;
 		} else {
 			// Reset counter :
-			unlink($bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand);
+			unlink($bf_conf_dir . '/nfwblocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand);
 		}
 	}
 
@@ -786,19 +793,24 @@ function nfw_bfd() {
 	}
 
 	// Read our log, if any :
-	if ( file_exists($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
-		$tmp_log = file( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+	if ( file_exists($bf_conf_dir . '/nfwlog' . $where . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
+		$tmp_log = file( $bf_conf_dir . '/nfwlog' . $where . $_SERVER['SERVER_NAME'] . $bf_rand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		if ( count( $tmp_log) >= $bf_attempt ) {
 			if ( ($tmp_log[count($tmp_log) - 1] - $tmp_log[count($tmp_log) - $bf_attempt]) <= $bf_maxtime ) {
 				// Threshold has been reached, lock down access to the page :
-				$bfdh = fopen( $bf_conf_dir . '/nfwblocked' . $_SERVER['SERVER_NAME'] . $bf_rand, 'w');
+				$bfdh = fopen( $bf_conf_dir . '/nfwblocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand, 'w');
 				fclose( $bfdh );
 				// Clear the log :
-				unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
+				unlink( $bf_conf_dir . '/nfwlog' . $where . $_SERVER['SERVER_NAME'] . $bf_rand );
 				// Setup HTTP ret code here, because we do not have access
 				// to the DB yet :
 				$nfw_['nfw_options']['ret_code'] = '401';
-				nfw_log('Brute-force attack detected', 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 3, 0);
+				if ($where == 1) {
+					$where = 'wp-login.php';
+				} else {
+					$where = 'XML-RPC API';
+				}
+				nfw_log('Brute-force attack detected on ' . $where, 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 3, 0);
 				// Force HTTP authentication :
 				nfw_check_auth($auth_name, $auth_pass, $auth_msg);
 				return;
@@ -806,14 +818,14 @@ function nfw_bfd() {
 			}
 		}
 		// If the logfile is too old, flush it :
-		$fstat = stat( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
+		$fstat = stat( $bf_conf_dir . '/nfwlog' . $where . $_SERVER['SERVER_NAME'] . $bf_rand );
 		if ( ($now - $fstat['mtime']) > $bf_bantime * 60 ) {
-			unlink( $bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand );
+			unlink( $bf_conf_dir . '/nfwlog' . $where . $_SERVER['SERVER_NAME'] . $bf_rand );
 		}
 	}
 
 	// Let it go, but record the request :
-	file_put_contents($bf_conf_dir . '/nfwlog' . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND );
+	file_put_contents($bf_conf_dir . '/nfwlog' . $where . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND );
 
 }
 /* ================================================================== */

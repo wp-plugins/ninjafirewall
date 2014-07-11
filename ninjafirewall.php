@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.2.2
+Version: 1.2.3
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -19,11 +19,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-06-25 01:38:13                                       |
+ | REVISION: 2014-07-11 13:40:19                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.2.2' );
-define( 'NFW_RULES_VERSION',  '20140624' );
+define( 'NFW_ENGINE_VERSION', '1.2.3' );
+define( 'NFW_RULES_VERSION',  '20140711' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -136,8 +136,6 @@ function nfw_upgrade() {
 
 	// update engine version number if needed :
 	if ( ( $nfw_options ) && ( $nfw_options['engine_version'] != NFW_ENGINE_VERSION ) ) {
-		$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
-		$is_update = 1;
 
 		// v1.0.4 update -------------------------------------------------
 		if ( empty( $nfw_options['alert_email']) ) {
@@ -169,16 +167,21 @@ function nfw_upgrade() {
 				if ( empty($nfw_options['auth_msg']) ) {
 					$nfw_options['auth_msg'] = 'Access restricted';
 				}
+				// xmlrpc option (added to v1.2.3) :
+				if (! isset($nfw_options['bf_xmlrpc']) ) {
+					$nfw_options['bf_xmlrpc'] = 0;
+				}
 				// ---------------------------------------------------------
 				$data = '<?php $bf_enable=' . $nfw_options['bf_enable'] .
-					';$bf_request=\'' . $nfw_options['bf_request'] .
-					'\';$bf_bantime=' . $nfw_options['bf_bantime'] . ';' .
-					'$bf_attempt=' . $nfw_options['bf_attempt'] . ';$bf_maxtime=' .
-					$nfw_options['bf_maxtime'] . ';' . '$auth_name=\'' .
-					$nfw_options['auth_name'] . '\';$auth_pass=\'' .
-					$nfw_options['auth_pass'] . '\';' . '$auth_msg=\'' .
-					$nfw_options['auth_msg'] . '\';' . '$bf_rand=\'' .
-					$nfw_options['bf_rand'] . '\'; ?>';
+				';$bf_request=\'' . $nfw_options['bf_request'] . '\'' .
+				';$bf_bantime=' . $nfw_options['bf_bantime'] .
+				';$bf_attempt=' . $nfw_options['bf_attempt'] .
+				';$bf_maxtime=' . $nfw_options['bf_maxtime'] .
+				';$bf_xmlrpc=' . $nfw_options['bf_xmlrpc'] .
+				';$auth_name=\'' . $nfw_options['auth_name'] . '\'' .
+				';$auth_pass=\'' . $nfw_options['auth_pass'] . '\';' .
+				'$auth_msg=\'' . $nfw_options['auth_msg'] . '\'' .
+				';$bf_rand=\'' . $nfw_options['bf_rand'] . '\'; ?>';
 				$fh = fopen( $nfwbfd_log, 'w' );
 				fwrite( $fh, $data );
 				fclose( $fh );
@@ -206,7 +209,14 @@ function nfw_upgrade() {
 			$nfw_options['fg_enable'] = 0;
 			$nfw_options['fg_mtime'] = 1;
 		}
+		// v1.2.3 update -------------------------------------------------
+		if ( version_compare( $nfw_options['engine_version'], '1.2.3', '<' ) ) {
+			$nfw_options['blocked_msg'] = base64_encode($nfw_options['blocked_msg']);
+		}
 		// ---------------------------------------------------------------
+
+		$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
+		$is_update = 1;
 	}
 
 	// do we need to update rules as well ?
@@ -690,27 +700,27 @@ function nf_menu_main() {
 	<table class="form-table">
 		<tr>
 			<th scope="row">Firewall</th>
-			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/' . $img, __FILE__ ) ?>" border="0" height="16" width="16"></td>
+			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/' . $img, __FILE__ ) ?>" border="0" height="16" width="16"></td>
 			<td><?php echo $txt; if ( $warn_msg == 1) {echo '&nbsp;&nbsp;&nbsp;&nbsp;<a href="?page=nfsubopt">Click here to enable NinjaFirewall</a>';} ?></td>
 		</tr>
 		<tr>
 			<th scope="row">PHP hook</th>
-			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/' . $img2, __FILE__ ) ?>" border="0" height="16" width="16"></td>
+			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/' . $img2, __FILE__ ) ?>" border="0" height="16" width="16"></td>
 			<td><?php echo $txt2 ?></td>
 		</tr>
 		<tr>
 			<th scope="row">PHP SAPI</th>
-			<td width="20" align="center">-</td>
+			<td width="20" align="left">&nbsp;</td>
 			<td><?php echo strtoupper(PHP_SAPI) ?></td>
 		</tr>
 		<tr>
 			<th scope="row">Engine version</th>
-			<td width="20" align="center">-</td>
+			<td width="20" align="left">&nbsp;</td>
 			<td><?php echo NFW_ENGINE_VERSION ?></td>
 		</tr>
 		<tr>
 			<th scope="row">Rules version</th>
-			<td width="20" align="center">-</td>
+			<td width="20" align="left">&nbsp;</td>
 			<td><?php echo NFW_RULES_VERSION ?></td>
 		</tr>
 	<?php
@@ -720,7 +730,7 @@ function nf_menu_main() {
 		?>
 			<tr>
 			<th scope="row">Log dir</th>
-			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
+			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
 			<td><code><?php echo plugin_dir_path(__FILE__) .  'log/' ?></code> directory is not writable&nbsp;! Please chmod it to 0777 or equivalent.</td>
 		</tr>
 	<?php
@@ -730,7 +740,7 @@ function nf_menu_main() {
 	if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
 		echo '<tr><th scope="row">Optional configuration file</th>';
 		if ( is_writable(dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
-			echo '<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
+			echo '<td width="20" align="left"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 			<td><code>' .  dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja</code> is writable. Consider changing its permissions to read-only.</td>';
 		} else {
 			echo '<td width="20">&nbsp;</td>
@@ -743,7 +753,7 @@ function nf_menu_main() {
 	?>
 		<tr>
 			<th scope="row">Debugging mode</th>
-			<td width="20" align="center"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ ) ?>" border="0" height="16" width="16"></td>
+			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ ) ?>" border="0" height="16" width="16"></td>
 			<td>On&nbsp;&nbsp;&nbsp;&nbsp;<a href="?page=nfsubopt">Click here to turn off Debugging mode</a></td>
 		</tr>
 	<?php
@@ -759,7 +769,7 @@ function nf_menu_main() {
 	if ( ( file_exists( ABSPATH . '.htaccess' ) ) && (! is_writable( ABSPATH . '.htaccess' ) ) ) {
 		$ro_msg .= '<tr>
 		<th scope="row">.htaccess</th>
-		<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
+		<td width="20" align="left"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 		<td><code>' . ABSPATH . '.htaccess</code> is read-only</td>
 		</tr>';
 		$ro++;
@@ -776,7 +786,7 @@ function nf_menu_main() {
 		if (! is_writable( $phpini ) ) {
 			$ro_msg .= '<tr>
 			<th scope="row">PHP INI</th>
-			<td width="20" align="center"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
+			<td width="20" align="left"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 			<td><code>' . $phpini . '</code> is read-only</td>
 			</tr>';
 			$ro++;
@@ -973,7 +983,7 @@ function default_msg() {
 	// Enabled :
 	if (! empty( $nfw_options['enabled']) ) {
 		echo '
-			<td width="20" align="center"><img src="' . plugins_url( '/images/icon_ok_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
+			<td width="20" align="left"><img src="' . plugins_url( '/images/icon_ok_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 			<td align="left">
 				<select name="nfw_options[enabled]" style="width:200px">
 					<option value="1" selected>Enabled</option>
@@ -982,7 +992,7 @@ function default_msg() {
 	// Disabled :
 	} else {
 		echo '
-			<td width="20" align="center"><img src="' . plugins_url( '/images/icon_error_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
+			<td width="20" align="left"><img src="' . plugins_url( '/images/icon_error_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 			<td align="left">
 				<select name="nfw_options[enabled]" style="width:200px">
 					<option value="1">Enabled</option>
@@ -997,7 +1007,7 @@ function default_msg() {
 
 	// Debugging enabled ?
 	if (! empty( $nfw_options['debug']) ) {
-	echo '<td width="20" align="center"><img src="' . plugins_url( '/images/icon_error_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
+	echo '<td width="20" align="left"><img src="' . plugins_url( '/images/icon_error_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
 			<td align="left">
 				<select name="nfw_options[debug]" style="width:200px">
 				<option value="1" selected>Enabled</option>
@@ -1009,7 +1019,7 @@ function default_msg() {
 	// Debugging disabled ?
 	echo '<td width="20">&nbsp;</td>
 			<td align="left">
-				<select name="nfw_options[debug]" style="width:200">
+				<select name="nfw_options[debug]" style="width:200px">
 				<option value="1">Enabled</option>
 					<option value="0" selected>Disabled (default)</option>
 				</select>
@@ -1045,7 +1055,7 @@ function default_msg() {
 				<textarea name="nfw_options[blocked_msg]" class="small-text code" cols="60" rows="5">';
 
 	if (! empty( $nfw_options['blocked_msg']) ) {
-		echo $nfw_options['blocked_msg'];
+		echo base64_decode($nfw_options['blocked_msg']);
 	} else {
 		echo NFW_DEFAULT_MSG;
 	}
@@ -1093,9 +1103,9 @@ function nf_sub_options_save() {
 	}
 
 	if ( empty( $_POST['nfw_options']['blocked_msg']) ) {
-		$nfw_options['blocked_msg'] = NFW_DEFAULT_MSG;
+		$nfw_options['blocked_msg'] = base64_encode(NFW_DEFAULT_MSG);
 	} else {
-		$nfw_options['blocked_msg'] = stripslashes( $_POST['nfw_options']['blocked_msg'] );
+		$nfw_options['blocked_msg'] = base64_encode(stripslashes($_POST['nfw_options']['blocked_msg']));
 	}
 
 	if ( empty( $_POST['nfw_options']['debug']) ) {
@@ -1518,10 +1528,10 @@ function ssl_warn() {
 			<th scope="row">Scan traffic coming from localhost and private IP address spaces</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
-				<label><input type="radio" name="nfw_options[allow_local_ip]" value="0"<?php checked( $allow_local_ip, 0 ) ?>>&nbsp;Yes</label>
+				<label><input type="radio" name="nfw_options[allow_local_ip]" value="0"<?php checked( $allow_local_ip, 0 ) ?>>&nbsp;Yes (default)</label>
 				</td>
 			<td align="left">
-				<label><input type="radio" name="nfw_options[allow_local_ip]" value="1"<?php checked( $allow_local_ip, 1 ) ?>>&nbsp;No (default)</label>
+				<label><input type="radio" name="nfw_options[allow_local_ip]" value="1"<?php checked( $allow_local_ip, 1 ) ?>>&nbsp;No</label>
 			</td>
 		</tr>
 	</table>
@@ -2027,11 +2037,11 @@ function nf_sub_policies_save() {
 	} else {
 		$nfw_options['no_host_ip'] = 1;
 	}
-	// Do not scan server/local IPs ?
+	// Scan server/local IPs ?
 	if ( empty( $_POST['nfw_options']['allow_local_ip']) ) {
+		// Default: yes
 		$nfw_options['allow_local_ip'] = 0;
 	} else {
-		// Default: yes
 		$nfw_options['allow_local_ip'] = 1;
 	}
 
@@ -2254,7 +2264,7 @@ function nf_sub_policies_default() {
 	$nfw_options['referer_sanitise']	= 1;
 	$nfw_options['referer_post']		= 0;
 	$nfw_options['no_host_ip']			= 0;
-	$nfw_options['allow_local_ip']	= 1;
+	$nfw_options['allow_local_ip']	= 0;
 	$nfw_options['php_errors']			= 1;
 	$nfw_options['php_self']			= 1;
 	$nfw_options['php_path_t']			= 1;
@@ -2461,10 +2471,9 @@ function nf_sub_network() {
 <h3>NinjaFirewall Status</h3>
 	<table class="form-table">
 		<tr>
-			<td width="300" valign="top">Display NinjaFirewall status icon in the admin bar of all sites in the network</td>
-			<td width="20" align="center">&nbsp;</td>
-			<td width="120" align=left><label><input type="radio" name="nfw_options[nt_show_status]" value="1"<?php echo $nfw_options['nt_show_status'] != 2 ? ' checked' : '' ?>>&nbsp;Yes (default)</label></td>
-			<td align=left><label><input type="radio" name="nfw_options[nt_show_status]" value="2"<?php echo $nfw_options['nt_show_status'] == 2 ? ' checked' : '' ?>>&nbsp;No</label></td>
+			<th scope="row">Display NinjaFirewall status icon in the admin bar of all sites in the network</th>
+			<td align="left" width="200"><label><input type="radio" name="nfw_options[nt_show_status]" value="1"<?php echo $nfw_options['nt_show_status'] != 2 ? ' checked' : '' ?>>&nbsp;Yes (default)</label></td>
+			<td align="left"><label><input type="radio" name="nfw_options[nt_show_status]" value="2"<?php echo $nfw_options['nt_show_status'] == 2 ? ' checked' : '' ?>>&nbsp;No</label></td>
 		</tr>
 	</table>
 
@@ -2870,6 +2879,11 @@ function nf_sub_loginprot() {
 		if ( ( empty($auth_msg) ) || ( @strlen( $auth_msg ) > 150 ) ) {
 			$auth_msg = 'Access restricted';
 		}
+		if (empty($bf_xmlrpc) ) {
+			$bf_xmlrpc = 0;
+		} else {
+			$bf_xmlrpc = 1;
+		}
 	}
 
 	if ( empty( $bf_enable ) ) {
@@ -2881,15 +2895,20 @@ function nf_sub_loginprot() {
 		$bf_maxtime  = 15;
 		$auth_name = '';
 		$auth_msg = 'Access restricted';
+		$bf_xmlrpc = 0;
 	}
-
+	if ($bf_xmlrpc) {
+		$it_them = 'them';
+	} else {
+		$it_them = 'it';
+	}
 	?>
 	<script type="text/javascript">
 	function is_number(id) {
 		var e = document.getElementById(id);
 		if (! e.value ) { return }
 		if (! /^[1-9][0-9]?$/.test(e.value) ) {
-			alert("Please enter a number from 1 to 99.");
+			alert("Please enter a number from 1 to 99 in 'Password-protect' field.");
 			e.value = e.value.substring(0, e.value.length-1);
 		}
 	}
@@ -2897,12 +2916,20 @@ function nf_sub_loginprot() {
 		var e = document.bp_form.elements['nfw_options[auth_name]'];
 		if ( e.value.match(/[^-\/\\_.a-zA-Z0-9]/) ) {
 			alert('Invalid character.');
-			e.value = e.value.substring(0, e.value.length-1);
+			e.value = e.value.replace(/[^-\/\\_.a-zA-Z0-9]/g,'');
 			return false;
 		}
 		if (e.value == 'admin') {
 			alert('"admin" is not acceptable, please choose another user name.');
 			e.value = '';
+			return false;
+		}
+	}
+	function realm_valid() {
+		var e = document.bp_form.elements['nfw_options[auth_msg]'];
+		if ( e.value.match(/[^\x20-\x7e\x80-\xff]/) ) {
+			alert('Invalid character.');
+			e.value = e.value.replace(/[^\x20-\x7e\x80-\xff]/g,'');
 			return false;
 		}
 	}
@@ -2924,6 +2951,13 @@ function nf_sub_loginprot() {
 			request = 'GET/POST';
 		}
 		document.getElementById('get_post').innerHTML = request;
+	}
+	function itthem(it_them) {
+		if (it_them.checked == true) {
+			document.getElementById('itthem').innerHTML = 'Password-protect them';
+		} else {
+			document.getElementById('itthem').innerHTML = 'Password-protect it';
+		}
 	}
 	</script>
 <br />
@@ -2951,11 +2985,13 @@ function nf_sub_loginprot() {
 			<p><label><input onclick="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GET"<?php checked($bf_request, 'GET') ?>>&nbsp;<code>GET</code> request attacks</label></p>
 			<p><label><input onclick="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="POST"<?php checked($bf_request, 'POST') ?>>&nbsp;<code>POST</code> request attacks (default)</label></p>
 			<p><label><input onclick="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GETPOST"<?php checked($bf_request, 'GETPOST') ?>>&nbsp;<code>GET</code> and <code>POST</code> requests attacks</label></p>
+			<br /><br />
+			<label><input type="checkbox" onclick="itthem(this);" name="nfw_options[bf_xmlrpc]" value="1"<?php checked($bf_xmlrpc, 1) ?>>&nbsp;Protect the <code>xmlrpc.php</code> script against brute force attacks as well</label>
 			</td>
 		</tr>
 
 		<tr valign="top">
-			<th scope="row">Password-protect it</th>
+			<th scope="row" id="itthem">Password-protect <?php echo $it_them; ?></th>
 			<td align="left">
 				For <input maxlength="2" size="2" value="<?php echo $bf_bantime ?>" name="nfw_options[bf_bantime]" id="ban1" onkeyup="is_number('ban1')" type="text" title="Enter a value from 1 to 99" /> minutes, if more than <input maxlength="2" size="2" value="<?php echo $bf_attempt ?>" name="nfw_options[bf_attempt]" id="ban2" onkeyup="is_number('ban2')" type="text" title="Enter a value from 1 to 99" /> <code id="get_post"><?php echo $get_post; ?></code> requests within <input maxlength="2" size="2" value="<?php echo $bf_maxtime ?>" name="nfw_options[bf_maxtime]" id="ban3" onkeyup="is_number('ban3')" type="text" title="Enter a value from 1 to 99" /> seconds.
 			</td>
@@ -2967,8 +3003,8 @@ function nf_sub_loginprot() {
 			<td align="left">
 				User:&nbsp;<input maxlength="20" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" title="Enter user name (from 6 to 20 characters)" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="20" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" title="Enter password (from 6 to 20 characters)" />
 				<br /><span class="description">&nbsp;User and Password must be from 6 to 20 characters.</span>
-				<br /><br />Message (max. 150 characters):<br />
-				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="150" size="50" name="nfw_options[auth_msg]">
+				<br /><br />Message (max. 150 ASCII characters):<br />
+				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="150" size="50" name="nfw_options[auth_msg]" onkeyup="realm_valid();" />
 			</td>
 		</tr>
 	</table>
@@ -3064,6 +3100,12 @@ function nf_sub_loginprot_save() {
 		$bf_maxtime = 15;
 	}
 
+	if ( empty($_POST['nfw_options']['bf_xmlrpc']) ) {
+		$bf_xmlrpc = 0;
+	} else {
+		$bf_xmlrpc = 1;
+	}
+
 	if ( empty($_POST['nfw_options']['auth_name']) ) {
 		return( 'Error : please enter a user name for HTTP authentication.');
 	} elseif (! preg_match('`^[-/\\_.a-zA-Z0-9]{6,20}$`', $_POST['nfw_options']['auth_name']) ) {
@@ -3093,8 +3135,8 @@ function nf_sub_loginprot_save() {
 	}
 	// Save it :
 	$data = '<?php $bf_enable=' . $bf_enable . ';$bf_request=\'' . $bf_request .
-	'\';$bf_bantime=' . $bf_bantime . ';' .
-		'$bf_attempt=' . $bf_attempt . ';$bf_maxtime=' . $bf_maxtime . ';' .
+		'\';$bf_bantime=' . $bf_bantime . ';' . '$bf_attempt=' . $bf_attempt .
+		';$bf_maxtime=' . $bf_maxtime . ';$bf_xmlrpc=' . $bf_xmlrpc. ';' .
 		'$auth_name=\'' . $auth_name . '\';$auth_pass=\'' . $auth_pass . '\';' .
 		'$auth_msg=\'' . $auth_msg . '\';$bf_rand=\'' . $bf_rand . '\'; ?>';
 
@@ -3113,6 +3155,7 @@ function nf_sub_loginprot_save() {
 	$nfw_options['bf_bantime'] = $bf_bantime;
 	$nfw_options['bf_attempt'] = $bf_attempt;
 	$nfw_options['bf_maxtime'] = $bf_maxtime;
+	$nfw_options['bf_xmlrpc']  = $bf_xmlrpc;
 	$nfw_options['auth_name']  = $auth_name;
 	$nfw_options['auth_pass']  = $auth_pass;
 	$nfw_options['bf_rand']    = $bf_rand;
@@ -3295,37 +3338,40 @@ function nf_sub_edit() {
 	<table class="form-table">
 		<tr>
 			<th scope="row">Select the rule you want to disable or enable</th>
-			<td align="center">
+			<td align="left">
 			<form method="post">
-			<select name="sel_e_r" style="width:220px;font-family:Consolas,Monaco,monospace;">
+			<select name="sel_e_r" style="font-family:Consolas,Monaco,monospace;">
 				<option value="0">Total rules enabled : ' . count( $enabled_rules ) . '</option>';
 	sort( $enabled_rules );
-
+	$count = 0;
 	foreach ( $enabled_rules as $key ) {
 		// grey-out those ones, they can be changed in the Firewall Policies section:
 		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) {
 			echo '<option value="0" disabled="disabled">Rule ID : ' . $key . '</option>';
 		} else {
 			echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+			$count++;
 		}
 	}
-	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Disable it">
+	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Disable it"' . disabled( $count, 0) .'>
 		</form>
 		<br />
 		<form method="post">
-		<select name="sel_d_r" style="width:220px;font-family:Consolas,Monaco,monospace;">
+		<select name="sel_d_r" style="font-family:Consolas,Monaco,monospace;">
 		<option value="0">Total rules disabled : ' . count( $disabled_rules ) . '</option>';
 	sort( $disabled_rules );
+	$count = 0;
 	foreach ( $disabled_rules as $key ) {
 		// grey-out those ones, they can be changed in the Firewall Policies section:
 		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) {
 			echo '<option value="0" disabled="disabled">Rule ID : ' . $key . '</option>';
 		} else {
 			echo '<option value="' . $key . '">Rule ID : ' . $key . '</option>';
+			$count++;
 		}
 	}
 
-	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Enable it">
+	echo '</select>&nbsp;&nbsp;<input class="button-secondary" type="submit" name="disable" value="Enable it"' . disabled( $count, 0) .'>
 				</form>
 				<br /><span class="description">Greyed out rules can be changed in the <a href="?page=nfsubpolicies">Firewall Policies</a> page.</span>
 			</td>
