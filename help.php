@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-07-11 14:18:55                                       |
+ | REVISION: 2014-07-22 14:18:55                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -231,7 +231,7 @@ function help_nfsublogin() {
 		<p>You can select to enable the protection only if an attack is detected or to keep it always activated:</p>
 
 		<strong>Yes, if under attack :</strong>
-		<br />When too many login attempts are detected, it password-protects the login page immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses a simple but fast <a href="http://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">HTTP Basic authentication implementation</a> and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).<br />
+		<br />When too many login attempts are detected, it password-protects the login page immediately, regardless of the offending IP. It blocks the attack instantly and prevents it from reaching WordPress, but still allows you to access your administration console using a predefined username/password combination. NinjaFirewall uses its own very fast authentication scheme and it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc).<br />
 		<ul>
 		<li>Protect the login page against:<span class="description"> select the type of requests (<code>GET</code> and/or <code>POST</code>) to monitor.</span></li>
 		<li>Password-protect the login page:<span class="description"> enter the suitable threshold that will trigger the protection.</span></li>
@@ -240,7 +240,7 @@ function help_nfsublogin() {
 		</ul>
 
 		<strong>Always ON :</strong>
-		<br />NinjaFirewall will always enforce HTTP Basic authentication implementation and you will be prompted to enter your choosen username/password each time you will access the login page.<br />
+		<br />NinjaFirewall will always enforce HTTP authentication implementation and you will be prompted to enter your choosen username/password each time you will access the login page.<br />
 		<ul>
 		<li>HTTP authentication:<span class="description"> enter the user name and password that you want to use to access the login page.</span></li>
 		<li>Message:<span class="description"> enter the message to display during the authentication process.</span></li>

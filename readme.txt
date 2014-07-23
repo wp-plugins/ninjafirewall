@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 3.9.1
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,10 +166,17 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Upgrade Notice ==
 
-= 1.2.3 =
+= 1.2.4 =
 This update fixes a few issues. See Changelog for more details.
 
 == Changelog ==
+
+= 1.2.4 =
+* Fixed login protection rejecting username/password on some servers running Apache PHP-CGI with suExec. NinjaFirewall will now use its own very fast authentication scheme rather than relying on the server HTTP Basic authentication.
+* The length of the firewall log lines was increased from 100 to 200 characters.
+* Fixed potential 500 Internal Server error during installation on Apache servers that do not have the mod_env module loaded.
+* Added Cloudflare and Incapsula detection. A message in the "Overview" page will warn the admin about setting up the server or NinjaFirewall in order to use the correct IP.
+* Updated security rules.
 
 = 1.2.3 =
 * The brute-force attack protection was extended to the XML-RPC API script (xmlrpc.php). See the "Login Protection" page and its contextual help.

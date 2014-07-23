@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-07-11 13:49:24                                       |
+ | REVISION: 2014-07-21 13:49:24                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -400,7 +400,7 @@ function nfw_check_upload() {
 
 	// Fetch uploaded files, if any :
 	$f_uploaded = nfw_fetch_uploads();
-
+	$tmp = '';
 	// Uploads are disallowed :
 	if ( empty($nfw_['nfw_options']['uploads']) ) {
 		$tmp = '';
@@ -691,7 +691,7 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	}
 
 	// Prepare the line to log :
-   if (strlen($logdata) > 100) { $logdata = substr($logdata, 0, 100) . '...'; }
+   if (strlen($logdata) > 200) { $logdata = substr($logdata, 0, 200) . '...'; }
 	$res = '';
 	$string = str_split($logdata);
 	foreach ( $string as $char ) {
@@ -834,15 +834,25 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	if ( (! empty($_SERVER['PHP_AUTH_USER'])) && (! empty($_SERVER['PHP_AUTH_PW'])) ) {
-		// Allow authenticated users only :
-		if ( ($_SERVER['PHP_AUTH_USER'] == $auth_name) && (sha1($_SERVER['PHP_AUTH_PW']) == $auth_pass) ) {
+	if (! session_id() ) { session_start(); }
+	// Good guy already authenticated ?
+	if (! empty($_SESSION['nfw_bfd']) ) {
+		return;
+	}
+
+	// Is this an authentication request ?
+	if (! empty($_REQUEST['u']) && ! empty($_REQUEST['p']) ) {
+		if ( $_REQUEST['u'] === $auth_name && sha1($_REQUEST['p']) === $auth_pass ) {
+			// Good guy :
+			$_SESSION['nfw_bfd'] = 1;
 			return;
 		}
 	}
-	header('WWW-Authenticate: Basic realm="' . $auth_msg . '"');
+
+	// Ask for authentication :
 	header('HTTP/1.0 401 Unauthorized');
-	echo $auth_msg;
+	header('Content-Type: text/html; charset=utf-8');
+	echo '<html><head><link rel="stylesheet" href="./wp-includes/css/buttons.min.css" type="text/css"><link rel="stylesheet" href="./wp-admin/css/login.min.css" type="text/css"></head><body class="login wp-core-ui"><div id="login"><center><h3>' . $auth_msg . '</h3><form method="post"><p><input class="input" type="text" name="u" placeholder="Username"></p><p><input class="input" type="password" name="p" placeholder="Password"></p><p align="right"><input type="submit" value="WP Login Page&nbsp;&#187;" class="button-secondary"></p></form><p>Brute-force protection by NinjaFirewall</p></center></div></body></html>';
 	exit;
 }
 

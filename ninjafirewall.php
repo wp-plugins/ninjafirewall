@@ -3,11 +3,12 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.2.3
+Version: 1.2.4
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
 Network: true
+Text Domain: ninjafirewall
 */
 
 /*
@@ -19,11 +20,11 @@ Network: true
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-07-11 13:40:19                                       |
+ | REVISION: 2014-07-23 13:40:19                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.2.3' );
-define( 'NFW_RULES_VERSION',  '20140711' );
+define( 'NFW_ENGINE_VERSION', '1.2.4' );
+define( 'NFW_RULES_VERSION',  '20140723' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -207,11 +208,16 @@ function nfw_upgrade() {
 		// v1.2.1 update -------------------------------------------------
 		if ( empty( $nfw_options['fg_mtime']) ) {
 			$nfw_options['fg_enable'] = 0;
-			$nfw_options['fg_mtime'] = 1;
+			$nfw_options['fg_mtime'] = 10;
 		}
 		// v1.2.3 update -------------------------------------------------
 		if ( version_compare( $nfw_options['engine_version'], '1.2.3', '<' ) ) {
 			$nfw_options['blocked_msg'] = base64_encode($nfw_options['blocked_msg']);
+		}
+		// v1.2.4 update -------------------------------------------------
+		// Error from v1.2.3 to delete :
+		if ( isset($nfw_options['$auth_msg']) ) {
+			unset($nfw_options['$auth_msg']);
 		}
 		// ---------------------------------------------------------------
 
@@ -724,7 +730,28 @@ function nf_menu_main() {
 			<td><?php echo NFW_RULES_VERSION ?></td>
 		</tr>
 	<?php
-
+	// Look for CDN's (Incapsula/Cloudflare) and
+	// warn the user about using the correct IPs :
+	if (! empty($_SERVER["HTTP_CF_CONNECTING_IP"]) ) {
+		// CloudFlare :
+		?>
+		<tr>
+			<th scope="row"><?php _e('CDN detection', 'ninjafirewall') ?></th>
+			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
+			<td><?php printf( __('<code>HTTP_CF_CONNECTING_IP</code> detected: you seem to be using Cloudflare CDN services. Ensure that you have setup your HTTP server or PHP to forward the correct visitor IP, otherwise use the NinjaFirewall <code><a href="%s">.htninja</a></code> configuration file.', 'ninjafirewall'), 'http://nintechnet.com/nfwp/1.1.3/?#variables') ?></td>
+		</tr>
+		<?php
+	}
+	if (! empty($_SERVER["HTTP_INCAP_CLIENT_IP"]) ) {
+		// Incapsula :
+		?>
+		<tr>
+			<th scope="row"><?php _e('CDN detection', 'ninjafirewall') ?></th>
+			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
+			<td><?php printf( __('<code>HTTP_INCAP_CLIENT_IP</code> detected: you seem to be using Incapsula CDN services. Ensure that you have setup your HTTP server or PHP to forward the correct visitor IP, otherwise use the NinjaFirewall <code><a href="%s">.htninja</a></code> configuration file.', 'ninjafirewall'), 'http://nintechnet.com/nfwp/1.1.3/?#variables') ?></td>
+		</tr>
+		<?php
+	}
 	// Ensure /log/ dir is writable :
 	if (! is_writable( plugin_dir_path(__FILE__) .  'log' ) ) {
 		?>
@@ -2369,7 +2396,7 @@ function nf_sub_fileguard() {
 		$nfw_options['fg_enable'] = 1;
 	}
 	if ( empty($nfw_options['fg_mtime']) || ! preg_match('/^[1-9][0-9]?$/', $nfw_options['fg_mtime']) ) {
-		$nfw_options['fg_mtime'] = 1;
+		$nfw_options['fg_mtime'] = 10;
 	}
 
 	?>
@@ -2419,7 +2446,7 @@ function nf_sub_fileguard_save() {
 	}
 
 	if ( empty($_POST['nfw_options']['fg_mtime']) || ! preg_match('/^[1-9][0-9]?$/', $_POST['nfw_options']['fg_mtime']) ) {
-		$nfw_options['fg_mtime'] = 1;
+		$nfw_options['fg_mtime'] = 10;
 	} else {
 		$nfw_options['fg_mtime'] = $_POST['nfw_options']['fg_mtime'];
 	}
@@ -2986,10 +3013,9 @@ function nf_sub_loginprot() {
 			<p><label><input onclick="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="POST"<?php checked($bf_request, 'POST') ?>>&nbsp;<code>POST</code> request attacks (default)</label></p>
 			<p><label><input onclick="getpost(this.value);" type="radio" name="nfw_options[bf_request]" value="GETPOST"<?php checked($bf_request, 'GETPOST') ?>>&nbsp;<code>GET</code> and <code>POST</code> requests attacks</label></p>
 			<br /><br />
-			<label><input type="checkbox" onclick="itthem(this);" name="nfw_options[bf_xmlrpc]" value="1"<?php checked($bf_xmlrpc, 1) ?>>&nbsp;Protect the <code>xmlrpc.php</code> script against brute force attacks as well</label>
+			<label><input type="checkbox" onclick="itthem(this);" name="nfw_options[bf_xmlrpc]" value="1"<?php checked($bf_xmlrpc, 1) ?>>&nbsp;Protect the <code>xmlrpc.php</code> script against brute force attacks as well.</label>
 			</td>
 		</tr>
-
 		<tr valign="top">
 			<th scope="row" id="itthem">Password-protect <?php echo $it_them; ?></th>
 			<td align="left">
@@ -3061,7 +3087,7 @@ function nf_sub_loginprot_save() {
 		$nfw_options['bf_request'] = 0; $nfw_options['bf_bantime'] = 0;
 		$nfw_options['bf_attempt'] = 0; $nfw_options['bf_maxtime'] = 0;
 		$nfw_options['auth_name']  = 0; $nfw_options['auth_pass']  = 0;
-		$nfw_options['bf_rand']    = 0; $nfw_options['$auth_msg']  = 0;
+		$nfw_options['bf_rand']    = 0; $nfw_options['auth_msg']  = 0;
 		update_option( 'nfw_options', $nfw_options );
 		return 0;
 
@@ -3162,11 +3188,16 @@ function nf_sub_loginprot_save() {
 	$nfw_options['auth_msg']   = $auth_msg;
 	update_option( 'nfw_options', $nfw_options );
 
+	// We reset the brute-force protection flag for the logged in user :
+	if (! empty($_SESSION['nfw_bfd']) ) {
+		unset($_SESSION['nfw_bfd']);
+	}
+
 }
 
 /* ================================================================== */
 
-function nfw_query( $query ) {
+function nfw_query( $query ) { // I18n
 
 	$nfw_options = get_option( 'nfw_options' );
 	if ( empty($nfw_options['enum_archives']) || empty($nfw_options['enabled']) ) {
@@ -3175,7 +3206,7 @@ function nfw_query( $query ) {
 
 	if ( $query->is_main_query() && $query->is_author() ) {
 		$query->set('author_name', '0');
-		nfw_log2('User enumeration scan (author archives)', $_SERVER['REQUEST_URI'], 2, 0);
+		nfw_log2( __('User enumeration scan (author archives)', 'ninjafirewall'), $_SERVER['REQUEST_URI'], 2, 0);
 		wp_redirect( home_url('/') );
 		exit;
 	}
@@ -3187,7 +3218,7 @@ if (! isset($_SESSION['nfw_goodguy']) ) {
 
 /* ================================================================== */
 
-function nfw_authenticate( $user ) {
+function nfw_authenticate( $user ) { // I18n
 
 	// User enumeration (login page) :
 
@@ -3199,7 +3230,7 @@ function nfw_authenticate( $user ) {
 
 	if ( is_wp_error( $user ) ) {
 		if ( preg_match( '/^(?:in(?:correct_password|valid_username)|authentication_failed)$/', $user->get_error_code() ) ) {
-			$user = new WP_Error( 'denied', sprintf( __( '<strong>ERROR</strong>: Invalid username or password.<br /><a href="%s" title="Password Lost and Found">Lost your password</a>?' ), wp_lostpassword_url() ) );
+			$user = new WP_Error( 'denied', sprintf( __( '<strong>ERROR</strong>: Invalid username or password.<br /><a href="%s">Lost your password</a>?' ), wp_lostpassword_url() ) );
 			add_filter('shake_error_codes', 'nfw_err_shake');
 		}
 	}
@@ -3216,7 +3247,7 @@ function nfw_err_shake( $shake_codes ) {
 
 /* ================================================================== */
 
-function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) {
+function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) { // I18n
 
 	// Write incident to the firewall log :
 
@@ -3231,7 +3262,7 @@ function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) {
 		$num_incident = mt_rand(1000000, 9000000);
 		$http_ret_code = $nfw_options['ret_code'];
 	}
-   if (strlen($logdata) > 100) { $logdata = substr($logdata, 0, 100) . '...'; }
+   if (strlen($logdata) > 200) { $logdata = substr($logdata, 0, 200) . '...'; }
 	$res = '';
 	$string = str_split($logdata);
 	foreach ( $string as $char ) {
@@ -3553,16 +3584,16 @@ function show_table(table_id) {
 
 		<table id="13" border="0" style="display:none;" width="500">';
 	if ( PHP_VERSION ) {
-		echo '<tr><td width="47%;" align="right">PHP version</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_VERSION . ' (' . strtoupper( PHP_SAPI ) . ')</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">PHP version</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_VERSION . ' (' . strtoupper( PHP_SAPI ) . ')</td></tr>';
 	}
 	if ( $_SERVER['SERVER_SOFTWARE'] ) {
-		echo '<tr><td width="47%;" align="right">HTTP server</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $_SERVER['SERVER_SOFTWARE'] . '</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">HTTP server</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $_SERVER['SERVER_SOFTWARE'] . '</td></tr>';
 	}
 	if ( PHP_OS ) {
-		echo '<tr><td width="47%;" align="right">Operating System</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_OS . '</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">Operating System</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_OS . '</td></tr>';
 	}
 	if ( $load = sys_getloadavg() ) {
-		echo '<tr><td width="47%;" align="right">Load Average</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $load[0] . ', '. $load[1] . ', '. $load[2] . '</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">Load Average</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $load[0] . ', '. $load[1] . ', '. $load[2] . '</td></tr>';
 	}
 	if (! preg_match( '/^win/i', PHP_OS ) ) {
 		$MemTotal = $MemFree = $Buffers = $Cached = 0;
@@ -3580,14 +3611,14 @@ function show_table(table_id) {
 		}
 		$free = ( $MemFree + $Buffers + $Cached ) / 1024;
 		if ( $free ) {
-			echo '<tr><td width="47%;" align="right">RAM</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . number_format( $free ) . ' MB free / '. number_format( $MemTotal ) . ' MB total</td></tr>';
+			echo '<tr valign="top"><td width="47%;" align="right">RAM</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . number_format( $free ) . ' MB free / '. number_format( $MemTotal ) . ' MB total</td></tr>';
 		}
 
 		$cpu = @explode( "\n", `grep 'model name' /proc/cpuinfo` );
 		if (! empty( $cpu[0] ) ) {
 			array_pop( $cpu );
-			echo '<tr><td width="47%;" align="right">Processor(s)</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . count( $cpu ) . '</td></tr>';
-			echo '<tr><td width="47%;" align="right">CPU model</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . str_replace ("model name\t:", '', $cpu[0]) . '</td></tr>';
+			echo '<tr valign="top"><td width="47%;" align="right">Processor(s)</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . count( $cpu ) . '</td></tr>';
+			echo '<tr valign="top"><td width="47%;" align="right">CPU model</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . str_replace ("model name\t:", '', $cpu[0]) . '</td></tr>';
 		}
 	}
 
