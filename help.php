@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-07-22 14:18:55                                       |
+ | REVISION: 2014-08-10 14:15:23                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -186,7 +186,7 @@ function help_nfsubfileguard() {
 		'content'   => '<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
 		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time).
 		<p>Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.</p>
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</p>'
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</span></p>'
 	) );
 }
 /* ================================================================== */
@@ -226,7 +226,7 @@ function help_nfsublogin() {
 
 		<p>By processing incoming HTTP requests <strong>before your blog and any of its plugins</strong>, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
 		<br />
-		The protection applies to the <code>wp-login.php</code> script and can also include the <code>xmlrpc.php</code> one. We recommend to enable it for both scripts.</p>
+		The protection applies to the <code>wp-login.php</code> script and can also include the <code>xmlrpc.php</code> one.</p>
 
 		<p>You can select to enable the protection only if an attack is detected or to keep it always activated:</p>
 
@@ -356,4 +356,3 @@ function help_nfsubabout() {
 
 /* ================================================================== */
 // EOF
-?>

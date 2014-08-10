@@ -73,4 +73,10 @@ if ( preg_match( '/^1\.1\.1\.\d+$/', $_SERVER["REMOTE_ADDR"] ) ) {
 }
 
 
+// Do not filter any HTTP request sent to a script located inside the /myfolder/ directory:
+if (strpos($_SERVER['SCRIPT_NAME'], '/myfolder/') !== FALSE) {
+   return 'ALLOW';
+}
+
+
 // do not add anything below this line.

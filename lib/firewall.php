@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-07-21 13:49:24                                       |
+ | REVISION: 2014-08-10 17:13:20                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -286,11 +286,11 @@ if (! empty($nfw_['nfw_options']['fg_enable']) ) {
 				$nfw_['nfw_options']['m_subject'] = '[NinjaFirewall] Alert: File Guard detection';
 				$nfw_['nfw_options']['m_msg'] = 	'Someone accessed a script that was modified or created less than ' .
 					$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
-					'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n" .
 					'SERVER_NAME    : ' . $_SERVER['SERVER_NAME'] . "\n" .
 					'SCRIPT_FILENAME: ' . $_SERVER['SCRIPT_FILENAME'] . "\n" .
 					'REQUEST_URI    : ' . $_SERVER['REQUEST_URI'] . "\n" .
-					'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n\n" .
+					'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
+					'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n" .
 					'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
 					'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 				mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
@@ -675,14 +675,14 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	// Info/sanitise ? Don't block and do not issue any incident number :
 	if ( $loglevel == 6) {
 		$nfw_['num_incident'] = '0000000';
-		$http_ret_code = '200 OK';
+		$http_ret_code = '200';
 	} else {
 		// Debugging ? Don't block and do not issue any incident number
 		// but set loglevel to 7 (will display 'DEBUG_ON' in log) :
 		if (! empty($nfw_['nfw_options']['debug']) ) {
 			$nfw_['num_incident'] = '0000000';
 			$loglevel = 7;
-			$http_ret_code = '200 OK';
+			$http_ret_code = '200';
 		// Create a random incident number :
 		} else {
 			$nfw_['num_incident'] = mt_rand(1000000, 9000000);
