@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-08-10 17:13:20                                       |
+ | REVISION: 2014-08-31 03:00:55                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -98,9 +98,11 @@ if ( (! isset($nfw_['DB_NAME'])) || (! isset($nfw_['DB_USER'])) || (! isset($nfw
 	return;
 }
 
-// So far, so good. Connect to the DB:
-@$nfw_['mysqli'] = new mysqli($nfw_['DB_HOST'], $nfw_['DB_USER'], $nfw_['DB_PASSWORD'], $nfw_['DB_NAME']);
-
+// So far, so good.
+// Check whether we have a host, host:ip, host:socket or host:port:socket :
+nfw_check_dbhost();
+// Connect to the DB:
+@$nfw_['mysqli'] = new mysqli($nfw_['DB_HOST'], $nfw_['DB_USER'], $nfw_['DB_PASSWORD'], $nfw_['DB_NAME'], $nfw_['port'], $nfw_['socket']);
 if ($nfw_['mysqli']->connect_error) {
 	define( 'NFW_STATUS', 4 );
 	unset($nfw_);
@@ -811,6 +813,15 @@ function nfw_bfd($where) {
 					$where = 'XML-RPC API';
 				}
 				nfw_log('Brute-force attack detected on ' . $where, 'enabling HTTP authentication for ' . $bf_bantime . 'mn', 3, 0);
+				// Shall we write to the AUTH log as well ?
+				if (! empty($bf_authlog) ) {
+					if (defined('LOG_AUTHPRIV') ) { $tmp = LOG_AUTHPRIV; }
+					else { $tmp = LOG_AUTH;	}
+					openlog('ninjafirewall', LOG_NDELAY|LOG_PID, $tmp);
+					syslog(LOG_INFO, 'Possible brute-force attack from '. $_SERVER['REMOTE_ADDR'] .
+							' on '. $_SERVER['SERVER_NAME'] .' ('. $where .'). Blocking access for ' . $bf_bantime . 'mn.');
+					closelog();
+				}
 				// Force HTTP authentication :
 				nfw_check_auth($auth_name, $auth_pass, $auth_msg);
 				return;
@@ -854,6 +865,30 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 	header('Content-Type: text/html; charset=utf-8');
 	echo '<html><head><link rel="stylesheet" href="./wp-includes/css/buttons.min.css" type="text/css"><link rel="stylesheet" href="./wp-admin/css/login.min.css" type="text/css"></head><body class="login wp-core-ui"><div id="login"><center><h3>' . $auth_msg . '</h3><form method="post"><p><input class="input" type="text" name="u" placeholder="Username"></p><p><input class="input" type="password" name="p" placeholder="Password"></p><p align="right"><input type="submit" value="WP Login Page&nbsp;&#187;" class="button-secondary"></p></form><p>Brute-force protection by NinjaFirewall</p></center></div></body></html>';
 	exit;
+}
+
+/* ================================================================== */
+// From WP db_connect() :
+function nfw_check_dbhost() {
+
+	global $nfw_;
+
+	$nfw_['port'] = null;
+	$nfw_['socket'] = null;
+	$port_or_socket = strstr( $nfw_['DB_HOST'], ':' );
+	if ( ! empty( $port_or_socket ) ) {
+		$nfw_['DB_HOST'] = substr( $nfw_['DB_HOST'], 0, strpos( $nfw_['DB_HOST'], ':' ) );
+		$port_or_socket = substr( $port_or_socket, 1 );
+		if ( 0 !== strpos( $port_or_socket, '/' ) ) {
+			$nfw_['port'] = intval( $port_or_socket );
+			$maybe_socket = strstr( $port_or_socket, ':' );
+			if ( ! empty( $maybe_socket ) ) {
+				$nfw_['socket'] = substr( $maybe_socket, 1 );
+			}
+		} else {
+			$nfw_['socket'] = $port_or_socket;
+		}
+	}
 }
 
 /* ================================================================== */
