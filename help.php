@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-08-10 14:15:23                                       |
+ | REVISION: 2014-08-31 19:32:41                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -42,10 +42,11 @@ function help_nfsubmain() {
 		'content'   => '<br />This is the contextual help&nbsp;!<br />Each NinjaFirewall menu page has such a contextual help screen with useful information about how to use and configure it.<br />&nbsp;'
 	) );
 	get_current_screen()->set_help_sidebar(
-	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
-	'<p>' . __( '<a href="http://ninjafirewall.com/wordpress/help.php" target="_blank">Installation help &amp; troubleshooting</a>' ) . '</p>' .
-	'<p>' . __( '<a href="http://wordpress.org/support/plugin/ninjafirewall/" target="_blank">Support Forums</a>' ) . '</p>'
-)	;
+		'<p><strong>' . __( 'For more information:', 'ninjafirewall' ) . '</strong></p>' .
+		'<p><a href="http://ninjafirewall.com/wordpress/help.php" target="_blank">'. __('Installation, help &amp; troubleshooting' , 'ninjafirewall' ) . '</a></p>' .
+		'<p><a href="http://wordpress.org/support/plugin/ninjafirewall/" target="_blank">' . __( 'Support Forum' , 'ninjafirewall' ) . '</a></p>' .
+		'<p>'. __('Updates via Twitter', 'ninjafirewall') . '<br /><a href="https://twitter.com/nintechnet"><img border="0" src="' . plugins_url( '/images/twitter_ntn.png', __FILE__ ) . '" width="116" height="28" target="_blank"></a></p>'
+	);
 
 }
 
@@ -140,15 +141,15 @@ function help_nfsubpolicies() {
 
 		<strong>HTTP_REFERER server variable</strong>
 		<li>Whether to scan and/or sanitise <code>HTTP_REFERER</code> requests.</li>
-		<li>Block POST requests that do not have an <code>HTTP_REFERER</code> header:<span class="description"> this option will block any <code>POST</code> request that does not have a Referrer header (<code>HTTP_REFERER</code> variable). If you need external applications to post to your scripts (i.e., Paypal IPN, WordPress WP-Cron...), you are advised to keep this option disabled otherwise they will likely be blocked. Note that <code>POST</code> requests are not required to have a Referrer header and, for that reason, this option is disabled by default.</span></li>
+		<li>Block POST requests that do not have an <code>HTTP_REFERER</code> header:<span class="description"> this option will block any <code>POST</code> request that does not have a Referrer header (<code>HTTP_REFERER</code> variable). If you need external applications to post to your scripts (e.g. Paypal IPN, WordPress WP-Cron...), you are advised to keep this option disabled otherwise they will likely be blocked. Note that <code>POST</code> requests are not required to have a Referrer header and, for that reason, this option is disabled by default.</span></li>
 
 		<strong>IPs</strong>
 		<li>Block localhost IP in <code>GET/POST</code> requests:<span class="description"> this option will block any <code>GET</code> or <code>POST</code> request containing the localhost IP (127.0.0.1). It can be useful to block SQL dumpers and various hacker\'s shell scripts.</span></li>
-		<li>Block HTTP requests with an IP in the <code>Host</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . $_SERVER['SERVER_ADDR'] . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
+		<li>Block HTTP requests with an IP in the <code>HTTP_HOST</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . $_SERVER['SERVER_ADDR'] . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
 		<li>Scan traffic coming from localhost and private IP address spaces:<span class="description"> this option will allow the firewall to scan traffic from all non-routable private IPs (IPv4 and IPv6) as well as the localhost IP. We recommend to keep it enabled if you have a private network (2 or more servers interconnected).</span></li>
 
 		<strong>PHP</strong>
-		<li>Block PHP built-in wrappers:<span class="description"> PHP has several wrappers for use with the filesystem functions. It is possible for an attacker to use them to bypass firewalls and various IDS to exploit remote and local file inclusions. This option lets you block any script attempting to pass a <code>php://</code>or a <code>data://</code> stream inside a <code>GET</code> or <code>POST</code> request, cookies, user agent and referrer variables.</span></li>
+		<li>Block PHP built-in wrappers:<span class="description"> PHP has several wrappers for use with the filesystem functions. It is possible for an attacker to use them to bypass firewalls and various IDS to exploit remote and local file inclusions. This option lets you block any script attempting to pass a <code>php://</code> or a <code>data://</code> stream inside a <code>GET</code> or <code>POST</code> request, cookies, user agent and referrer variables.</span></li>
 		<li>Hide PHP notice &amp; error messages:<span class="description"> this option lets you hide errors returned by your scripts. Such errors can leak sensitive informations which can be exploited by hackers.</span></li>
 		<li>Sanitise <code>PHP_SELF</code>, <code>PATH_TRANSLATED</code>, <code>PATH_INFO</code>:<span class="description"> this option can sanitise any dangerous characters found in those 3 server variables to prevent various XSS and database injection attempts.</span></li>
 
@@ -249,6 +250,31 @@ function help_nfsublogin() {
 		<br />&nbsp;
 		</div>'
 	) );
+
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'login02',
+		'title'     => 'AUTH log',
+		'content'   => '
+		<div style="height:250px;">
+		<p>NinjaFirewall can write to the server <code>AUTH</code> log when the brute-force protection is triggered. This can be useful to the system administrator for monitoring purposes or banning IPs at the server level.
+		<br />If you have a shared hosting account, <strong>keep this option disabled</strong> as you do not have any access to the server\'s logs.<br />
+		On Debian-based systems, the log is located in <code>/var/log/auth.log</code>, and on Red Hat-based systems in <code>/var/log/secure</code>. The logline uses the following format:
+		<p><code>ninjafirewall[<font color="red">AA</font>]: Possible brute-force attack from <font color="red">BB</font> on <font color="red">CC</font> (<font color="red">DD</font>). Blocking access for <font color="red">EE</font>mn.</code><p>
+		<ul>
+			<li>AA: the process ID (PID).</li>
+			<li>BB: the offending IPv4 or IPv6 IP.</li>
+			<li>CC: the blog (sub-)domain name.</li>
+			<li>DD: the target attacked. It can be either <code>wp-login.php</code> or <code>XML-RPC API</code>.</li>
+			<li>EE: the time, in minutes, the protection will remain active.</li>
+		</ul>
+		Sample loglines:
+		<br />
+		<textarea class="small-text code" style="width:100%;height:80px;" wrap="off">Aug 31 01:40:35 www ninjafirewall[6191]: Possible brute-force attack from 172.16.0.1 on mysite.com (wp-login.php). Blocking access for 5mn.'. "\n" . 'Aug 31 01:45:28 www ninjafirewall[6192]: Possible brute-force attack from fe80::6e88:14ff:fe3e:86f0 on blog.domain.com (XML-RPC API). Blocking access for 25mn.</textarea>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Be careful if you are behind a load balancer, reverse-proxy or CDN because NinjaFirewall will always record the <code>REMOTE_ADDR</code> IP. If you have an application parsing the AUTH log in order to ban IPs (e.g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward the correct IP (or use the <code><a href="http://nintechnet.com/nfwp/1.1.3/">.htninja</a></code> file), otherwise you will likely block legitimate users.</span></p>
+		</div>'
+	) );
+
+
 }
 /* ================================================================== */
 

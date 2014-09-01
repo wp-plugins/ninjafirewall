@@ -2,8 +2,8 @@
 Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
-Tested up to: 3.9.2
-Stable tag: 1.2.5
+Tested up to: 4.0
+Stable tag: 1.2.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -164,12 +164,14 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 6. NinjaFirewall Log page.
 7. NinjaFirewall Contextual Help.
 
-== Upgrade Notice ==
-
-= 1.2.5 =
-This update fixes a few issues. See Changelog for more details.
-
 == Changelog ==
+
+= 1.2.6 =
+* Added a new option to record brute-force attacks to the server AUTH log (see Login Protection > AUTH log).
+* NinjaFirewall is now able to parse the wp-config.php script if the DB_HOST constant is using a "host:port", "host:socket" or "host:port:socket" format.
+* Fixed installer bug that could corrupt the .htaccess.
+* Fixed Cloudflare and Incapsula detection warning in the "Overview" page. It will not be displayed when the correct IP is used.
+* We opened a Twitter account for all updates and upgrades: @nintechnet.
 
 = 1.2.5 =
 * Fixed IE browsers italic text bug in the File Guard page.

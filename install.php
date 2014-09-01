@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-08-10 14:16:51                                       |
+ | REVISION: 2014-08-30 20:16:55                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -83,9 +83,11 @@ function nfw_install_1() {
 	<br />
 	If you need some help regarding the installation, please consult our <a href="http://ninjafirewall.com/wordpress/help.php">site</a>.
 	<br />
+	Updates info are available via Twitter:<br /><a href="https://twitter.com/nintechnet"><img border="0" src="<?php echo plugins_url( '/images/twitter_ntn.png', __FILE__ ) ?>" width="116" height="28" target="_blank"></a>
+	<br />
 	<br />
 	<form method="post">
-		<input class="button-primary" type="submit" name="Save" value="Enough chitchat, let's go ! &gt;&gt;" />
+		<p><input class="button-primary" type="submit" name="Save" value="Enough chitchat, let's go ! &gt;&gt;" /></p>
 		<input type="hidden" name="nfw_act" value="11" />
 	</form>
 </div>
@@ -225,11 +227,7 @@ function nfw_install_2( $err ) {
 			$data = file_get_contents( $htaccess_path . $htaccess );
 
 			// make sure we don't have already some of our own instructions left :
-			$pos_start = strpos( $data, HTACCESS_BEGIN );
-			$pos_end   = strpos( $data, HTACCESS_END );
-			if ( ( $pos_start !== FALSE ) && ( $pos_end !== FALSE ) && ( $pos_end > $pos_start ) ) {
-				$data = substr( $data, $pos_end + strlen( HTACCESS_END ) );
-			}
+			$data = preg_replace( '/\s?'. HTACCESS_BEGIN .'.+?'. HTACCESS_END .'[^\r\n]*\s?/s' , "\n", $data);
 
 			if ( $htaccess_writable ) {
 				echo '<li>I will add the following <font color="red">red lines</font> of code to your <code>' . $htaccess_path . $htaccess . '</code> file. All other lines, if any, are the actual content of the file&nbsp;:</li>';
@@ -328,11 +326,8 @@ function nfw_install_2( $err ) {
 			$data = file_get_contents( $_SESSION['abspath'] . $phpini );
 
 			// make sure we don't have already some of our own instructions left :
-			$pos_start = strpos( $data, PHPINI_BEGIN );
-			$pos_end   = strpos( $data, PHPINI_END );
-			if ( ( $pos_start !== FALSE ) && ( $pos_end !== FALSE ) && ( $pos_end > $pos_start ) ) {
-				$data = substr( $data, $pos_end + strlen( PHPINI_END ) );
-			}
+			$data = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $data);
+
 			if ( $phpini_writable ) {
 				echo '<li>I will add the following <font color="red">red lines</font> of code to your <code>' . $_SESSION['abspath'] . $phpini . '</code> file. All other lines, if any, are the actual content of the file&nbsp;:</li>';
 				$button_title = 'Apply changes';
@@ -344,27 +339,23 @@ function nfw_install_2( $err ) {
 		} else {
 			// There is no PHP INI we need to create one :
 			if ( is_writable( $_SESSION['abspath'] ) ) {
-				echo '<li>I need to create a PHP INI file inside your WordPress main directory (<code>' . $_SESSION['abspath'] . '</code>). Usually, such a file is named <code>php.ini</code> but some hosting companies may use <code>php5.ini</code> (e.g. GoDaddy) or <code>.user.ini</code> files instead. Please select which PHP INI file you want me to create&nbsp;:</li>
-				<label><input type="radio" name="phpini_user" value="php.ini" checked onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php.ini</code> (default)</label>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<label><input type="radio" name="phpini_user" value="php5.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php5.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php5.ini</code></label>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<label><input type="radio" name="phpini_user" value=".user.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'.user.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>.user.ini</code></label>
-				<br /><br />
+				echo '<li>I need to create a PHP initialization file inside your WordPress main directory (<code>' . $_SESSION['abspath'] . '</code>). Please select which PHP INI file you want me to create&nbsp;:</li>
+				<p><label><input type="radio" name="phpini_user" value="php.ini" checked onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php.ini</code> (used by most shared hosting accounts)</label></p>
+
+				<p><label><input type="radio" name="phpini_user" value=".user.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'.user.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>.user.ini</code> (used by most dedicated/VPS servers, as well as shared hosting accounts that do not support php.ini)</label></p>
+
+				<p><label><input type="radio" name="phpini_user" value="php5.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php5.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php5.ini</code> (a few shared hosting accounts; seldom used)</label></p>
 				I will add the <font color="red">red lines</font> of code below to that file.';
 				$button_title = 'Apply changes';
 				// default name :
 				$phpini_user = 'php.ini';
 			} else {
-				echo '<li>I cannot make the required changes because your system is read-only. Using your FTP client, you need to create a PHP INI file inside your WordPress main directory. Usually, such a file is named <code>php.ini</code> but some hosting companies may use <code>php5.ini</code> (e.g. GoDaddy) or <code>.user.ini</code> files instead.
-				<br />
-				Select which PHP INI file you will create so that I could give you the lines of code to use&nbsp;:</li>
-				<label><input type="radio" name="phpini_user" value="php.ini" checked onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php.ini\';document.getElementById(\'phpiniusertxt\').innerHTML = \'php.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php.ini</code> (default)</label>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<label><input type="radio" name="phpini_user" value="php5.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php5.ini\';document.getElementById(\'phpiniusertxt\').innerHTML = \'php5.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php5.ini</code></label>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<label><input type="radio" name="phpini_user" value=".user.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'.user.ini\';document.getElementById(\'phpiniusertxt\').innerHTML = \'.user.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>.user.ini</code></label>
-				<br /><br />
+				echo '<li>I cannot make the required changes because your system is read-only. Using your FTP client, you need to create a PHP initialization file inside your WordPress main directory. Select which PHP INI file you will create so that I can give you the lines of code to use&nbsp;:</li>
+				<p><label><input type="radio" name="phpini_user" value="php.ini" checked onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php.ini\';document.getElementById(\'phpiniusertxt\').innerHTML = \'php.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php.ini</code> (used by most shared hosting accounts)</label></p>
+
+				<p><label><input type="radio" name="phpini_user" value=".user.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'.user.ini\';document.getElementById(\'phpiniusertxt\').innerHTML = \'.user.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>.user.ini</code> (used by most dedicated/VPS servers, as well as shared hosting accounts that do not support php.ini)</label></p>
+
+				<p><label><input type="radio" name="phpini_user" value="php5.ini" onclick="document.getElementById(\'phpiniuser\').innerHTML = \'php5.ini\';document.getElementById(\'phpiniusertxt\').innerHTML = \'php5.ini\';document.nfw_install03.elements[\'nfw_conf_arr[phpini_user]\'].value=this.value">&nbsp;<code>php5.ini</code> (a few shared hosting accounts; seldom used)</label></p>
 				Please add the following <font color="red">red lines</font> of code to that file and upload it into your WordPress root directory (<code>' . $_SESSION['abspath'] . '<font id="phpiniusertxt">php.ini</font></code>)&nbsp;:</li>';
 				$diy = 1;
 				$button_title = 'Test configuration';
@@ -393,11 +384,7 @@ function nfw_install_2( $err ) {
 			$data = file_get_contents( $_SESSION['abspath'] . $htaccess );
 
 			// make sure we don't have already some of our own instructions left :
-			$pos_start = strpos( $data, HTACCESS_BEGIN );
-			$pos_end   = strpos( $data, HTACCESS_END );
-			if ( ( $pos_start !== FALSE ) && ( $pos_end !== FALSE ) && ( $pos_end > $pos_start ) ) {
-				$data = substr( $data, $pos_end + strlen( HTACCESS_END ) );
-			}
+			$data = preg_replace( '/\s?'. HTACCESS_BEGIN .'.+?'. HTACCESS_END .'[^\r\n]*\s?/s' , "\n", $data);
 
 			if ( $htaccess_writable ) {
 				echo '<li>I will add the following <font color="red">red lines</font> of code to your <code>' . $_SESSION['abspath'] . $htaccess . '</code> file. All other lines, if any, are the actual content of the file&nbsp;:</li>';

@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.2.5
+Version: 1.2.6
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -20,10 +20,10 @@ Text Domain: ninjafirewall
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-08-10 14:16:27                                       |
+ | REVISION: 2014-08-30 15:53:55                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.2.5' );
+define( 'NFW_ENGINE_VERSION', '1.2.6' );
 define( 'NFW_RULES_VERSION',  '20140810' );
  /*
  +---------------------------------------------------------------------+
@@ -172,6 +172,10 @@ function nfw_upgrade() {
 				if (! isset($nfw_options['bf_xmlrpc']) ) {
 					$nfw_options['bf_xmlrpc'] = 0;
 				}
+				// AUTH log (added to v1.2.6) :
+				if (! isset($nfw_options['bf_authlog']) ) {
+					$nfw_options['bf_authlog'] = 0;
+				}
 				// ---------------------------------------------------------
 				$data = '<?php $bf_enable=' . $nfw_options['bf_enable'] .
 				';$bf_request=\'' . $nfw_options['bf_request'] . '\'' .
@@ -182,7 +186,8 @@ function nfw_upgrade() {
 				';$auth_name=\'' . $nfw_options['auth_name'] . '\'' .
 				';$auth_pass=\'' . $nfw_options['auth_pass'] . '\';' .
 				'$auth_msg=\'' . $nfw_options['auth_msg'] . '\'' .
-				';$bf_rand=\'' . $nfw_options['bf_rand'] . '\'; ?>';
+				';$bf_rand=\'' . $nfw_options['bf_rand'] . '\';'.
+				'$bf_authlog='. $nfw_options['bf_authlog'] . '; ?>';
 				$fh = fopen( $nfwbfd_log, 'w' );
 				fwrite( $fh, $data );
 				fclose( $fh );
@@ -737,7 +742,7 @@ function nf_menu_main() {
 	if (! filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) ) {
 		?>
 		<tr>
-			<th scope="row"><?php _e('Server IP', 'ninjafirewall') ?></th>
+			<th scope="row"><?php _e('Source IP', 'ninjafirewall') ?></th>
 			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
 			<td><?php printf( __('You have a private IP&nbsp;: %s<br />If your site is behind a reverse proxy or a load balancer, ensure that you have setup your HTTP server or PHP to forward the correct visitor IP, otherwise use the NinjaFirewall <code><a href="%s">.htninja</a></code> configuration file.', 'ninjafirewall'), $_SERVER['REMOTE_ADDR'], 'http://nintechnet.com/nfwp/1.1.3/?#variables') ?></td>
 		</tr>
@@ -2944,6 +2949,11 @@ function nf_sub_loginprot() {
 		} else {
 			$bf_xmlrpc = 1;
 		}
+		if (empty($bf_authlog) ) {
+			$bf_authlog = 0;
+		} else {
+			$bf_authlog = 1;
+		}
 	}
 
 	if ( empty( $bf_enable ) ) {
@@ -2956,6 +2966,7 @@ function nf_sub_loginprot() {
 		$auth_name = '';
 		$auth_msg = 'Access restricted';
 		$bf_xmlrpc = 0;
+		$bf_authlog = 0;
 	}
 	?>
 	<script type="text/javascript">
@@ -2993,14 +3004,17 @@ function nf_sub_loginprot() {
 			document.getElementById('bf_table').style.display = '';
 			document.getElementById('bf_table1').style.display = '';
 			document.getElementById('bf_table2').style.display = '';
+			document.getElementById('bf_table3').style.display = '';
 		} else if ( off == 2 ) {
 			document.getElementById('bf_table').style.display = 'none';
+			document.getElementById('bf_table3').style.display = 'none';
 			document.getElementById('bf_table1').style.display = '';
 			document.getElementById('bf_table2').style.display = '';
 		} else {
 			document.getElementById('bf_table').style.display = 'none';
 			document.getElementById('bf_table1').style.display = 'none';
 			document.getElementById('bf_table2').style.display = 'none';
+			document.getElementById('bf_table3').style.display = 'none';
 		}
 		return;
 	}
@@ -3045,7 +3059,6 @@ function nf_sub_loginprot() {
 			</td>
 		</tr>
 	</table>
-
 	<table class="form-table" id="bf_table1"<?php echo $bf_enable ? '' : ' style="display:none"' ?>>
 		<tr>
 			<th scope="row">&nbsp;</th>
@@ -3063,6 +3076,16 @@ function nf_sub_loginprot() {
 				<br /><span class="description">&nbsp;User and Password must be from 6 to 20 characters.</span>
 				<br /><br />Message (max. 150 ASCII characters):<br />
 				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="150" size="50" name="nfw_options[auth_msg]" onkeyup="realm_valid();" />
+			</td>
+		</tr>
+	</table>
+	<table class="form-table" id="bf_table3"<?php echo $bf_enable == 1 ? '' : ' style="display:none"' ?>>
+		<tr valign="top">
+			<th scope="row">AUTH log</th>
+			<td align="left">
+				<label><input type="checkbox" name="nfw_options[bf_authlog]" value="1"<?php checked($bf_authlog, 1) ?>>&nbsp;<?php _e('Write incident to the server <code>AUTH</code> log.', 'nfwplus') ?></label>
+				<br />
+				<span class="description">See contextual help before enabling this option.</span>
 			</td>
 		</tr>
 	</table>
@@ -3115,11 +3138,12 @@ function nf_sub_loginprot_save() {
 			}
 		}
 		// Clear the backed up values from the DB:
-		$nfw_options['bf_enable']  = 0;
+		$nfw_options['bf_enable']  = 0; $nfw_options['bf_authlog'] = 0;
 		$nfw_options['bf_request'] = 0; $nfw_options['bf_bantime'] = 0;
 		$nfw_options['bf_attempt'] = 0; $nfw_options['bf_maxtime'] = 0;
 		$nfw_options['auth_name']  = 0; $nfw_options['auth_pass']  = 0;
 		$nfw_options['bf_rand']    = 0; $nfw_options['auth_msg']  = 0;
+		$nfw_options['bf_xmlrpc']  = 0;
 		update_option( 'nfw_options', $nfw_options );
 		return 0;
 
@@ -3164,6 +3188,12 @@ function nf_sub_loginprot_save() {
 		$bf_xmlrpc = 1;
 	}
 
+	if ( empty($_POST['nfw_options']['bf_authlog']) ) {
+		$bf_authlog = 0;
+	} else {
+		$bf_authlog = 1;
+	}
+
 	if ( empty($_POST['nfw_options']['auth_name']) ) {
 		return( 'Error : please enter a user name for HTTP authentication.');
 	} elseif (! preg_match('`^[-/\\_.a-zA-Z0-9]{6,20}$`', $_POST['nfw_options']['auth_name']) ) {
@@ -3196,7 +3226,8 @@ function nf_sub_loginprot_save() {
 		'\';$bf_bantime=' . $bf_bantime . ';' . '$bf_attempt=' . $bf_attempt .
 		';$bf_maxtime=' . $bf_maxtime . ';$bf_xmlrpc=' . $bf_xmlrpc. ';' .
 		'$auth_name=\'' . $auth_name . '\';$auth_pass=\'' . $auth_pass . '\';' .
-		'$auth_msg=\'' . $auth_msg . '\';$bf_rand=\'' . $bf_rand . '\'; ?>';
+		'$auth_msg=\'' . $auth_msg . '\';$bf_rand=\'' . $bf_rand . '\';' .
+		'$bf_authlog=' . $bf_authlog . '; ?>';
 
 	$fh = fopen( plugin_dir_path(__FILE__) . 'log/nfwbfd.php', 'w' );
 	if (! $fh) {
@@ -3218,6 +3249,7 @@ function nf_sub_loginprot_save() {
 	$nfw_options['auth_pass']  = $auth_pass;
 	$nfw_options['bf_rand']    = $bf_rand;
 	$nfw_options['auth_msg']   = $auth_msg;
+	$nfw_options['bf_authlog'] = $bf_authlog;
 	update_option( 'nfw_options', $nfw_options );
 
 	// We reset the brute-force protection flag for the logged in user :
@@ -3415,19 +3447,19 @@ function nf_sub_edit() {
 			echo '<option value="0" disabled="disabled">Rule ID : ' . $key . ' Firewall policies</option>';
 		} else {
 			if ( $key < 100 ) {
-				$desc = ' (remote/local file inclusion)';
+				$desc = __(' (remote/local file inclusion)', 'ninjafirewall');
 			} elseif ( $key < 150 ) {
-				$desc = ' (cross-site scripting/XSS)';
+				$desc = __(' (cross-site scripting/XSS)', 'ninjafirewall');
 			} elseif ( $key < 200 ) {
-				$desc = ' (code injection)';
+				$desc = __(' (code injection)', 'ninjafirewall');
 			} elseif ( $key < 250 ) {
-				$desc = ' (SQL injection)';
+				$desc = __(' (SQL injection)', 'ninjafirewall');
 			} elseif ( $key < 350 ) {
-				$desc = ' (various)';
+				$desc = __(' (various)', 'ninjafirewall');
 			} elseif ( $key < 400 ) {
-				$desc = ' (backdoor shells)';
+				$desc = __(' (backdoor shells)', 'ninjafirewall');
 			} elseif ( $key > 1299 ) {
-				$desc = ' (WP vulnerabilities)';
+				$desc = __(' (WP vulnerabilities)', 'ninjafirewall');
 			}
 			echo '<option value="' . $key . '">Rule ID : ' . $key . $desc . '</option>';
 			$count++;
@@ -3447,19 +3479,19 @@ function nf_sub_edit() {
 			echo '<option value="0" disabled="disabled">Rule ID #' . $key . ' Firewall policies</option>';
 		} else {
 			if ( $key < 100 ) {
-				$desc = ' (remote/local file inclusion)';
+				$desc = __(' (remote/local file inclusion)', 'ninjafirewall');
 			} elseif ( $key < 150 ) {
-				$desc = ' (cross-site scripting/XSS)';
+				$desc = __(' (cross-site scripting/XSS)', 'ninjafirewall');
 			} elseif ( $key < 200 ) {
-				$desc = ' (code injection)';
+				$desc = __(' (code injection)', 'ninjafirewall');
 			} elseif ( $key < 250 ) {
-				$desc = ' (SQL injection)';
+				$desc = __(' (SQL injection)', 'ninjafirewall');
 			} elseif ( $key < 350 ) {
-				$desc = ' (various)';
+				$desc = __(' (various)', 'ninjafirewall');
 			} elseif ( $key < 400 ) {
-				$desc = ' (backdoor shells)';
+				$desc = __(' (backdoor shells)', 'ninjafirewall');
 			} elseif ( $key > 1299 ) {
-				$desc = ' (WP vulnerabilities)';
+				$desc = __(' (WP vulnerabilities)', 'ninjafirewall');
 			}
 			echo '<option value="' . $key . '">Rule ID #' . $key . $desc . '</option>';
 			$count++;
@@ -3589,7 +3621,7 @@ function show_table(table_id) {
 					&copy; 2012-' . date( 'Y' ) . ' <a href="http://nintechnet.com/" target="_blank" title="The Ninja Technologies Network"><strong>NinTechNet</strong></a>
 					<br />
 					The Ninja Technologies Network
-					<br />
+					<p><a href="https://twitter.com/nintechnet"><img border="0" src="'. plugins_url( '/images/twitter_ntn.png', __FILE__ ) .'" width="116" height="28" target="_blank"></a></p>
 					<table border="0" cellspacing="2" cellpadding="10" width="100%">
 						<tr valign=top>
 							<td align=center style="border-right:dotted 0px #FDCD25;" width="33%">
@@ -3637,7 +3669,6 @@ function show_table(table_id) {
 				<td><a href="' . plugins_url( '/images/ninjafirewall_100.png', __FILE__ ) . '">ninjafirewall_100.png</a><br />100x100</td>
 			</tr>
 		</table>
-
 		<table id="12" style="display:none;" width="500">
 			<tr>
 				<td>
