@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-08-31 19:32:41                                       |
+ | REVISION: 2014-09-22 17:48:20                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -30,7 +30,7 @@ if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 // of the admin panel to preview this.
 
 
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubmain() {
 
@@ -50,7 +50,7 @@ function help_nfsubmain() {
 
 }
 
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubstat() {
 
@@ -67,7 +67,7 @@ function help_nfsubstat() {
 		'content'   => '<br />Benchmarks show the time NinjaFirewall took, in seconds, to proceed each request it has blocked.'
 	) );
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubopt() {
 
@@ -90,8 +90,13 @@ function help_nfsubopt() {
 		'content'   => '<br />Lets you customize the HTTP error code returned by NinjaFirewall when blocking a dangerous request and the message to display to the user. You can use any HTML tags and 3 built-in variables:
 		<li><code>%%REM_ADDRESS%%</code> : the blocked user IP.</li><li><code>%%NUM_INCIDENT%%</code> : the unique incident number as it will appear in the <a href="?page=nfsublog">firewall log</a> "INCIDENT" column.</li><li><code>%%NINJA_LOGO%%</code> : NinjaFirewall logo.</li>'
 	) );
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'opt04',
+		'title'     => 'Export/import configuration',
+		'content'   => '<br />This options lets you export you current configuration or import it from another NinjaFirewall (WP edition) installation. The imported file must match your current version otherwise it will be rejected. Note that importing will override all firewall rules and options.'
+	) );
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubpolicies() {
 
@@ -176,7 +181,7 @@ function help_nfsubpolicies() {
 	) );
 
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubfileguard() {
 
@@ -190,7 +195,7 @@ function help_nfsubfileguard() {
 		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</span></p>'
 	) );
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 function help_nfsubnetwork() {
 
 	// Network (multisite version only) :
@@ -200,7 +205,7 @@ function help_nfsubnetwork() {
 		'content'   => '<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.'
 	) );
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubalerts() {
 
@@ -212,7 +217,7 @@ function help_nfsubalerts() {
 		'content'   => '<br />NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.'
 	) );
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsublogin() {
 
@@ -262,21 +267,21 @@ function help_nfsublogin() {
 		<p><code>ninjafirewall[<font color="red">AA</font>]: Possible brute-force attack from <font color="red">BB</font> on <font color="red">CC</font> (<font color="red">DD</font>). Blocking access for <font color="red">EE</font>mn.</code><p>
 		<ul>
 			<li>AA: the process ID (PID).</li>
-			<li>BB: the offending IPv4 or IPv6 IP.</li>
+			<li>BB: the offending IPv4 or IPv6 address.</li>
 			<li>CC: the blog (sub-)domain name.</li>
-			<li>DD: the target attacked. It can be either <code>wp-login.php</code> or <code>XML-RPC API</code>.</li>
+			<li>DD: the target: it can be either <code>wp-login.php</code> or <code>XML-RPC API</code>.</li>
 			<li>EE: the time, in minutes, the protection will remain active.</li>
 		</ul>
 		Sample loglines:
 		<br />
 		<textarea class="small-text code" style="width:100%;height:80px;" wrap="off">Aug 31 01:40:35 www ninjafirewall[6191]: Possible brute-force attack from 172.16.0.1 on mysite.com (wp-login.php). Blocking access for 5mn.'. "\n" . 'Aug 31 01:45:28 www ninjafirewall[6192]: Possible brute-force attack from fe80::6e88:14ff:fe3e:86f0 on blog.domain.com (XML-RPC API). Blocking access for 25mn.</textarea>
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Be careful if you are behind a load balancer, reverse-proxy or CDN because NinjaFirewall will always record the <code>REMOTE_ADDR</code> IP. If you have an application parsing the AUTH log in order to ban IPs (e.g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward the correct IP (or use the <code><a href="http://nintechnet.com/nfwp/1.1.3/">.htninja</a></code> file), otherwise you will likely block legitimate users.</span></p>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Be careful if you are behind a load balancer, reverse-proxy or CDN because NinjaFirewall will always record the <code>REMOTE_ADDR</code> IP. If you have an application parsing the AUTH log in order to ban IPs (e.g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward the correct IP (or use the <code><a href="http://ninjafirewall.com/wordpress/htninja/">.htninja</a></code> file), otherwise you will likely block legitimate users.</span></p>
 		</div>'
 	) );
 
 
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsublog() {
 
@@ -288,7 +293,7 @@ function help_nfsublog() {
 		'content'   => '<br />The firewall log displays blocked and sanitised requests as well as some useful information. It has 6  columns:<li>DATE : date and time of the incident.</li><li>INCIDENT : unique incident number/ID as it was displayed to the <a href="?page=nfsubopt">blocked user.</a></li><li>LEVEL : level of severity (<code>critical</code>, <code>high</code> or <code>medium</code>), information (<code>info</code>, <code>error</code>, <code>upload</code>) and debugging mode (<code>DEBUG_ON</code>).</li><li>RULE : reference of the NinjaFirewall built-in security rule that triggered the action. A hyphen (<code>-</code>) instead of a number means it was a rule from your own <a href="?page=nfsubpolicies">Firewall Policies</a>.</li><li>IP : the blocked user remote address.</li><li>REQUEST : the HTTP request including offending variables &amp; values as well as the reason the action was logged.</li>'
 	) );
 }
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubedit() {
 
@@ -306,7 +311,7 @@ function help_nfsubedit() {
 	) );
 }
 
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function help_nfsubabout() {
 
@@ -380,5 +385,5 @@ function help_nfsubabout() {
 
 }
 
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 // EOF

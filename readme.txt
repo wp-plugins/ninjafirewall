@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.0
-Stable tag: 1.2.6
+Stable tag: 1.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,11 +39,15 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 = Brute-Force Attack Protection =
 
-By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the **only plugin** for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
+By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
 
-See our benchmark and stress-test: [WordPress brute-force detection plugins comparison](http://nintechnet.com/1.1.1/ "").
+See our benchmark and stress-test:
 
-The protection applies to the `wp-login.php` script and can also include the `xmlrpc.php` one. We recommend to enable it for both scripts.
+* [WordPress brute-force detection plugins comparison](http://nintechnet.com/wordpress-brute-force-detection-plugins-benchmarks.html "")
+
+* [Brute-force attack protection in a production environment](http://nintechnet.com/ninjafirewall-brute-force-attack-protection.html "")
+
+The protection applies to the `wp-login.php` script and can also include the `xmlrpc.php` one; the incident can be written to the server `AUTH` log.
 
 = Events Notification =
 
@@ -132,11 +136,11 @@ You do not need to make any modifications to your scripts. NinjaFirewall hooks a
 
 = I moved my wp-config.php file to another directory. Will it work with NinjaFirewall ? =
 
-Since version 1.1.3, you can use an optional configuration file to tell NinjaFirewall where is located your WordPress configuration file, wp-config.php, if you moved it to another directory. Please [follow these steps](http://nintechnet.com/nfwp/1.1.3/ "").
+Since version 1.1.3, you can use an optional configuration file to tell NinjaFirewall where is located your WordPress configuration file, wp-config.php, if you moved it to another directory. Please [follow these steps](http://ninjafirewall.com/wordpress/htninja/ "").
 
 = Will NinjaFirewall detect the correct IP of my visitors if I am behind a CDN service like Cloudflare ? =
 
-You can use an optional configuration file to tell NinjaFirewall which IP to use. Please [follow these steps](http://nintechnet.com/nfwp/1.1.3/ "").
+You can use an optional configuration file to tell NinjaFirewall which IP to use. Please [follow these steps](http://ninjafirewall.com/wordpress/htninja/ "").
 
 = Will it slow down my site ? =
 
@@ -165,6 +169,16 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 7. NinjaFirewall Contextual Help.
 
 == Changelog ==
+
+= 1.2.7 =
+* Added an option to import/export NinjaFirewall configuration (see "Firewall Options" page).
+* The firewall logs will be saved to the `wp-content/nfwplus/` folder, to prevent WordPress from deleting them during an update.
+* Added a warning in the "Overview" page if the administrator is not whitelisted by the firewall.
+* Non-RFC compliant uppercase IPv6 addresses found in the X_FORWARDED_FOR header will no longer be blocked by the firewall (rule #312).
+* Rules #151 and #152 (HTTP header injection) were removed to prevent false positives from occurring.
+* The "AUTH log" option from the "Login Protection" page will be disabled if the server does not support it.
+* Cookies and GET variable sanitizing, as well as HTTP_REFERER scan will be disabled by default in the Firewall Policies page.
+* Added a rule to protect against the Bash code injection vulnerability (CVE-2014-6271).
 
 = 1.2.6 =
 * Added a new option to record brute-force attacks to the server AUTH log (see Login Protection > AUTH log).
@@ -221,7 +235,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 * The "Protect against username enumeration" option ("Firewall Policies" page) will not be enabled by default, to prevent Google bot from being blocked.
 * Modified the handling of session_start.
 * Added a stats file to summarize the firewall log statistics in order to speed up the display of the dashboard widget when the log is huge.
-* Added new features to the `.htninja` file to quickly allow or block visitors. See `http://nintechnet.com/nfwp/1.1.3/` for full details.
+* Added new features to the `.htninja` file to quickly allow or block visitors. See `http://ninjafirewall.com/wordpress/htninja/` for full details.
 
 = 1.1.7 =
 * Updated firewall rules.
@@ -255,7 +269,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 = 1.1.3 =
 * Added an option to block username enumeration scanning attempts through the author archives and the login page (Firewall Policies page).
 * Added an option to always enforce HTTP Basic authentication to protect the login page and the possibility to set a custom 'realm' message (Login Protection page).
-* Added an optional configuration file that can be used to tell NinjaFirewall where is located the `wp-config.php` file, in the case it was moved to another directory (see `http://nintechnet.com/nfwp/1.1.3/` for full details).
+* Added an optional configuration file that can be used to tell NinjaFirewall where is located the `wp-config.php` file, in the case it was moved to another directory (see `http://ninjafirewall.com/wordpress/htninja/` for full details).
 * Added a warning about blocking direct access to PHP scripts located in the `/wp-includes/` directory because it could prevent non-admin users from using the TinyMCE WYSIWYG editor.
 
 = 1.1.2 =

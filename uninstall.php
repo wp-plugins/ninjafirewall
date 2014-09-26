@@ -28,7 +28,7 @@ if (! session_id() ) { session_start(); }
 
 nfw_uninstall();
 
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function nfw_uninstall() {
 
@@ -93,14 +93,12 @@ function nfw_uninstall() {
 	}
 
 	// Delete DB rows :
-	delete_option( 'nfw_options' );
-	delete_option( 'nfw_rules' );
-	delete_option( 'nfw_install' );
+	delete_option('nfw_options');
+	delete_option('nfw_rules');
+	delete_option('nfw_install');
 	delete_option( 'nfw_tmp' );
 
 }
 
-/* ================================================================== */
-
+/* ------------------------------------------------------------------ */
 // EOF
-?>
