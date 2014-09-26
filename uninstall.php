@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-01-10 19:09:02                                       |
+ | REVISION: 2014-08-30 20:16:48                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -28,7 +28,7 @@ if (! session_id() ) { session_start(); }
 
 nfw_uninstall();
 
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function nfw_uninstall() {
 
@@ -61,12 +61,8 @@ function nfw_uninstall() {
 	if (! empty($htaccess_file) && is_writable( $htaccess_file ) ) {
 		$data = file_get_contents( $htaccess_file );
 		// Find / delete instructions :
-		$pos_start = strpos( $data, HTACCESS_BEGIN );
-		$pos_end   = strpos( $data, HTACCESS_END );
-		if ( ( $pos_start !== FALSE ) && ( $pos_end !== FALSE ) && ( $pos_end > $pos_start ) ) {
-			$data = substr( $data, $pos_end + strlen( HTACCESS_END ) );
-			file_put_contents( $htaccess_file,  $data );
-		}
+		$data = preg_replace( '/\s?'. HTACCESS_BEGIN .'.+?'. HTACCESS_END .'[^\r\n]*\s?/s' , "\n", $data);
+		file_put_contents( $htaccess_file,  $data );
 	}
 
 	// Clean up PHP INI file :
@@ -92,24 +88,17 @@ function nfw_uninstall() {
 	}
 	foreach( $phpini as $ini ) {
 		$data = file_get_contents( $ini );
-		$pos_start = strpos( $data, PHPINI_BEGIN );
-		$pos_end   = strpos( $data, PHPINI_END );
-
-		if ( ( $pos_start !== FALSE ) && ( $pos_end !== FALSE ) && ( $pos_end > $pos_start ) ) {
-			$data = substr( $data, $pos_end + strlen( PHPINI_END ) );
-			file_put_contents( $ini,  $data );
-		}
+		$data = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $data);
+		file_put_contents( $ini,  $data );
 	}
 
 	// Delete DB rows :
-	delete_option( 'nfw_options' );
-	delete_option( 'nfw_rules' );
-	delete_option( 'nfw_install' );
+	delete_option('nfw_options');
+	delete_option('nfw_rules');
+	delete_option('nfw_install');
 	delete_option( 'nfw_tmp' );
 
 }
 
-/* ================================================================== */
-
+/* ------------------------------------------------------------------ */
 // EOF
-?>
