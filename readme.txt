@@ -1,6 +1,6 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet
-Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
+Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.0
 Stable tag: 1.2.7
@@ -172,13 +172,13 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 = 1.2.7 =
 * Added an option to import/export NinjaFirewall configuration (see "Firewall Options" page).
-* The firewall logs will be saved to the `wp-content/nfwplus/` folder, to prevent WordPress from deleting them during an update.
+* The firewall logs will be saved to the `wp-content/nfwlog/` folder, to prevent WordPress from deleting them during an update.
 * Added a warning in the "Overview" page if the administrator is not whitelisted by the firewall.
 * Non-RFC compliant uppercase IPv6 addresses found in the X_FORWARDED_FOR header will no longer be blocked by the firewall (rule #312).
 * Rules #151 and #152 (HTTP header injection) were removed to prevent false positives from occurring.
 * The "AUTH log" option from the "Login Protection" page will be disabled if the server does not support it.
 * Cookies and GET variable sanitizing, as well as HTTP_REFERER scan will be disabled by default in the Firewall Policies page.
-* Added a rule to protect against the Bash code injection vulnerability (CVE-2014-6271).
+* Added a rule to protect against the `shellshock` bash code injection vulnerability (CVE-2014-6271).
 
 = 1.2.6 =
 * Added a new option to record brute-force attacks to the server AUTH log (see Login Protection > AUTH log).
