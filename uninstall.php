@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-08-30 20:16:48                                       |
+ | REVISION: 2014-10-14 00:09:03                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -49,7 +49,7 @@ function nfw_uninstall() {
 	}
 
 	// clean-up .htaccess :
-	if ( file_exists( @$nfw_install['htaccess'] ) ) {
+	if (! empty($nfw_install['htaccess']) && file_exists($nfw_install['htaccess']) ) {
 		$htaccess_file = $nfw_install['htaccess'];
 	} elseif ( file_exists( ABSPATH . '.htaccess' ) ) {
 		$htaccess_file = ABSPATH . '.htaccess';
@@ -66,7 +66,7 @@ function nfw_uninstall() {
 	}
 
 	// Clean up PHP INI file :
-	if ( file_exists( @$nfw_install['phpini'] ) ) {
+	if (! empty($nfw_install['phpini']) && file_exists($nfw_install['phpini']) ) {
 		if ( is_writable( $nfw_install['phpini'] ) ) {
 			$phpini[] = $nfw_install['phpini'];
 		}

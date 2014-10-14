@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-09-22 17:48:20                                       |
+ | REVISION: 2014-10-07 18:50:05                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -32,14 +32,14 @@ if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
 /* ------------------------------------------------------------------ */
 
-function help_nfsubmain() {
+function help_nfsubmain() {	// i18n
 
 	// Overview menu help :
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'main01',
-		'title'     => 'NinjaFirewall Help',
-		'content'   => '<br />This is the contextual help&nbsp;!<br />Each NinjaFirewall menu page has such a contextual help screen with useful information about how to use and configure it.<br />&nbsp;'
+		'title'     => __('Overview', 'ninjafirewall'),
+		'content'   => '<br />' . __('This is the Overview page; it shows information about the firewall status. We recommend you keep an eye on it because, in case of problems, all possible errors and warnings will be displayed here.', 'ninjafirewall') . '<br />&nbsp;'
 	) );
 	get_current_screen()->set_help_sidebar(
 		'<p><strong>' . __( 'For more information:', 'ninjafirewall' ) . '</strong></p>' .
@@ -138,7 +138,7 @@ function help_nfsubpolicies() {
 		<li>Whether to sanitise the <code>REQUEST</code> variable.</li>
 
 		<strong>Cookies</strong>
-		<li>Whether to scan and/or sanitise <code>Cookies</code> requests.</li>
+		<li>Whether to scan and/or sanitise cookies.</li>
 
 		<strong>HTTP_USER_AGENT server variable</strong>
 		<li>Whether to scan and/or sanitise <code>HTTP_USER_AGENT</code> requests.</li>
@@ -190,8 +190,8 @@ function help_nfsubfileguard() {
 		'id'        => 'fileguard01',
 		'title'     => 'File Guard',
 		'content'   => '<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
-		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time).
-		<p>Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.</p>
+		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time). Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
+		<p>Modifications detected by NinjaFirewall include <code>mtime</code> (saved or updated content of a file) and <code>ctime</code> (inode change, e.g., permissions, ownership etc).</p>
 		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</span></p>'
 	) );
 }
@@ -290,7 +290,7 @@ function help_nfsublog() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
 		'title'     => 'Firewall Log',
-		'content'   => '<br />The firewall log displays blocked and sanitised requests as well as some useful information. It has 6  columns:<li>DATE : date and time of the incident.</li><li>INCIDENT : unique incident number/ID as it was displayed to the <a href="?page=nfsubopt">blocked user.</a></li><li>LEVEL : level of severity (<code>critical</code>, <code>high</code> or <code>medium</code>), information (<code>info</code>, <code>error</code>, <code>upload</code>) and debugging mode (<code>DEBUG_ON</code>).</li><li>RULE : reference of the NinjaFirewall built-in security rule that triggered the action. A hyphen (<code>-</code>) instead of a number means it was a rule from your own <a href="?page=nfsubpolicies">Firewall Policies</a>.</li><li>IP : the blocked user remote address.</li><li>REQUEST : the HTTP request including offending variables &amp; values as well as the reason the action was logged.</li>'
+		'content'   => '<br />The firewall log displays blocked and sanitised requests as well as some useful information. It has 6  columns:<li>DATE : date and time of the incident.</li><li>INCIDENT : unique incident number/ID as it was displayed to the <a href="?page=nfsubopt">blocked user.</a></li><li>LEVEL : level of severity (<code>critical</code>, <code>high</code> or <code>medium</code>), information (<code>info</code>, <code>upload</code>) and debugging mode (<code>DEBUG_ON</code>).</li><li>RULE : reference of the NinjaFirewall built-in security rule that triggered the action. A hyphen (<code>-</code>) instead of a number means it was a rule from your own <a href="?page=nfsubpolicies">Firewall Policies</a>.</li><li>IP : the blocked user remote address.</li><li>REQUEST : the HTTP request including offending variables &amp; values as well as the reason the action was logged.</li>'
 	) );
 }
 /* ------------------------------------------------------------------ */

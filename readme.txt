@@ -3,7 +3,7 @@ Contributors: nintechnet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.0
-Stable tag: 1.2.7
+Stable tag: 1.2.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Rules editor to enable/disable built-in security rules
 * Activity log and statistics
 * Debugging mode
+* Possibility to [prepend your own PHP code](http://ninjafirewall.com/wordpress/htninja/ "") to the firewall
 
 = Brute-Force Attack Protection =
 
@@ -128,7 +129,7 @@ NinjaFirewall does not require any root privilege and is fully compatible with s
 
 = Does it work with Nginx ? =
 
-NinjaFirewall works with any Unix-based HTTP server (Apache, Nginx, LiteSpeed etc). Please [follow these steps](http://wordpress.org/support/topic/nginx-instructions "").
+NinjaFirewall works with Nginx and others Unix-based HTTP servers (Apache, LiteSpeed etc). Its installer will detect it.
 
 = Do I need to alter my PHP scripts ? =
 
@@ -170,10 +171,22 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
+= 1.2.8 =
+* Added a drop-down menu to the "Statistics" page to select and view stats from the previous months.
+* Added a drop-down menu to the "Firewall Log" page to select and view logs from the previous months.
+* New simpler and intuitive installer.
+* Fixed the FORCE_SSL_ADMIN alert that was unnecessarily displayed when the site was already in HTTPS mode.
+* Fixed a potential bug in the user enumeration protection that could block a legitimate user.
+* Added a warning to WordPress admin console if the log directory does not exist.
+* Added missing MIME and charset headers to all emails sent by the firewall.
+* Updated "File Guard" contextual help.
+* Updated security rules.
+* Fixed various small bugs and typos.
+
 = 1.2.7 =
 * Added an option to import/export NinjaFirewall configuration (see "Firewall Options" page).
 * The firewall logs will be saved to the `wp-content/nfwlog/` folder, to prevent WordPress from deleting them during an update.
-* Added a warning in the "Overview" page if the administrator is not whitelisted by the firewall.
+* Added a warning to the "Overview" page if the administrator is not whitelisted by the firewall.
 * Non-RFC compliant uppercase IPv6 addresses found in the X_FORWARDED_FOR header will no longer be blocked by the firewall (rule #312).
 * Rules #151 and #152 (HTTP header injection) were removed to prevent false positives from occurring.
 * The "AUTH log" option from the "Login Protection" page will be disabled if the server does not support it.

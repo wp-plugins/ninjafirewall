@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.2.7
+Version: 1.2.8
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -20,11 +20,11 @@ Text Domain: ninjafirewall
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-09-25 20:02:52                                       |
+ | REVISION: 2014-10-13 01:04:13                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.2.7' );
-define( 'NFW_RULES_VERSION',  '20140925' );
+define( 'NFW_ENGINE_VERSION', '1.2.8' );
+define( 'NFW_RULES_VERSION',  '20141014' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -55,6 +55,10 @@ define( 'NFW_ASCII_CTRL', 500);
 define( 'NFW_DOC_ROOT', 510);
 define( 'NFW_WRAPPERS', 520);
 define( 'NFW_LOOPBACK', 540);
+
+/* ------------------------------------------------------------------ */
+
+require( plugin_dir_path(__FILE__) . 'lib/nfw_misc.php' );
 
 /* ------------------------------------------------------------------ */
 
@@ -278,7 +282,7 @@ function nfw_upgrade() {	//i18n
 	// do we need to update rules as well ?
 	if ( ( $nfw_options ) && ( $nfw_options['rules_version'] < NFW_RULES_VERSION ) ) {
 		// fetch new set of rules :
-		$_POST['nfw_act'] = 'x';
+		$_REQUEST['nfw_act'] = 'x';
 		require_once( plugin_dir_path(__FILE__) . 'install.php' );
 		$nfw_rules_new = unserialize( nfw_default_rules() );
 
@@ -294,9 +298,9 @@ function nfw_upgrade() {	//i18n
 		$nfw_rules_new[NFW_DOC_ROOT]['what']= $nfw_rules[NFW_DOC_ROOT]['what'];
 		$nfw_rules_new[NFW_DOC_ROOT]['on']	= $nfw_rules[NFW_DOC_ROOT]['on'];
 
-		// v1.2.7 update -------------------------------------------------
+		// v1.2.7:20140925 update ----------------------------------------
 		// We delete rules #151 and #152
-		if ( version_compare( $nfw_options['rules_version'], '1.2.7', '<' ) ) {
+		if ( version_compare( $nfw_options['rules_version'], '20140925', '<' ) ) {
 			if ( isset($nfw_rules_new[151]) ) {
 				unset($nfw_rules_new[151]);
 			}
@@ -675,47 +679,6 @@ function nf_menu_install() {
 
 /* ------------------------------------------------------------------ */
 
-function nf_admin_notice(){
-
-	// display a big red warning if the firewall returned an error :
-
-	// we don't display any fatal error message to users :
-	if (nf_not_allowed( 0, __LINE__ ) ) { return; }
-
-	list ( $user_enabled, $hook_enabled, $debug_enabled ) = is_nfw_enabled();
-	if ( (! $user_enabled) || (! $hook_enabled ) || ( $debug_enabled ) ) {
-		// we will assume that NinjaFirewall it is not installed yet :
-		return;
-	}
-
-	if ( defined('NFW_STATUS') ) {
-		if ( NFW_STATUS == 20 ) {
-			// OK
-			return;
-		}
-		$err_fw = array(
-			1	=> 'cannot find WordPress configuration file',
-			2	=>	'cannot read WordPress configuration file',
-			3	=>	'cannot retrieve WordPress database credentials',
-			4	=>	'cannot connect to WordPress database',
-			5	=>	'cannot retrieve user options from database (#1)',
-			6	=>	'cannot retrieve user options from database (#2)',
-			7	=>	'cannot retrieve user rules from database (#1)',
-			8	=>	'cannot retrieve user rules from database (#2)'
-		);
-		$err = $err_fw[NFW_STATUS];
-	} else {
-		// something wrong, here :
-		$err = 'communication with the firewall failed';
-	}
-	echo '<div class="error"><p><strong>NinjaFirewall fatal error :</strong> ' . $err .
-		'. Please review your installation. Your site is <strong>not</strong> protected.</p></div>';
-}
-
-add_action('all_admin_notices', 'nf_admin_notice');
-
-/* ------------------------------------------------------------------ */
-
 function nf_menu_main() {
 
 	// Main menu (Overview) :
@@ -752,8 +715,8 @@ function nf_menu_main() {
 		echo '<div class="error settings-error"><p><strong>Warning :</strong> you are at risk ! Your site is not protected as long as the problems below aren\'t solved.</p></div>';
 	}
 	// first run ?
-	if ( ( defined( 'NFW_IT_WORKS' )) || (! empty( $_GET['nfw_firstrun']) ) ) {
-		echo '<br><div class="updated settings-error"><p><strong>Congratulations&nbsp;!</strong> NinjaFirewall is up and running. Use the menu in the left frame to configure it according to your needs.<br />If you need help, click on the contextual <strong>Help</strong> menu tab located in the upper right corner of each page.</p></div>';
+	if ( @NFW_STATUS == 20 && ! empty( $_REQUEST['nfw_firstrun']) ) {
+		echo '<br><div class="updated settings-error"><p>Congratulations&nbsp;! NinjaFirewall is up and running.<br />If you need help, click on the contextual <code>Help</code> menu tab located in the upper right corner of each page.</p></div>';
 	}
 	?>
 	<br />
@@ -795,7 +758,7 @@ function nf_menu_main() {
 		<tr>
 			<th scope="row"><?php _e('Source IP', 'ninjafirewall') ?></th>
 			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
-			<td><?php printf( __('You have a private IP&nbsp;: %s<br />If your site is behind a reverse proxy or a load balancer, ensure that you have setup your HTTP server or PHP to forward the correct visitor IP, otherwise use the NinjaFirewall <code><a href="%s">.htninja</a></code> configuration file.', 'ninjafirewall'), $_SERVER['REMOTE_ADDR'], 'http://ninjafirewall.com/wordpress/htninja/?#variables') ?></td>
+			<td><?php printf( __('You have a private IP&nbsp;: %s<br />If your site is behind a reverse proxy or a load balancer, ensure that you have setup your HTTP server or PHP to forward the correct visitor IP, otherwise use the NinjaFirewall <code><a href="%s">.htninja</a></code> configuration file.', 'ninjafirewall'), $_SERVER['REMOTE_ADDR'], 'http://ninjafirewall.com/wordpress/htninja/') ?></td>
 		</tr>
 		<?php
 	}
@@ -911,124 +874,7 @@ function nf_sub_statistics() {
 
 	// Stats / benchmarks menu :
 
-	if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
-
-	echo '
-<div class="wrap">
-		<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Statistics</h2>
-	<br />';
-
-	$critical = $high = $medium = $slow = $benchmark = $tot_bench = $speed = $upload = $total = 0;
-
-	// Do we have any log for this month ?
-	if (! file_exists( WP_CONTENT_DIR . '/nfwlog/firewall_' . date( 'Y-m' ) . '.php' ) ) {
-		echo '<div class="updated settings-error"><p>You do not have any stats for the current month yet.</p></div>';
-		$fast = 0;
-	} else {
-		$fast = 1000;
-
-		if (! $fh = @fopen( WP_CONTENT_DIR . '/nfwlog/firewall_' . date( 'Y-m' ) . '.php', 'r') ) {
-			echo '<div class="error settings-error"><p><strong>Cannot open logfile :</strong> ' .
-				WP_CONTENT_DIR . '/nfwlog/firewall_' . date( 'Y-m' ) . '.php</p></div></div>';
-			return;
-		}
-		// Retrieve all lines :
-		while (! feof( $fh) ) {
-			$line = fgets( $fh);
-			if (preg_match( '/^\[.+?\]\s+\[(.+?)\]\s+(?:\[.+?\]\s+){3}\[(1|2|3|4|5|6)\]/', $line, $match) ) {
-				if ( $match[2] == 1) {
-					$medium++;
-				} elseif ( $match[2] == 2) {
-					$high++;
-				} elseif ( $match[2] == 3) {
-					$critical++;
-				} elseif ( $match[2] == 5) {
-					$upload++;
-				}
-				if ($match[1]) {
-					if ( $match[1] > $slow) {
-						$slow = $match[1];
-					}
-					if ( $match[1] < $fast) {
-						$fast = $match[1];
-					}
-					$speed += $match[1];
-					$tot_bench++;
-				}
-			}
-		}
-		fclose( $fh);
-
-		$total = $critical + $high + $medium;
-		if ( $total ) {
-			if ( $total == 1) {$fast = $slow;}
-			$coef = 100 / $total;
-			$critical = round( $critical * $coef, 2);
-			$high = round( $high * $coef, 2);
-			$medium = round( $medium * $coef, 2);
-			if ($tot_bench) {
-				$speed = round( $speed / $tot_bench, 4);
-			} else {
-				$speed = 0;
-				$fast = 0;
-			}
-		}
-	}
-
-	echo '
-	<table class="form-table">
-		<tr>
-			<th scope="row"><h3>Monthly stats</h3></th>
-			<td align="left">' . date("F Y") . '</td>
-		</tr>
-		<tr>
-			<th scope="row">Blocked hacking attempts</th>
-			<td align="left">' . $total . '</td>
-		</tr>
-		<tr>
-			<th scope="row">Hacking attempts severity</th>
-			<td align="left">
-				Critical : ' . $critical . '%<br />
-				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="250" align="left" style="height:14px;">
-					<tr>
-						<td width="' . round( $critical) . '%" background="' . plugins_url( '/images/bar-critical.png', __FILE__ ) . '" style="padding:0px"></td><td width="' . round(100 - $critical) . '%" style="padding:0px"></td>
-					</tr>
-				</table>
-				<br /><br />High : ' . $high . '%<br />
-				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="250" align="left" style="height:14px;">
-					<tr>
-						<td width="' . round( $high) . '%" background="' . plugins_url( '/images/bar-high.png', __FILE__ ) . '" style="padding:0px"></td><td width="' . round(100 - $high) . '%" style="padding:0px"></td>
-					</tr>
-				</table>
-				<br /><br />Medium : ' . $medium . '%<br />
-				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="250" align="left" style="height:14px;">
-					<tr>
-						<td width="' . round( $medium) . '%" background="' . plugins_url( '/images/bar-medium.png', __FILE__ ) . '" style="padding:0px;"></td><td width="' . round(100 - $medium) . '%" style="padding:0px;"></td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row">Uploaded files</th>
-			<td align="left">' . $upload . '</td>
-		</tr>
-
-		<tr><th scope="row"><h3>Benchmarks</h3></th><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr>
-			<th scope="row">Average time per request</th>
-			<td align="left">' . $speed . 's</td>
-		</tr>
-		<tr>
-			<th scope="row">Fastest request</th>
-			<td align="left">' . round( $fast, 4) . 's</td>
-		</tr>
-		<tr>
-			<th scope="row">Slowest request</th>
-			<td align="left">' . round( $slow, 4) . 's</td>
-		</tr>
-	</table>
-</div>';
+	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_statistics.php' );
 
 }
 
@@ -1079,11 +925,18 @@ function chksubmenu() {
       document.getElementById("santxt").style.color = "#bbbbbb";
    }
 }
-function ssl_warn() {
-	if (confirm("WARNING: ensure that you can access your admin console from HTTPS (' . admin_url('/','https') . ') before enabling this option, otherwise you will lock yourself out of your site !\nGo ahead ?")){
-		return true;
+function ssl_warn() {';
+	// Obviously, if we are already in HTTPS mode, we don't send any warning:
+	if ($_SERVER['SERVER_PORT'] == 443 ) {
+		echo 'return true;';
+	} else {
+		echo '
+		if (confirm("WARNING: ensure that you can access your admin console from HTTPS before enabling this option, otherwise you will lock yourself out of your site !\nGo ahead ?")){
+			return true;
+		}
+		return false;';
 	}
-	return false;
+echo '
 }
 </script>
 
@@ -1438,7 +1291,7 @@ function ssl_warn() {
 	<h3>IPs</h3>
 	<table class="form-table" border=0>
 		<tr>
-			<th scope="row">Block localhost IP in <code>GET/POST</code> requests</th>
+			<th scope="row">Block localhost IP in <code>GET/POST</code> request</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_rules[no_localhost_ip]" value="1"<?php checked( $no_localhost_ip, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -1587,7 +1440,7 @@ function ssl_warn() {
 	<h3>Various</h3>
 	<table class="form-table">
 		<tr valign="top">
-			<th scope="row">Block the <code>DOCUMENT_ROOT</code> server variable in HTTP requests</th>
+			<th scope="row">Block the <code>DOCUMENT_ROOT</code> server variable in HTTP request</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label <?php echo $greyed ?>><input type="radio" name="nfw_rules[block_doc_root]" value="1"<?php checked( $block_doc_root, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -2643,103 +2496,7 @@ function nf_sub_alerts_save() {
 function nf_sub_log() {
 
 	// Firewall Log menu :
-
-	if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
-
-	$log = WP_CONTENT_DIR . '/nfwlog/firewall_' . date( 'Y-m' ) . '.php';
-
-	$err = '';
-	if ( file_exists( $log ) ) {
-		if (! is_writable( $log ) ) {
-			$err = 'logfile is not writable. Please chmod it and its parent directory to 0777';
-		}
-	} else {
-		if (! is_writable( WP_CONTENT_DIR . '/nfwlog' ) ) {
-			$err = 'log directory is not writable. Please chmod it to 0777';
-		}
-	}
-
-	echo '
-<div class="wrap">
-	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Firewall Log</h2>
-	<br />';
-
-	if ( $err ) {
-		echo '<div class="error settings-error"><p><strong>Error : </strong>' . $err . '</p></div>';
-	}
-
-	// Do we have any log for this month ?
-	if (! file_exists( $log ) ) {
-		echo '<div class="updated settings-error"><p>You do not have any log for the current month yet.</p></div></div>';
-		return;
-	}
-
-	if (! $fh = @fopen( $log, 'r' ) ) {
-		echo '<div class="error settings-error"><p><strong>Fatal error :</strong> cannot open the log ( ' . $log .' )</p></div></div>';
-		return;
-	}
-	// We will only display the last $max_lines lines, and will warn
-	// about it if the log is bigger :
-	$count = 0;
-	$max_lines = 500;
-	while (! feof( $fh ) ) {
-		fgets( $fh );
-		$count++;
-	}
-	// Skip last empty line :
-	$count--;
-	fclose( $fh );
-	if ( $count < $max_lines ) {
-		$skip = 0;
-	} else  {
-		echo '<div class="updated settings-error"><p><strong>Warning :</strong> your log has ' .
-			$count . ' lines. I will display the last 500 lines only.</p></div>';
-		$skip = $count - $max_lines;
-	}
-
-	// Get timezone :
-	nfw_get_blogtimezone();
-
-	$levels = array( '', 'medium', 'high', 'critical', 'error', 'upload', 'info', 'DEBUG_ON' );
-	echo '
-	<table class="form-table">
-		<tr>
-			<td width="100%">
-				<textarea class="small-text code" style="width:100%;height:320px;" wrap="off">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
-				'DATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCIDENT&nbsp;&nbsp;LEVEL&nbsp;&nbsp;' .
-				'&nbsp;&nbsp;&nbsp;RULE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
-				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REQUEST' . "\n";
-
-	$fh = fopen( $log, 'r' );
-	while (! feof( $fh ) ) {
-		$line = fgets( $fh );
-		if ( $skip <= 0 ) {
-			if ( preg_match( '/^\[(\d{10})\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(#\d{7})\]\s+\[(\d+)\]\s+\[(\d)\]\s+\[([\d.:a-fA-F]+?)\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+)\]$/', $line, $match ) ) {
-				if ( empty( $match[4]) ) { $match[4] = '-'; }
-				$res = date( 'd/M/y H:i:s', $match[1] ) . '  ' . $match[3] . '  ' . str_pad( $levels[$match[5]], 8 , ' ', STR_PAD_RIGHT) .'  ' .
-				str_pad( $match[4], 4 , ' ', STR_PAD_LEFT) . '  ' . str_pad( $match[6], 15, ' ', STR_PAD_RIGHT) . '  ' .
-				$match[7] . ' ' . $match[8] . ' - ' .	$match[9] . ' - [' . $match[10] . ']';
-				// If multi-site mode, append the domain name :
-				if ( is_multisite() ) {
-					$res .= ' - ' . $match[2];
-				}
-				echo htmlentities( $res ."\n" );
-			}
-		}
-		$skip--;
-	}
-
-	fclose( $fh );
-
-	$log_stat = stat( $log );
-	echo '</textarea>
-				<br />
-				<center><span class="description">The log is rotated monthly - Current size: ' . number_format( $log_stat['size'] ) .' bytes, '. $count . ' lines.</span></center>
-			</td>
-		</tr>
-	</table>
-</div>';
+	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_log.php' );
 
 }
 /* ------------------------------------------------------------------ */
@@ -2786,7 +2543,7 @@ function nf_sub_loginprot() {
 			$bf_bantime = 5;
 		}
 		if (! @preg_match('/^[1-9][0-9]?$/', $bf_attempt ) ) {
-			$bf_attempt = 5;
+			$bf_attempt = 8;
 		}
 		if (! @preg_match('/^[1-9][0-9]?$/', $bf_maxtime ) ) {
 			$bf_maxtime = 15;
@@ -2814,7 +2571,7 @@ function nf_sub_loginprot() {
 		$bf_enable   = 0;
 		$get_post = $bf_request  = 'POST';
 		$bf_bantime  = 5;
-		$bf_attempt  = 5;
+		$bf_attempt  = 8;
 		$bf_maxtime  = 15;
 		$auth_name = '';
 		$auth_msg = 'Access restricted';
@@ -2921,11 +2678,18 @@ function nf_sub_loginprot() {
 		</tr>
 	</table>
 
+	<?php
+	if ( empty($auth_pass) ) {
+		$placeholder = '';
+	} else {
+		$placeholder = '&#149;&#149;&#149;&#149;&#149;&#149;&#149;&#149;';
+	}
+	?>
 	<table class="form-table" id="bf_table2"<?php echo $bf_enable ? '' : ' style="display:none"' ?>>
 		<tr valign="top">
 			<th scope="row">HTTP authentication</th>
 			<td align="left">
-				User:&nbsp;<input maxlength="20" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" title="Enter user name (from 6 to 20 characters)" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="20" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" title="Enter password (from 6 to 20 characters)" />
+				User:&nbsp;<input maxlength="20" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" title="Enter user name (from 6 to 20 characters)" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="20" placeholder="<?php echo $placeholder ?>" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" title="Enter password (from 6 to 20 characters)" />
 				<br /><span class="description">&nbsp;User and Password must be from 6 to 20 characters.</span>
 				<br /><br />Message (max. 150 ASCII characters):<br />
 				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="150" size="50" name="nfw_options[auth_msg]" onkeyup="realm_valid();" />
@@ -2943,7 +2707,7 @@ function nf_sub_loginprot() {
 					$bf_msg = __('Your server configuration is not compatible with that option.', 'ninjafirewall');
 					$enabled = 0;
 				} else {
-					$bf_msg = __('Write incident to the server <code>AUTH</code> log.', 'ninjafirewall');
+					$bf_msg = __('See contextual help before enabling this option.', 'ninjafirewall');
 					$enabled = 1;
 				}
 				?>
@@ -3030,7 +2794,7 @@ function nf_sub_loginprot_save() {
 		$bf_attempt = $_POST['nfw_options']['bf_attempt'];
 	} else {
 		// Default value :
-		$bf_attempt = 5;
+		$bf_attempt = 8;
 	}
 	if ( @preg_match('/^[1-9][0-9]?$/', $_POST['nfw_options']['bf_maxtime'] ) ) {
 		$bf_maxtime = $_POST['nfw_options']['bf_maxtime'];
@@ -3111,8 +2875,15 @@ function nfw_query( $query ) { // i18n
 	}
 
 	if ( $query->is_main_query() && $query->is_author() ) {
+		if (! empty($_REQUEST['author']) ) {
+			$tmp = 'author=' . $_REQUEST['author'];
+		} elseif (! empty($_REQUEST['author_name']) ) {
+			$tmp = 'author_name=' . $_REQUEST['author_name'];
+		} else {
+			return;
+		}
 		$query->set('author_name', '0');
-		nfw_log2( __('User enumeration scan (author archives)', 'ninjafirewall'), $_SERVER['REQUEST_URI'], 2, 0);
+		nfw_log2( __('User enumeration scan (author archives)', 'ninjafirewall'), $tmp, 2, 0);
 		wp_redirect( home_url('/') );
 		exit;
 	}
@@ -3711,9 +3482,12 @@ function nfw_stats_widget(){
 			<th width="50%" align="left">Uploaded files</th>
 			<td width="50%" align="left">' . $upload . '</td>
 		</tr>
-	</table>
-	<div align="right"><small><a href="admin.php?page=nfsublog">View firewall log</a></small></div>
-';
+	</table>';
+	// Display the link to the log page only if the log is not empty :
+	if ( $total || $upload ) {
+		echo '<div align="right"><small><a href="admin.php?page=nfsublog">View firewall log</a></small></div>';
+	}
+
 }
 
 if ( is_multisite() ) {

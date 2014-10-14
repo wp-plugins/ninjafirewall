@@ -7,7 +7,7 @@
 // +---------------------------------------------------------------------+
 // | http://nintechnet.com/                                              |
 // +---------------------------------------------------------------------+
-// | REVISION: 2014-08-31 03:00:55                                       |
+// | REVISION: 2014-10-13 01:03:17                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -240,10 +240,6 @@ if ( $nfw_['a_msg'] ) {
 if (! session_id() ) { session_start(); }
 if (! empty($_SESSION['nfw_goodguy']) ) {
 	$nfw_['mysqli']->close();
-	// for testing purpose (used during the installation process) :
-	if (! empty( $_POST['nfw_test'] ) ) {
-		define( 'NFW_IT_WORKS', true );
-	}
 	define( 'NFW_STATUS', 20 );
 	unset($nfw_);
 	return;
@@ -291,7 +287,10 @@ if (! empty($nfw_['nfw_options']['fg_enable']) ) {
 					$nfw_['nfw_options']['tzstring'] = 'UTC';
 				}
 				date_default_timezone_set($nfw_['nfw_options']['tzstring']);
-				$nfw_['nfw_options']['m_headers'] = 'From: "NinjaFirewall" <postmaster@'. $_SERVER['SERVER_NAME'] . ">\r\n\r\n";
+				$nfw_['nfw_options']['m_headers'] = 'From: "NinjaFirewall" <postmaster@'. $_SERVER['SERVER_NAME'] . ">\r\n";
+				$nfw_['nfw_options']['m_headers'] .= "Content-Transfer-Encoding: 7bit\r\n";
+				$nfw_['nfw_options']['m_headers'] .= "Content-Type: text/plain; charset=\"UTF-8\"\r\n";
+				$nfw_['nfw_options']['m_headers'] .= "MIME-Version: 1.0\r\n";
 				$nfw_['nfw_options']['m_subject'] = '[NinjaFirewall] Alert: File Guard detection';
 				$nfw_['nfw_options']['m_msg'] = 	'Someone accessed a script that was modified or created less than ' .
 					$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
