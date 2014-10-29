@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-10-07 18:50:05                                       |
+ | REVISION: 2014-10-28 00:42:47                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -168,7 +168,7 @@ function help_nfsubpolicies() {
 		<li>Protect against username enumeration:<span class="description"> it is possible to enumerate usernames either through the WordPress author archives or the login page. Although this is not a vulnerability but a WordPress feature, some hackers use it to retrieve usernames in order to launch more accurate brute-force attacks. NinjaFirewall will not block the request but, if it is a failed login attempt, it will sanitise the error message returned by WordPress and, if it is an author archives scan, it will invalidate it and redirect the user to the blog index page.</span></li>
 		<li>Block access to WordPress XML-RPC API:<span class="description"> XML-RPC is a remote procedure call (RPC) protocol which uses XML to encode its calls and HTTP as a transport mechanism. WordPress has an XMLRPC API that can be accessed through the <code>xmlrpc.php</code> file. Since WordPress version 3.5, it is always activated and cannot be turned off. NinjaFirewall allows you to block any access to that file. This option is not enabled by default.</span></li>
 		<li>Block <code>POST</code> requests in the themes folder <code>/wp-content/themes</code>:<span class="description"> this option can be useful to block hackers from installing backdoor in the PHP theme files. However, because some custom themes may include an HTML form (contact, search form etc), this option is not enabled by default.</span></li>
-		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear. <font color="red"><strong>Warning:</strong></font> ensure that you can access your admin console from HTTPS (<a href="' . admin_url('/','https') . '" target="_blank">' . admin_url('/','https') . '</a>) before enabling this option, otherwise you will lock yourself out of your site&nbsp;!</span></li>
+		<li>Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:<span class="description"> enable this option when you want to secure logins and the admin area so that both passwords and cookies are never sent in the clear. <font color="red"><strong>Warning:</strong></font> ensure that you can access your admin console from HTTPS before enabling this option, otherwise you will lock yourself out of your site&nbsp;!</span></li>
 		<li>Disable the plugin and theme editor <code>DISALLOW_FILE_EDIT</code>:<span class="description"> disabling the plugin and theme editor provides an additional layer of security if a hacker gains access to a well-privileged user account.</span></li>
 		<li>Disable plugin and theme update/installation <code>DISALLOW_FILE_MODS</code>:<span class="description"> this option will block users being able to use the plugin and theme installation/update functionality from the WordPress admin area. Setting this constant also disables the Plugin and Theme editor.</span></li>
 
@@ -196,15 +196,36 @@ function help_nfsubfileguard() {
 	) );
 }
 /* ------------------------------------------------------------------ */
-function help_nfsubnetwork() {
+function help_nfsubnetwork() {	// i18n
 
 	// Network (multisite version only) :
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'network01',
-		'title'     => 'Network',
-		'content'   => '<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.'
+		'title'     => __('Network', 'nfwplus'),
+		'content'   => __('<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.', 'nfwplus')
 	) );
 }
+/* ------------------------------------------------------------------ */
+
+function help_nfsubfilecheck() {	// i18n
+
+	// File check menu help :
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'filecheck01',
+		'title'     => __('File Check', 'ninjafirewall'),
+		'content'   => __('<p>File Check lets you perform file integrity monitoring upon request.
+		<br />
+		You need to create a snapshot of all your files and then, at a later time, you can scan your system to compare it with the previous snapshot. Any modification will be immediately detected: file content, file permissions, file ownership, timestamp (<code>ctime</code> and <code>mtime</code>) as well as file creation and deletion.
+		</p>
+		<li>Create a snapshot of all files stored in that directory: by default, the directory is set to WordPress <code>ABSPATH</code> (<code>' . ABSPATH . '</code>).</li>
+		<li>Exclude the following files/folders: you can enter a directory or a file name (e.g., <code>/foo/bar/</code>), or a part of it (e.g., <code>foo</code>). Or you can use an extension (e.g., <code>.css</code>).
+		<br />
+		Multiple value must be comma-separated (e.g., <code>/foo/bar/,.css,.png</code>).</li>
+		<li>Do not follow symbolic links: by default, NinjaFirewall will not follow symbolic links.</li>', 'ninjafirewall')
+	) );
+
+}
+
 /* ------------------------------------------------------------------ */
 
 function help_nfsubalerts() {

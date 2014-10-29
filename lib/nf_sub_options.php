@@ -6,7 +6,7 @@
  | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
  |                                                                     |
  +---------------------------------------------------------------------+
- | REVISION: 2014-09-22 16:03:21                                       |
+ | REVISION: 2014-10-27 18:27:27                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -225,7 +225,7 @@ function nf_sub_options_import() {
 	if (! $data) {
 		return sprintf($err_msg, 1);
 	}
-	list ($options, $rules, $bf) = explode("\n:-:\n", $data . "\n:-:\n");
+	@list ($options, $rules, $bf) = @explode("\n:-:\n", $data . "\n:-:\n");
 	if (! $options || ! $rules) {
 		return sprintf($err_msg, 2);
 	}
@@ -257,6 +257,9 @@ function nf_sub_options_import() {
 									 '/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
 									 '/'. basename(WP_CONTENT_DIR) .'/uploads/|/cache/';
 	// $nfw_options['alert_email'] = get_option('admin_email');
+
+	// We don't import the File Check 'snapshot directory' path:
+	$nfw_options['snapdir'] = '';
 
 	// If brute force protection is enabled, we need to create a new config file :
 	$nfwbfd_log = WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php';

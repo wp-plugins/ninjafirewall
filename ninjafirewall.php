@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.2.8
+Version: 1.3
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -20,11 +20,11 @@ Text Domain: ninjafirewall
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-10-13 01:04:13                                       |
+ | REVISION: 2014-10-28 00:41:11                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.2.8' );
-define( 'NFW_RULES_VERSION',  '20141014' );
+define( 'NFW_ENGINE_VERSION', '1.3' );
+define( 'NFW_RULES_VERSION',  '20141029' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -131,7 +131,7 @@ register_deactivation_hook( __FILE__, 'nfw_deactivate' );
 function nfw_upgrade() {	//i18n
 
 	// Only used when upgrading NinjaFirewall, sending alerts
-	// and exporting configuration :
+	// and exporting/downloading files :
 
 	if ( nf_not_allowed(0, __LINE__) ) { return; }
 
@@ -156,6 +156,43 @@ function nfw_upgrade() {	//i18n
 		header('Content-Disposition: attachment; filename="nfwp.' . NFW_ENGINE_VERSION . '.dat"');
 		echo $data;
 		exit;
+	}
+
+	// Download File Check modified files list :
+	if ( isset($_POST['dlmods']) ) {
+		if (file_exists(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php') ) {
+			$stat = stat(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php');
+			nfw_get_blogtimezone();
+			$data = '== NinjaFirewall File Check : ' . date_i18n('M d, Y @ H:i:s O', $stat['ctime']) . "\n\n";
+			$data .= '[+] = ' . __('New file', 'ninjafirewall') .
+						'      [-] = ' . __('Deleted file', 'ninjafirewall') .
+						'      [!] = ' . __('Modified file', 'ninjafirewall') .
+						"\n\n";
+			$fh = fopen(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php', 'r');
+			while (! feof($fh) ) {
+				$res = explode('::', fgets($fh) );
+				if ( empty($res[1]) ) { continue; }
+				// New file :
+				if ($res[1] == 'N') {
+					$data .= '[+] ' . $res[0] . "\n";
+				// Deleted file :
+				} elseif ($res[1] == 'D') {
+					$data .= '[-] ' . $res[0] . "\n";
+				// Modified file:
+				} elseif ($res[1] == 'M') {
+					$data .= '[!] ' . $res[0] . "\n";
+				}
+			}
+			fclose($fh);
+			$data .= "\n== EOF\n";
+
+			// Download :
+			header('Content-Type: application/txt');
+			header('Content-Length: '. strlen( $data ) );
+			header('Content-Disposition: attachment; filename="'. $_SERVER['SERVER_NAME'] .'_diff.txt"');
+			echo $data;
+			exit;
+		}
 	}
 
 	// update engine version number if needed :
@@ -574,7 +611,12 @@ function ninjafirewall_admin_menu() {
 		'nfsubnetwork', 'nf_sub_network' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubnetwork' );
 
-	// Alerts menu :
+	// File Check menu :
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: File Check', 'File Check', 'manage_options',
+		'nfsubfilecheck', 'nf_sub_filecheck' );
+	add_action( 'load-' . $menu_hook, 'help_nfsubfilecheck' );
+
+	// Event Notifications menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Event Notifications', 'Event Notifications', 'manage_options',
 		'nfsubalerts', 'nf_sub_alerts' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubalerts' );
@@ -2265,6 +2307,15 @@ function nf_sub_network() {
 </form>
 </div>
 <?php
+}
+
+/* ------------------------------------------------------------------ */
+
+function nf_sub_filecheck() {	// i18n
+
+	// File Check menu :
+	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_filecheck.php' );
+
 }
 
 /* ------------------------------------------------------------------ */

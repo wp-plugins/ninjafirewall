@@ -80,7 +80,7 @@ if ( $err ) {
 
 // Do we have any log for this month ?
 if (! file_exists( $log_dir . $selected_log ) ) {
-	echo '<div class="updated settings-error"><p>' . __('You do not have any log for the current month yet.', 'ninjafirewall') . '</p></div></div>';
+	echo '<div class="error settings-error"><p>' . __('You do not have any log for the current month yet.', 'ninjafirewall') . '</p></div></div>';
 	return;
 }
 

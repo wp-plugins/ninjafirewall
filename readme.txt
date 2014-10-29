@@ -1,9 +1,10 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet
+Donate link: http://ninjafirewall.com/wordpress/overview.php
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.0
-Stable tag: 1.2.8
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +26,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Sanitises variables names and values
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
 * Real-time detection (File Guard)
+* File integrity monitoring (File Check)
 * Blocks username enumeration scanning attempts through the author archives and the login page
 * Blocks/allows uploads, sanitises uploaded file names
 * Blocks suspicious bots and scanners
@@ -170,6 +172,10 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 7. NinjaFirewall Contextual Help.
 
 == Changelog ==
+
+= 1.3 =
+* Added a new feature that can detect changes made to your files (see "File Check" menu and its contextual help).
+* Updated security rules.
 
 = 1.2.8 =
 * Added a drop-down menu to the "Statistics" page to select and view stats from the previous months.

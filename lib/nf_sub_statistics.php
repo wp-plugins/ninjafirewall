@@ -46,7 +46,6 @@ if (! file_exists($fw_log) ) {
 	goto NO_STATS_FILE;
 }
 
-
 if ($fh = @fopen($fw_log, 'r') ) {
 	// Retrieve all lines :
 	while (! feof( $fh) ) {
@@ -86,7 +85,7 @@ $total = $critical + $high + $medium;
 if ($total == 1) {$fast = $slow;}
 
 if (! $total ) {
-	echo '<div class="updated settings-error"><p>' . __('You do not have any stats for the current month yet.', 'ninjafirewall') . '</p></div>';
+	echo '<div class="error settings-error"><p>' . __('You do not have any stats for the current month yet.', 'ninjafirewall') . '</p></div>';
 	$fast = 0;
 } else {
 	$coef = 100 / $total;
