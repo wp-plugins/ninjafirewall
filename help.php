@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-10-28 00:42:47                                       |
+ | REVISION: 2014-11-07 18:04:50                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -118,50 +118,92 @@ function help_nfsubpolicies() {
 		'id'			=> 'policies04',
 		'title'		=> 'Firewall Policies',
 		'content'	=> '<br />
-		<div style="height:250px;">
+		<div style="height:400px;">
 
 		<strong>HTTP / HTTPS</strong>
 		<li>Whether to filter HTTP and/or HTTPS traffic.</li>
+
+		<br />
 
 		<strong>Uploads</strong>
 		<li>File Uploads:<span class="description"> whether to allow/disallow file uploads.</span></li>
 		<li>Sanitise filenames:<span class="description"> any character that is not a letter <code>a-zA-Z</code>, a digit <code>0-9</code>, a dot <code>.</code>, a hyphen <code>-</code> or an underscore <code>_</code> will be removed from the filename and replaced with the <code>X</code> character.</span></li>
 
+		<br />
+
 		<strong>HTTP GET variable</strong>
 		<li>Whether to scan and/or sanitise the <code>GET</code> variable.</li>
+
+		<br />
 
 		<strong>HTTP POST variable</strong>
 		<li>Whether to scan and/or sanitise the <code>POST</code> variable.</li>
 		<li>Decode base64-encoded <code>POST</code> variable:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for the <code>POST</code> variable.</span></li>
 
+		<br />
+
 		<strong>HTTP REQUEST variable</strong>
 		<li>Whether to sanitise the <code>REQUEST</code> variable.</li>
 
-		<strong>Cookies</strong>
+
+		<br />
+				<strong>Cookies</strong>
 		<li>Whether to scan and/or sanitise cookies.</li>
+
+		<br />
 
 		<strong>HTTP_USER_AGENT server variable</strong>
 		<li>Whether to scan and/or sanitise <code>HTTP_USER_AGENT</code> requests.</li>
 		<li>Block suspicious bots/scanners:<span class="description"> rejects some known bots, scanners and various malicious scripts attempting to access your blog.</span></li>
 
+		<br />
+
 		<strong>HTTP_REFERER server variable</strong>
 		<li>Whether to scan and/or sanitise <code>HTTP_REFERER</code> requests.</li>
 		<li>Block POST requests that do not have an <code>HTTP_REFERER</code> header:<span class="description"> this option will block any <code>POST</code> request that does not have a Referrer header (<code>HTTP_REFERER</code> variable). If you need external applications to post to your scripts (e.g. Paypal IPN, WordPress WP-Cron...), you are advised to keep this option disabled otherwise they will likely be blocked. Note that <code>POST</code> requests are not required to have a Referrer header and, for that reason, this option is disabled by default.</span></li>
 
-		<strong>IPs</strong>
+		<br />
+
+		<strong>HTTP response headers</strong>
+		<br />
+		In addition to filtering incoming requests, NinjaFirewall can also hook the HTTP response in order to alter its headers. Those modifications can help to mitigate threats such as XSS, phishing and clickjacking attacks.
+		<br />
+		<li>Set <code>X-Content-Type-Options</code> to protect against MIME type confusion attacks:<span class="description"> sending this response header with the <code>nosniff</code> value will prevent compatible browsers from MIME-sniffing a response away from the declared content-type.</span></li>
+		<li>Set <code>X-Frame-Options</code> to protect against clickjacking attempts:<span class="description"> this header indicates a policy whether a browser must not allow to render a page in a &lt;frame&gt; or &lt;iframe&gt;. Hosts can declare this policy in the header of their HTTP responses to prevent clickjacking attacks, by ensuring that their content is not embedded into other pages or frames. NinjaFirewall accepts two different values:
+			<ul>
+				<li><code>SAMEORIGIN</code>: a browser receiving content with this header must not display this content in any frame from a page of different origin than the content itself.</li>
+				<li><code>DENY</code>: a browser receiving content with this header must not display this content in any frame.</li>
+			</ul>
+			</span>
+			NinjaFirewall does not support the <code>ALLOW-FROM</code> value.
+			<br />
+			Since v3.1.3, WordPress sets this value to <code>SAMEORIGIN</code> for the administrator and the login page only.</li>
+		<li>Set <code>X-XSS-Protection</code> to enable browser\'s built-in XSS filter (IE, Chrome and Safari):<span class="description"> this header allows compatible browsers to identify and block XSS attack by preventing the malicious script from executing. NinjaFirewall will set its value to <code>1; mode=block</code>.</span></li>
+		<li>Force <code>HttpOnly</code> flag on all cookies to mitigate XSS attacks:<span class="description"> adding this flag to cookies helps to mitigate the risk of cross-site scripting by preventing them from being accessed through client-side script. NinjaFirewall can hook all cookies sent by your blog, its plugins or any other PHP script, add the <code>HttpOnly</code> flag if it is missing, and re-inject those cookies back into your server HTTP response headers right before they are sent to your visitors. Note that WordPress sets that flag on the logged in user cookies only.</span></li>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">If you have cookies that need to be accessed from JavaScript, you should keep that option disabled.</span></p>
+
+		<br />
+
+		<strong>IP</strong>
 		<li>Block localhost IP in <code>GET/POST</code> requests:<span class="description"> this option will block any <code>GET</code> or <code>POST</code> request containing the localhost IP (127.0.0.1). It can be useful to block SQL dumpers and various hacker\'s shell scripts.</span></li>
 		<li>Block HTTP requests with an IP in the <code>HTTP_HOST</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . $_SERVER['SERVER_ADDR'] . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
 		<li>Scan traffic coming from localhost and private IP address spaces:<span class="description"> this option will allow the firewall to scan traffic from all non-routable private IPs (IPv4 and IPv6) as well as the localhost IP. We recommend to keep it enabled if you have a private network (2 or more servers interconnected).</span></li>
+
+		<br />
 
 		<strong>PHP</strong>
 		<li>Block PHP built-in wrappers:<span class="description"> PHP has several wrappers for use with the filesystem functions. It is possible for an attacker to use them to bypass firewalls and various IDS to exploit remote and local file inclusions. This option lets you block any script attempting to pass a <code>php://</code> or a <code>data://</code> stream inside a <code>GET</code> or <code>POST</code> request, cookies, user agent and referrer variables.</span></li>
 		<li>Hide PHP notice &amp; error messages:<span class="description"> this option lets you hide errors returned by your scripts. Such errors can leak sensitive informations which can be exploited by hackers.</span></li>
 		<li>Sanitise <code>PHP_SELF</code>, <code>PATH_TRANSLATED</code>, <code>PATH_INFO</code>:<span class="description"> this option can sanitise any dangerous characters found in those 3 server variables to prevent various XSS and database injection attempts.</span></li>
 
+		<br />
+
 		<strong>Various</strong>
 		<li>Block the <code>DOCUMENT_ROOT</code> server variable <code>' . getenv( 'DOCUMENT_ROOT' ) . '</code> in HTTP requests:<span class="description"> this option will block scripts attempting to pass the <code>DOCUMENT_ROOT</code> server variable in a <code>GET</code> or <code>POST</code> request. Hackers use shell scripts that often need to pass this value, but most legitimate programs do not.</span></li>
 		<li>Block ASCII character 0x00 (NULL byte):<span class="description"> this option will reject any <code>GET</code> or <code>POST</code> request, <code>COOKIE</code>, <code>HTTP_USER_AGENT</code>, <code>REQUEST_URI</code>, <code>PHP_SELF</code>, <code>PATH_INFO</code> variables containing the ASCII character 0x00 (NULL byte). Such a character is dangerous and should always be rejected.</span></li>
 		<li>Block ASCII control characters 1 to 8 and 14 to 31:<span class="description"> in most cases, those control characters are not needed and should be rejected as well.</span></li>
+
+		<br />
 
 		<strong>WordPress</strong>
 		<li>Whether to block direct access to PHP files located in specific WordPress directories.</li>
@@ -218,9 +260,9 @@ function help_nfsubfilecheck() {	// i18n
 		You need to create a snapshot of all your files and then, at a later time, you can scan your system to compare it with the previous snapshot. Any modification will be immediately detected: file content, file permissions, file ownership, timestamp (<code>ctime</code> and <code>mtime</code>) as well as file creation and deletion.
 		</p>
 		<li>Create a snapshot of all files stored in that directory: by default, the directory is set to WordPress <code>ABSPATH</code> (<code>' . ABSPATH . '</code>).</li>
-		<li>Exclude the following files/folders: you can enter a directory or a file name (e.g., <code>/foo/bar/</code>), or a part of it (e.g., <code>foo</code>). Or you can use an extension (e.g., <code>.css</code>).
+		<li>Exclude the following files/folders: you can enter a directory or a file name (e.g., <code>/foo/bar/</code>), or a part of it (e.g., <code>foo</code>). Or you can exclude a file extension (e.g., <code>.css</code>).
 		<br />
-		Multiple value must be comma-separated (e.g., <code>/foo/bar/,.css,.png</code>).</li>
+		Multiple values must be comma-separated (e.g., <code>/foo/bar/,.css,.png</code>).</li>
 		<li>Do not follow symbolic links: by default, NinjaFirewall will not follow symbolic links.</li>', 'ninjafirewall')
 	) );
 

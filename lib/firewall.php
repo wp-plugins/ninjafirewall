@@ -7,7 +7,7 @@
 // +---------------------------------------------------------------------+
 // | http://nintechnet.com/                                              |
 // +---------------------------------------------------------------------+
-// | REVISION: 2014-10-13 01:03:17                                       |
+// | REVISION: 2014-11-07 23:13:29                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -47,7 +47,7 @@ if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninj
 // Get WordPress 'wp_content' directory. This assume that the plugins dir
 // is called 'plugins', but if you changed its name, use the .htninja
 // file to define the full path to wp-content folder instead
-// ( e.g., $nfw_['wp_content'] = /foo/bar/wp-content ) :
+// ( e.g., $nfw_['wp_content'] = '/foo/bar/wp-content' ) :
 if (empty($nfw_['wp_content'])) {
 	$nfw_['wp_content'] = strstr(__DIR__, '/plugins/ninjafirewall/lib', true);
 }
@@ -86,15 +86,15 @@ if (! $nfw_['fh'] = fopen($wp_config, 'r') ) {
 // Fetch WP configuration:
 while (! feof($nfw_['fh'])) {
 	$nfw_['line'] = fgets($nfw_['fh']);
-	if ( preg_match('/^\s*define\s*\(\s*\'DB_NAME\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+	if ( preg_match('/^\s*define\s*\(\s*[\'"]DB_NAME[\'"]\s*,\s*[\'"](.+?)[\'"]/', $nfw_['line'], $nfw_['match']) ) {
 		$nfw_['DB_NAME'] = $nfw_['match'][1];
-	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_USER\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+	} elseif ( preg_match('/^\s*define\s*\(\s*[\'"]DB_USER[\'"]\s*,\s*[\'"](.+?)[\'"]/', $nfw_['line'], $nfw_['match']) ) {
 		$nfw_['DB_USER'] = $nfw_['match'][1];
-	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_PASSWORD\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+	} elseif ( preg_match('/^\s*define\s*\(\s*[\'"]DB_PASSWORD[\'"]\s*,\s*[\'"](.+?)[\'"]/', $nfw_['line'], $nfw_['match']) ) {
 		$nfw_['DB_PASSWORD'] = $nfw_['match'][1];
-	} elseif ( preg_match('/^\s*define\s*\(\s*\'DB_HOST\'\s*,\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+	} elseif ( preg_match('/^\s*define\s*\(\s*[\'"]DB_HOST[\'"]\s*,\s*[\'"](.+?)[\'"]/', $nfw_['line'], $nfw_['match']) ) {
 		$nfw_['DB_HOST'] = $nfw_['match'][1];
-	} elseif ( preg_match('/^\s*\$table_prefix\s*=\s*\'(.+?)\'/', $nfw_['line'], $nfw_['match']) ) {
+	} elseif ( preg_match('/^\s*\$table_prefix\s*=\s*[\'"](.+?)[\'"]/', $nfw_['line'], $nfw_['match']) ) {
 		$nfw_['table_prefix'] = $nfw_['match'][1];
 	}
 }
@@ -140,6 +140,12 @@ if ( empty($nfw_['nfw_options']['enabled']) ) {
 	define( 'NFW_STATUS', 20 );
 	unset($nfw_);
 	return;
+}
+
+// Response headers hook :
+if (! empty($nfw_['nfw_options']['response_headers']) && $nfw_['nfw_options']['response_headers'] != '000000' ) {
+	define('NFW_RESHEADERS', $nfw_['nfw_options']['response_headers']);
+	@header_register_callback('nfw_response_headers');
 }
 
 // Force SSL for admin and logins ?
@@ -236,8 +242,16 @@ if ( $nfw_['a_msg'] ) {
 	define('NFW_ALERT', $nfw_['a_msg']);
 }
 
+if (! session_id() ) {
+	// Prepare session :
+	@ini_set('session.cookie_httponly', 1);
+	@ini_set('session.use_only_cookies', 1);
+	if ($_SERVER['SERVER_PORT'] == 443) {
+		@ini_set('session.cookie_secure', 1);
+	}
+	session_start();
+}
 // Do not scan/filter WordPress admin (if logged in) ?
-if (! session_id() ) { session_start(); }
 if (! empty($_SESSION['nfw_goodguy']) ) {
 	$nfw_['mysqli']->close();
 	define( 'NFW_STATUS', 20 );
@@ -854,7 +868,9 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	if (! session_id() ) { session_start(); }
+	if (! session_id() ) {
+		@ini_set('session.use_only_cookies', 1);
+		session_start(); }
 	// Good guy already authenticated ?
 	if (! empty($_SESSION['nfw_bfd']) ) {
 		return;
@@ -872,6 +888,7 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 	// Ask for authentication :
 	header('HTTP/1.0 401 Unauthorized');
 	header('Content-Type: text/html; charset=utf-8');
+	header('X-Frame-Options: DENY');
 	echo '<html><head><link rel="stylesheet" href="./wp-includes/css/buttons.min.css" type="text/css"><link rel="stylesheet" href="./wp-admin/css/login.min.css" type="text/css"></head><body class="login wp-core-ui"><div id="login"><center><h3>' . $auth_msg . '</h3><form method="post"><p><input class="input" type="text" name="u" placeholder="Username"></p><p><input class="input" type="password" name="p" placeholder="Password"></p><p align="right"><input type="submit" value="WP Login Page&nbsp;&#187;" class="button-secondary"></p></form><p>Brute-force protection by NinjaFirewall</p></center></div></body></html>';
 	exit;
 }
@@ -897,6 +914,64 @@ function nfw_check_dbhost() {
 		} else {
 			$nfw_['socket'] = $port_or_socket;
 		}
+	}
+}
+
+// =====================================================================
+
+function nfw_response_headers() {
+
+	if (! defined('NFW_RESHEADERS') ) { return; }
+	$NFW_RESHEADERS = NFW_RESHEADERS;
+	// NFW_RESHEADERS:
+	// 000000
+	// ||||||_ (reserved)
+	// |||||__ (reserved)
+	// ||||___ X-XSS-Protection [0-1]
+	// |||____ X-Frame-Options [0-2]
+	// ||_____ X-Content-Type-Options [0-1]
+	// |______ HttpOnly cookies [0-1]
+
+	$rewrite = array();
+
+	if ($NFW_RESHEADERS[0] == 1) {
+		// Parse all response headers :
+		foreach (headers_list() as $header) {
+			// Ignore it if it is not a cookie :
+			if (strpos($header, 'Set-Cookie:') === false) { continue; }
+			// Does it have the HttpOnly flag on ?
+			if (stripos($header, '; httponly') !== false) {
+				// Save it...
+				$rewrite[] = $header;
+				// and check next header :
+				continue;
+			}
+			// Append the HttpOnly flag and save it :
+			$rewrite[] = $header . '; httponly';
+		}
+		// Shall we rewrite cookies ?
+		if (! empty($rewrite) ) {
+			// Remove all original cookies first:
+			header_remove('Set-Cookie');
+			foreach($rewrite as $cookie) {
+				// Inject ours instead :
+				header($cookie, false);
+			}
+		}
+	}
+
+	if ($NFW_RESHEADERS[1] == 1) {
+		header('X-Content-Type-Options: nosniff');
+	}
+
+	if ($NFW_RESHEADERS[2] == 1) {
+		header('X-Frame-Options: SAMEORIGIN');
+	} elseif ($NFW_RESHEADERS[2] == 2) {
+		header('X-Frame-Options: DENY');
+	}
+
+	if ($NFW_RESHEADERS[3] == 1) {
+		header('X-XSS-Protection: 1; mode=block');
 	}
 }
 

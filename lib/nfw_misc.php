@@ -6,7 +6,7 @@
  | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
  |                                                                     |
  +---------------------------------------------------------------------+
- | REVISION: 2014-10-08 11:09:10                                       |
+ | REVISION: 2014-11-13 20:31:48                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -33,10 +33,8 @@ function nfw_admin_notice(){
 	// we don't display any fatal error message to users :
 	if (nf_not_allowed( 0, __LINE__ ) ) { return; }
 
-	list ( $user_enabled, $hook_enabled, $debug_enabled ) = is_nfw_enabled();
-	if ( (! $user_enabled) || (! $hook_enabled ) || ( $debug_enabled ) ) {
-		// we will assume that NinjaFirewall it is not installed yet :
-		return;
+	if (! defined('NF_DISABLED') ) {
+		is_nfw_enabled();
 	}
 
 	// Ensure we have our cache/log folder, or attempt to create it :
@@ -57,28 +55,29 @@ function nfw_admin_notice(){
 		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory is read-only. Please review your installation and ensure that <code>/nfwlog/</code> is writable.', 'ninjafirewall'), WP_CONTENT_DIR) . '</p></div>';
 	}
 
-	if ( defined('NFW_STATUS') ) {
-		if ( NFW_STATUS == 20 ) {
-			// OK
-			return;
-		}
-		$err_fw = array(
-			1	=> __('cannot find WordPress configuration file', 'ninjafirewall'),
-			2	=>	__('cannot read WordPress configuration file', 'ninjafirewall'),
-			3	=>	__('cannot retrieve WordPress database credentials', 'ninjafirewall'),
-			4	=>	__('cannot connect to WordPress database', 'ninjafirewall'),
-			5	=>	__('cannot retrieve user options from database (#1)', 'ninjafirewall'),
-			6	=>	__('cannot retrieve user options from database (#2)', 'ninjafirewall'),
-			7	=>	__('cannot retrieve user rules from database (#1)', 'ninjafirewall'),
-			8	=>	__('cannot retrieve user rules from database (#2)', 'ninjafirewall')
-		);
-		$err = $err_fw[NFW_STATUS];
-	} else {
-		// something wrong, here :
-		$err = __('communication with the firewall failed', 'ninjafirewall');
+	if (! NF_DISABLED) {
+		// OK
+		return;
 	}
-	echo '<div class="error"><p><strong>' . __('NinjaFirewall fatal error :', 'ninjafirewall') . '</strong> ' . $err .
-		'. ' . __('Please review your installation. Your site is <strong>not</strong> protected.', 'ninjafirewall') . '</p></div>';
+
+	// Don't display anything if we are looking at the main page (error message will
+	// be displayed already) or during the installation process :
+	if (isset($_GET['page']) && $_GET['page'] == 'NinjaFirewall' ) {
+		return;
+	}
+
+	$nfw_options = get_option('nfw_options');
+	if ( empty($nfw_options['ret_code']) ) {
+		// we will assume that NinjaFirewall it is not installed yet :
+		return;
+	}
+	if (! empty($GLOBALS['err_fw'][NF_DISABLED]) ) {
+		$msg = $GLOBALS['err_fw'][NF_DISABLED];
+	} else {
+		$msg = 'unknown error #' . NF_DISABLED;
+	}
+	echo '<div class="error"><p><strong>' . __('NinjaFirewall fatal error :', 'ninjafirewall') . '</strong> ' . $msg .
+		'. ' . __('Review your installation, your site is not protected.', 'ninjafirewall') . '</p></div>';
 }
 
 add_action('all_admin_notices', 'nfw_admin_notice');

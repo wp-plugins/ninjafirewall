@@ -1,10 +1,10 @@
 === NinjaFirewall (WP edition) ===
-Contributors: nintechnet
-Donate link: http://ninjafirewall.com/wordpress/overview.php
+Contributors: nintechnet, bruandet
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypal%40ninjafirewall%2ecom&lc=US&item_name=Donation %20to%20NinjaFirewall%20WP%20Edition%20Plugin&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.0
-Stable tag: 1.3
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,8 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
 * Real-time detection (File Guard)
 * File integrity monitoring (File Check)
+* Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`)
+* Sets the `HttpOnly` flag on all cookies
 * Blocks username enumeration scanning attempts through the author archives and the login page
 * Blocks/allows uploads, sanitises uploaded file names
 * Blocks suspicious bots and scanners
@@ -172,6 +174,12 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 7. NinjaFirewall Contextual Help.
 
 == Changelog ==
+
+= 1.3.1 =
+* Added a new set of options that can hook the HTTP response headers, including cookies, and modify them on-the-fly to help mitigate threats such as XSS, phishing and clickjacking attacks (see "Firewall Policies > HTTP response headers").
+* Updated security rules.
+* The function detecting if the firewall is enabled was rewritten and is more accurate and flexible.
+* File Check will display date & time using the blog timezone rather than the user localtime.
 
 = 1.3 =
 * Added a new feature that can detect changes made to your files (see "File Check" menu and its contextual help).

@@ -6,7 +6,7 @@
  | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
  |                                                                     |
  +---------------------------------------------------------------------+
- | REVISION: 2014-10-27 00:54:08                                       |
+ | REVISION: 2014-11-14 00:12:30                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -35,12 +35,6 @@ if (! file_exists($nfmon_snapshot) ) {
 }
 
 if (! empty($_REQUEST['nfw_act'])) {
-	// View snapshot files?
-	if ( $_REQUEST['nfw_act'] == 'viewfiles' && ! $err ) {
-		nf_sub_monitoring_viewsnapshot($nfmon_snapshot);
-		return;
-	}
-
 	if ( $_REQUEST['nfw_act'] == 'create') {
 		if (! $err = nf_sub_monitoring_create($nfmon_snapshot) ) {
 			$success = __('Snapshot successfully created.', 'ninjafirewall');
@@ -78,6 +72,9 @@ if (! empty($_REQUEST['nfw_act'])) {
 $nfw_options = get_option('nfw_options');
 if (! isset($nfw_options['snapdir']) ) {
 	$nfw_options['snapdir'] = '';
+	if ( file_exists($nfmon_snapshot) ) {
+		unlink($nfmon_snapshot);
+	}
 }
 if (! isset($nfw_options['snapexclude']) ) {
 	$nfw_options['snapexclude'] = '/wp-content/nfwlog/';
@@ -93,6 +90,7 @@ if ( $err ) {
 } elseif ( $success ) {
 	echo '<div class="updated settings-error"><p>' . $success . '</p></div>';
 }
+
 // If we don't have a snapshopt, offer to create one :
 if (! file_exists($nfmon_snapshot) ) {
 	?>
@@ -149,13 +147,32 @@ if (file_exists($nfmon_diff) ) {
 		if ( empty($res[1]) ) { continue; }
 		// New file :
 		if ($res[1] == 'N') {
-			$new_file[$res[0]] = $res[2];
+			$s_tmp = explode(':', rtrim($res[2]));
+			$new_file[$res[0]] = $s_tmp[0] .':'.
+				$s_tmp[1] .':'.
+				$s_tmp[2] .':'.
+				$s_tmp[3] .':'.
+				date('Y-m-d H~i~s O', $s_tmp[4]) .':'.
+				date('Y-m-d H~i~s O', $s_tmp[5]);
 		// Deleted file :
 		} elseif ($res[1] == 'D') {
 			$del_file[$res[0]] = 1;
 		// Modified file:
 		} elseif ($res[1] == 'M') {
-			$mod_file[$res[0]] = $res[2] . '::' . rtrim($res[3]);
+			$s_tmp = explode(':', $res[2]);
+			$mod_file[$res[0]] = $s_tmp[0] .':'.
+				$s_tmp[1] .':'.
+				$s_tmp[2] .':'.
+				$s_tmp[3] .':'.
+				date('Y-m-d H~i~s O', $s_tmp[4]) .':'.
+				date('Y-m-d H~i~s O', $s_tmp[5]) .'::';
+				$s_tmp = explode(':', rtrim($res[3]));
+			$mod_file[$res[0]] .= $s_tmp[0] .':'.
+				$s_tmp[1] .':'.
+				$s_tmp[2] .':'.
+				$s_tmp[3] .':'.
+				date('Y-m-d H~i~s O', $s_tmp[4]) .':'.
+				date('Y-m-d H~i~s O', $s_tmp[5]);
 		}
 	}
 	fclose($fh);
@@ -165,7 +182,6 @@ if (file_exists($nfmon_diff) ) {
 }
 	?>
 	<script>
-	function popup(url,width,height,scroll_bar) {height=height+20;width=width+20;var str = "height=" + height + ",innerHeight=" + height;str += ",width=" + width + ",innerWidth=" + width;if (window.screen){var ah = screen.availHeight - 30;var aw = screen.availWidth -10;var xc = (aw - width) / 2;var yc = (ah - height) / 2;str += ",left=" + xc + ",screenX=" + xc;str += ",top=" + yc + ",screenY=" + yc;if (scroll_bar) {str += ",scrollbars=no";}else {str += ",scrollbars=yes";}str += ",status=no,location=no,resizable=yes";}win = open(url, "nfpop", str);setTimeout("win.window.focus()",1300);}
 	<?php if ($mod) { ?>
 	function file_info(what, where) {
 		// New file :
@@ -175,10 +191,8 @@ if (file_exists($nfmon_diff) ) {
 			document.getElementById('new_size').innerHTML = nfo[3];
 			document.getElementById('new_chmod').innerHTML = nfo[0];
 			document.getElementById('new_uidgid').innerHTML = nfo[1] + ' / ' + nfo[2];
-			var mtime = new Date( nfo[4] * 1000 );
-			document.getElementById('new_mtime').innerHTML = mtime.toLocaleString();
-			var ctime = new Date( nfo[5] * 1000 );
-			document.getElementById('new_ctime').innerHTML = ctime.toLocaleString();
+			document.getElementById('new_mtime').innerHTML = nfo[4].replace(/~/g, ':');
+			document.getElementById('new_ctime').innerHTML = nfo[5].replace(/~/g, ':');
 			document.getElementById('table_new').style.display = '';
 			<?php } ?>
 		// Modified file :
@@ -205,21 +219,17 @@ if (file_exists($nfmon_diff) ) {
 			} else {
 				document.getElementById('mod_uidgid2').innerHTML = nfo2[1] + ' / ' + nfo2[2];
 			}
-			var mtime = new Date( nfo[4] * 1000 );
-			var mtime2 = new Date( nfo2[4] * 1000 );
-			document.getElementById('mod_mtime').innerHTML = mtime.toLocaleString();
+			document.getElementById('mod_mtime').innerHTML = nfo[4].replace(/~/g, ':');
 			if (nfo[4] != nfo2[4]) {
-				document.getElementById('mod_mtime2').innerHTML = '<font color="red">'+ mtime2.toLocaleString() +'</font>';
+				document.getElementById('mod_mtime2').innerHTML = '<font color="red">'+ nfo2[4].replace(/~/g, ':') +'</font>';
 			} else {
-				document.getElementById('mod_mtime2').innerHTML = mtime2.toLocaleString();
+				document.getElementById('mod_mtime2').innerHTML = nfo2[4].replace(/~/g, ':');
 			}
-			var ctime = new Date( nfo[5] * 1000 );
-			var ctime2 = new Date( nfo2[5] * 1000 );
-			document.getElementById('mod_ctime').innerHTML = ctime.toLocaleString();
+			document.getElementById('mod_ctime').innerHTML = nfo[5].replace(/~/g, ':');
 			if (nfo[5] != nfo2[5]) {
-				document.getElementById('mod_ctime2').innerHTML = '<font color="red">'+ ctime2.toLocaleString() +'</font>';
+				document.getElementById('mod_ctime2').innerHTML = '<font color="red">'+ nfo2[5].replace(/~/g, ':') +'</font>';
 			} else {
-				document.getElementById('mod_ctime2').innerHTML = ctime2.toLocaleString();
+				document.getElementById('mod_ctime2').innerHTML = nfo2[5].replace(/~/g, ':');
 			}
 			document.getElementById('table_mod').style.display = '';
 			<?php } ?>
@@ -265,7 +275,7 @@ if (file_exists($nfmon_diff) ) {
 				}
 				?>
 				<form method="post">
-					<p><input type="button" value="<?php _e('View Snapshot', 'ninjafirewall') ?>" class="button-secondary" onClick="javascript:popup('?page=nfsubfilecheck&nfw_act=viewfiles',760,500,0);" />&nbsp;&nbsp;&nbsp;<input type="submit" class="button-secondary" onClick="return delit();" value="<?php _e('Delete Snapshot', 'ninjafirewall') ?>" /><input type="hidden" name="nfw_act" value="delete" /></p>
+					<p><input type="submit" name="dlsnap" value="<?php _e('Download Snapshot', 'nfwplus') ?>" class="button-secondary" />&nbsp;&nbsp;&nbsp;<input type="submit" class="button-secondary" onClick="return delit();" value="<?php _e('Delete Snapshot', 'ninjafirewall') ?>" /><input type="hidden" name="nfw_act" value="delete" /></p>
 				</form>
 			</td>
 		</tr>
@@ -510,6 +520,9 @@ function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
 
 	$nfw_options = get_option('nfw_options');
 
+	if (! isset($nfw_options['snapexclude']) || ! isset($nfw_options['snapdir']) || ! isset($nfw_options['snapnoslink']) ) {
+		return sprintf( __('Missing options line %s, please try again.', 'ninjafirewall'), __LINE__ );
+	}
 	$tmp = preg_quote($nfw_options['snapexclude'], '/');
 	$snapexclude = str_replace(',', '|', $tmp);
 
@@ -599,31 +612,6 @@ function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
 		}
 		unlink( $nfmon_snapshot . '_tmp');
 	}
-}
-
-/* ------------------------------------------------------------------ */
-
-function nf_sub_monitoring_viewsnapshot($nfmon_snapshot) {
-
-?>
-	<table class="form-table">
-		<tr>
-			<td width="100%">
-				<textarea class="small-text code" style="width:100%;height:400px;font-size:13px" wrap="off"><?php
-				$fh = fopen($nfmon_snapshot, 'r');
-				while (! feof($fh) ) {
-					$res = explode('::', fgets($fh));
-					if (! empty($res[0][0]) && $res[0][0] == '/') {
-						echo htmlspecialchars($res[0]) . "\n";
-					}
-				}
-				fclose($fh);
-				?></textarea>
-			</td>
-		</tr>
-	</table>
-	<center><input type="button" class="button-secondary" value="<?php _e('Close', 'ninjafirewall') ?>" onClick="window.close();" />
-<?php
 }
 
 /* ------------------------------------------------------------------ */
