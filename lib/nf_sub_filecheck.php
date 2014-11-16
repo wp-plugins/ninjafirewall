@@ -1,0 +1,618 @@
+<?php
+/*
+ +---------------------------------------------------------------------+
+ | NinjaFirewall (WP  edition)                                         |
+ |                                                                     |
+ | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
+ |                                                                     |
+ +---------------------------------------------------------------------+
+ | REVISION: 2014-11-14 00:12:30                                       |
+ +---------------------------------------------------------------------+
+ | This program is free software: you can redistribute it and/or       |
+ | modify it under the terms of the GNU General Public License as      |
+ | published by the Free Software Foundation, either version 3 of      |
+ | the License, or (at your option) any later version.                 |
+ |                                                                     |
+ | This program is distributed in the hope that it will be useful,     |
+ | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
+ | GNU General Public License for more details.                        |
+ +---------------------------------------------------------------------+ i18n
+*/
+
+if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
+
+if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+
+$log_dir = WP_CONTENT_DIR . '/nfwlog/cache/';
+$nfmon_snapshot = $log_dir . 'nfilecheck_snapshot.php';
+$nfmon_diff = $log_dir . 'nfilecheck_diff.php';
+$err = $success = '';
+
+// Check if we have a snapshot or not:
+if (! file_exists($nfmon_snapshot) ) {
+	$err = __('You did not create any snapshot yet.', 'ninjafirewall');
+}
+
+if (! empty($_REQUEST['nfw_act'])) {
+	if ( $_REQUEST['nfw_act'] == 'create') {
+		if (! $err = nf_sub_monitoring_create($nfmon_snapshot) ) {
+			$success = __('Snapshot successfully created.', 'ninjafirewall');
+			if (file_exists($nfmon_diff) ) {
+				unlink($nfmon_diff);
+			}
+		}
+	} elseif ( $_REQUEST['nfw_act'] == 'delete') {
+		// Delete de current snapshot file :
+		if (file_exists($nfmon_snapshot) ) {
+			unlink ($nfmon_snapshot);
+			$success = __('Snapshot file successfully deleted.', 'ninjafirewall');
+		} else {
+			$err = __('You did not create any snapshot yet.', 'ninjafirewall');
+		}
+	} elseif ( $_REQUEST['nfw_act'] == 'scan') {
+		// Scan disk for changes :
+		if (! file_exists($nfmon_snapshot) ) {
+			$err = __('You must create a snapshot first.', 'ninjafirewall');
+		} else {
+			$err = nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff);
+
+			if (! $err) {
+				if (file_exists($nfmon_diff) ) {
+					$err =  __('NinjaFirewall detected that changes were made to your files.', 'ninjafirewall');
+					$changes = 1;
+				} else {
+					$success =  __('No changes detected.', 'ninjafirewall');
+				}
+			}
+		}
+	}
+}
+
+$nfw_options = get_option('nfw_options');
+if (! isset($nfw_options['snapdir']) ) {
+	$nfw_options['snapdir'] = '';
+	if ( file_exists($nfmon_snapshot) ) {
+		unlink($nfmon_snapshot);
+	}
+}
+if (! isset($nfw_options['snapexclude']) ) {
+	$nfw_options['snapexclude'] = '/wp-content/nfwlog/';
+}
+
+echo '<div class="wrap">
+	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
+	<h2>' . __('File Check', 'ninjafirewall') . '</h2>
+	<br />';
+
+if ( $err ) {
+	echo '<div class="error settings-error"><p>' . $err . '</p></div>';
+} elseif ( $success ) {
+	echo '<div class="updated settings-error"><p>' . $success . '</p></div>';
+}
+
+// If we don't have a snapshopt, offer to create one :
+if (! file_exists($nfmon_snapshot) ) {
+	?>
+	<br />
+	<form method="post" name="monitor_form">
+		<table class="form-table">
+			<tr>
+				<th scope="row"><?php _e('Create a snapshot of all files stored in that directory', 'ninjafirewall') ?></th>
+				<td align="left"><input class="regular-text" type="text" name="snapdir" value="<?php
+				if (! empty($nfw_options['snapdir']) ) {
+					echo $nfw_options['snapdir'];
+				} else {
+					echo ABSPATH;
+				}
+				?>" required /></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php _e('Exclude the following files/folders', 'ninjafirewall') ?></th>
+				<td align="left"><input class="regular-text" type="text" name="snapexclude" value="<?php echo htmlspecialchars($nfw_options['snapexclude']); ?>" placeholder="<?php _e('e.g.,', 'ninjafirewall') ?> /wp-content/nfwlog/" maxlength="255"><br /><span class="description"><?php _e('Full or partial case-sensitive string(s). Multiple values must be comma-separated.', 'ninjafirewall') ?></span></td>
+			</tr>
+
+			<tr>
+				<th scope="row">&nbsp;</th>
+				<td align="left"><label><input type="checkbox" name="snapnoslink" value="1" checked="checked" /><?php _e('Do not follow symbolic links (default)', 'ninjafirewall') ?></label></td>
+			</tr>
+
+		</table>
+		<input type="hidden" name="nfw_act" value="create" />
+		<p><input type="submit" class="button-primary" value="<?php _e('Create Snapshot', 'ninjafirewall') ?>" /></p>
+	</form>
+</div>
+	<?php
+	return;
+}
+
+// We have a snapshot :
+$stat = stat($nfmon_snapshot);
+$count = -2;
+$fh = fopen($nfmon_snapshot, 'r');
+while (! feof($fh) ) {
+	fgets($fh);
+	$count++;
+}
+fclose($fh);
+nfw_get_blogtimezone();
+// Look for new/mod/del files :
+$res = $new_file = $del_file = $mod_file = array();
+if (file_exists($nfmon_diff) ) {
+	$stat2 = stat($nfmon_diff);
+	$fh = fopen($nfmon_diff, 'r');
+	while (! feof($fh) ) {
+		$res = explode('::', fgets($fh) );
+		if ( empty($res[1]) ) { continue; }
+		// New file :
+		if ($res[1] == 'N') {
+			$s_tmp = explode(':', rtrim($res[2]));
+			$new_file[$res[0]] = $s_tmp[0] .':'.
+				$s_tmp[1] .':'.
+				$s_tmp[2] .':'.
+				$s_tmp[3] .':'.
+				date('Y-m-d H~i~s O', $s_tmp[4]) .':'.
+				date('Y-m-d H~i~s O', $s_tmp[5]);
+		// Deleted file :
+		} elseif ($res[1] == 'D') {
+			$del_file[$res[0]] = 1;
+		// Modified file:
+		} elseif ($res[1] == 'M') {
+			$s_tmp = explode(':', $res[2]);
+			$mod_file[$res[0]] = $s_tmp[0] .':'.
+				$s_tmp[1] .':'.
+				$s_tmp[2] .':'.
+				$s_tmp[3] .':'.
+				date('Y-m-d H~i~s O', $s_tmp[4]) .':'.
+				date('Y-m-d H~i~s O', $s_tmp[5]) .'::';
+				$s_tmp = explode(':', rtrim($res[3]));
+			$mod_file[$res[0]] .= $s_tmp[0] .':'.
+				$s_tmp[1] .':'.
+				$s_tmp[2] .':'.
+				$s_tmp[3] .':'.
+				date('Y-m-d H~i~s O', $s_tmp[4]) .':'.
+				date('Y-m-d H~i~s O', $s_tmp[5]);
+		}
+	}
+	fclose($fh);
+	$mod = 1;
+} else {
+	$mod = 0;
+}
+	?>
+	<script>
+	<?php if ($mod) { ?>
+	function file_info(what, where) {
+		// New file :
+		if (where == 1) {
+			<?php if ($new_file) { ?>
+			var nfo = what.split(':');
+			document.getElementById('new_size').innerHTML = nfo[3];
+			document.getElementById('new_chmod').innerHTML = nfo[0];
+			document.getElementById('new_uidgid').innerHTML = nfo[1] + ' / ' + nfo[2];
+			document.getElementById('new_mtime').innerHTML = nfo[4].replace(/~/g, ':');
+			document.getElementById('new_ctime').innerHTML = nfo[5].replace(/~/g, ':');
+			document.getElementById('table_new').style.display = '';
+			<?php } ?>
+		// Modified file :
+		} else if (where == 2) {
+			<?php if ($mod_file) { ?>
+			var all = what.split('::');
+			var nfo = all[0].split(':');
+			var nfo2 = all[1].split(':');
+			document.getElementById('mod_size').innerHTML = nfo[3];
+			if (nfo[3] != nfo2[3]) {
+				document.getElementById('mod_size2').innerHTML = '<font color="red">'+ nfo2[3] +'</font>';
+			} else {
+				document.getElementById('mod_size2').innerHTML = nfo2[3];
+			}
+			document.getElementById('mod_chmod').innerHTML = nfo[0];
+			if (nfo[0] != nfo2[0]) {
+				document.getElementById('mod_chmod2').innerHTML = '<font color="red">'+ nfo2[0] +'</font>';
+			} else {
+				document.getElementById('mod_chmod2').innerHTML = nfo2[0];
+			}
+			document.getElementById('mod_uidgid').innerHTML = nfo[1] + ' / ' + nfo[2];
+			if ( (nfo[1] != nfo2[1]) || (nfo[2] != nfo2[2]) ) {
+				document.getElementById('mod_uidgid2').innerHTML = '<font color="red">'+ nfo2[1] + '/' + nfo2[2] +'</font>';
+			} else {
+				document.getElementById('mod_uidgid2').innerHTML = nfo2[1] + ' / ' + nfo2[2];
+			}
+			document.getElementById('mod_mtime').innerHTML = nfo[4].replace(/~/g, ':');
+			if (nfo[4] != nfo2[4]) {
+				document.getElementById('mod_mtime2').innerHTML = '<font color="red">'+ nfo2[4].replace(/~/g, ':') +'</font>';
+			} else {
+				document.getElementById('mod_mtime2').innerHTML = nfo2[4].replace(/~/g, ':');
+			}
+			document.getElementById('mod_ctime').innerHTML = nfo[5].replace(/~/g, ':');
+			if (nfo[5] != nfo2[5]) {
+				document.getElementById('mod_ctime2').innerHTML = '<font color="red">'+ nfo2[5].replace(/~/g, ':') +'</font>';
+			} else {
+				document.getElementById('mod_ctime2').innerHTML = nfo2[5].replace(/~/g, ':');
+			}
+			document.getElementById('table_mod').style.display = '';
+			<?php } ?>
+		}
+	}
+	<?php } ?>
+	function delit() {
+		if (confirm("<?php _e('Delete the current snapshot ?', 'ninjafirewall') ?>") ) {
+			return true;
+		}
+		return false;
+	}
+	function nftoogle() {
+		document.getElementById('changes_table').style.display = '';
+		document.getElementById('vcbtn').disabled = true;
+	}
+	</script>
+	<br />
+
+	<table class="form-table">
+		<tr>
+			<th scope="row"><?php _e('Last snapshot', 'ninjafirewall') ?></th>
+			<td align="left">
+				<p><?php printf( __('Created on: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O', $stat['ctime'])); ?></p>
+				<p><?php printf( __('Total files: %s ', 'ninjafirewall'), number_format($count) ); ?></p>
+
+				<p><?php _e('Directory : ', 'ninjafirewall') ?><code><?php echo htmlspecialchars($nfw_options['snapdir']) ?></code></p>
+				<?php
+				if (! empty($nfw_options['snapexclude']) ) {
+					$res = @explode(',', $nfw_options['snapexclude']);
+					echo '<p>' .  __('Exclusion : ', 'ninjafirewall');
+					foreach ($res as $exc) {
+						echo '<code>' . htmlspecialchars($exc) . '</code>&nbsp;';
+					}
+					echo '</p>
+					<p>' .  __('Symlinks : ', 'ninjafirewall');
+					if ( empty($nfw_options['snapnoslink']) ) {
+						echo __('follow', 'ninjafirewall');
+					} else {
+						echo __('do not follow', 'ninjafirewall');
+					}
+					echo '</p>';
+				}
+				?>
+				<form method="post">
+					<p><input type="submit" name="dlsnap" value="<?php _e('Download Snapshot', 'nfwplus') ?>" class="button-secondary" />&nbsp;&nbsp;&nbsp;<input type="submit" class="button-secondary" onClick="return delit();" value="<?php _e('Delete Snapshot', 'ninjafirewall') ?>" /><input type="hidden" name="nfw_act" value="delete" /></p>
+				</form>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php _e('Last changes', 'ninjafirewall') ?></th>
+			<td align="left">
+
+			<?php
+			// Show info about last changes, if any :
+			if ($mod) {
+			?>
+				<p><?php printf( __('Detected on: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O', $stat2['ctime'])); ?></p>
+				<p><?php printf( __('New files: %s', 'ninjafirewall'), count($new_file) ) ?></p>
+				<p><?php printf( __('Deleted files: %s', 'ninjafirewall'), count($del_file) ) ?></p>
+				<p><?php printf( __('Modified files: %s', 'ninjafirewall'), count($mod_file) ) ?></p>
+
+				<form method="post">
+					<p><input type="button" value="<?php _e('View Changes', 'ninjafirewall') ?>" onClick="nftoogle();" class="button-secondary" id="vcbtn" <?php
+					if (! empty($changes)) {
+						echo 'disabled="disabled" ';
+					}
+					?>/>&nbsp;&nbsp;&nbsp;<input type="submit" name="dlmods" value="<?php _e('Download Changes', 'ninjafirewall') ?>" class="button-secondary" /></p>
+				</form>
+				<br />
+			<?php
+				if (empty($changes)) {
+					echo '<table border="0" width="100%" id="changes_table" style="display:none">';
+				} else {
+					echo '<table border="0" width="100%" id="changes_table">';
+				}
+
+				$more_info = __('Click a file to get more info about it.', 'ninjafirewall');
+				if ($new_file) {
+					echo '<tr><td>';
+					echo __('New files: ', 'ninjafirewall') . count($new_file). '<br />';
+					echo '<select name="sometext" multiple="multiple" style="width:100%;height:150px" onClick="file_info(this.value, 1);">';
+					foreach($new_file as $k => $v) {
+						echo '<option value="' . $v . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
+					}
+					echo'</select>
+					<p style="text-align:center"><span class="description">' . $more_info . '</span></p>
+					<table id="table_new" style="width:100%;background-color:#F7F7F7;border:solid 1px #DFDFDF;display:none;">
+						<tr>
+							<th style="padding:0">' . __('Size', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="new_size"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Access', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="new_chmod"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Uid / Gid', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="new_uidgid"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Modify (mtime)', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="new_mtime"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Change', 'ninjafirewall') .' (<a href="http://en.wikipedia.org/wiki/Stat_%28system_call%29#ctime" target="_blank">ctime</a>)</th>
+							<td style="padding:0" id="new_ctime"></td>
+						</tr>
+					</table>
+				</td></tr>';
+
+				}
+				if ($del_file) {
+					echo '
+			<tr>
+				<td>' . __('Deleted files: ', 'ninjafirewall') . count($del_file). '<br />' .
+					'<select name="sometext" multiple="multiple" style="width:100%;height:150px">';
+					foreach($del_file as $k => $v) {
+						echo '<option title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
+					}
+					echo'</select>
+				</td>
+			</tr>';
+
+				}
+				if ($mod_file) {
+					echo '
+			<tr>
+				<td>' . __('Modified files: ', 'ninjafirewall') . count($mod_file). '<br />' .
+					'<select name="sometext" multiple="multiple" style="width:100%;height:150px" onClick="file_info(this.value, 2);">';
+					foreach($mod_file as $k => $v) {
+						echo '<option value="' . $v . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
+					}
+					echo'</select>
+					<p style="text-align:center"><span class="description">' . $more_info . '</span></p>
+					<table id="table_mod" style="width:100%;background-color:#F7F7F7;border:solid 1px #DFDFDF;display:none;">
+						<tr>
+							<th style="padding:0">&nbsp;</th>
+							<td style="padding:0"><b>' . __('Old', 'ninjafirewall') .'</b></td>
+							<td style="padding:0"><b>' . __('New', 'ninjafirewall') .'</b></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Size', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="mod_size"></td>
+							<td style="padding:0" id="mod_size2"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Access', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="mod_chmod"></td>
+							<td style="padding:0" id="mod_chmod2"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Uid / Gid', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="mod_uidgid"></td>
+							<td style="padding:0" id="mod_uidgid2"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Modify (mtime)', 'ninjafirewall') .'</th>
+							<td style="padding:0" id="mod_mtime"></td>
+							<td style="padding:0" id="mod_mtime2"></td>
+						</tr>
+						<tr>
+							<th style="padding:0">' . __('Change', 'ninjafirewall') .' (<a href="http://en.wikipedia.org/wiki/Stat_%28system_call%29#ctime" target="_blank">ctime</a>)</th>
+							<td style="padding:0" id="mod_ctime"></td>
+							<td style="padding:0" id="mod_ctime2"></td>
+						</tr>
+					</table>
+				</td>
+			</tr>';
+				}
+				echo '
+		</table>
+		</td>
+		</tr>
+		</table>';
+			} else {
+				echo __('None', 'ninjfirewall') . '
+			</td>
+		</tr>
+	</table>
+	<br />
+	<br />';
+			}
+			?>
+	<form method="post">
+		<input type="hidden" name="nfw_act" value="scan" />
+		<p><input type="submit" class="button-primary" value="<?php _e('Scan System For File Changes', 'ninjafirewall') ?>" /></p>
+	</form>
+</div>
+<?php
+
+/* ------------------------------------------------------------------ */
+
+function nf_sub_monitoring_create($nfmon_snapshot) {
+
+	// Check POST data:
+	if ( empty($_POST['snapdir']) ) {
+		return __('Enter the full path to the directory to be scanned.', 'ninjafirewall');
+	}
+	if ( strlen($_POST['snapdir']) > 1 ) {
+		$_POST['snapdir'] = rtrim($_POST['snapdir'], '/');
+	}
+	if (! file_exists($_POST['snapdir']) ) {
+		return sprintf( __('The directory <code>%s</code> does not exist.', 'ninjafirewall'), htmlspecialchars($_POST['snapdir']));
+	}
+	if (! is_readable($_POST['snapdir']) ) {
+		return sprintf( __('The directory <code>%s</code> is not readable.', 'ninjafirewall'), htmlspecialchars($_POST['snapdir']));
+	}
+	if ( isset($_POST['snapnoslink']) ) {
+		$snapnoslink = 1;
+	} else {
+		$snapnoslink = 0;
+	}
+
+	$snapexclude = '';
+	if (! empty($_POST['snapexclude']) ) {
+		$_POST['snapexclude'] = trim($_POST['snapexclude']);
+		$tmp = preg_quote($_POST['snapexclude'], '/');
+		$snapexclude = str_replace(',', '|', $tmp);
+	}
+
+	if ($fh = fopen($nfmon_snapshot, 'w') ) {
+		fwrite($fh, '<?php die("Forbidden"); ?>' . "\n");
+		$res = scd($_POST['snapdir'], $snapexclude, $fh, $snapnoslink);
+		fclose($fh);
+
+		// Error ?
+		if ($res) {
+			if (file_exists($nfmon_snapshot) ) {
+				unlink($nfmon_snapshot);
+			}
+			return $res;
+		}
+		$stat = stat($nfmon_snapshot);
+		if ($stat['size'] < 30 ) {
+			unlink($nfmon_snapshot);
+			return sprintf( __('Unable to create <code>%s</code>.', 'ninjafirewall'), $nfmon_snapshot);
+		}
+
+		// Save scan dir :
+		$nfw_options = get_option('nfw_options');
+		$nfw_options['snapexclude'] = $_POST['snapexclude'];
+		$nfw_options['snapdir'] = $_POST['snapdir'];
+		$nfw_options['snapnoslink'] = $snapnoslink;
+		update_option('nfw_options', $nfw_options);
+
+	} else {
+		return sprintf( __('Cannot write to <code>%s</code>.', 'ninjafirewall'), $nfmon_snapshot);
+	}
+}
+
+/* ------------------------------------------------------------------ */
+
+function scd($snapdir, $snapexclude, $fh, $snapnoslink) {
+
+	if (is_readable($snapdir) ) {
+		if ($dh = opendir($snapdir) ) {
+			while ( FALSE !== ($file = readdir($dh)) ) {
+				if ( $file == '.' || $file == '..') { continue; }
+				$full_path = $snapdir . '/' . $file;
+				if ( $snapexclude ) {
+					if ( preg_match("/$snapexclude/", $full_path) ) { continue; }
+				}
+				if (is_readable($full_path)) {
+					if ( $snapnoslink && is_link($full_path)) { continue; }
+					if ( is_dir($full_path) ) {
+						scd($full_path, $snapexclude, $fh, $snapnoslink);
+					} elseif (is_file($full_path) ) {
+						$file_stat = stat($full_path);
+						fwrite($fh, $full_path . '::' . sprintf ("%04o", $file_stat['mode'] & 0777) . ':' . $file_stat['uid'] . ':' .
+							$file_stat['gid'] . ':' . $file_stat['size'] . ':' . $file_stat['mtime'] . ':' .
+							$file_stat['ctime'] . "\n");
+					}
+				}
+			}
+			closedir($dh);
+		} else {
+			return sprintf(__('Error : cannot open <code>%s</code> directory.', 'ninjafirewall'), htmlspecialchars($snapdir));
+		}
+	} else {
+		return sprintf(__('Error : <code>%s</code> directory is not readable.', 'ninjafirewall'), htmlspecialchars($snapdir));
+	}
+}
+
+/* ------------------------------------------------------------------ */
+
+function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
+
+	$nfw_options = get_option('nfw_options');
+
+	if (! isset($nfw_options['snapexclude']) || ! isset($nfw_options['snapdir']) || ! isset($nfw_options['snapnoslink']) ) {
+		return sprintf( __('Missing options line %s, please try again.', 'ninjafirewall'), __LINE__ );
+	}
+	$tmp = preg_quote($nfw_options['snapexclude'], '/');
+	$snapexclude = str_replace(',', '|', $tmp);
+
+	if ($fh = fopen($nfmon_snapshot . '_tmp', 'w') ) {
+		fwrite($fh, '<?php die("Forbidden"); ?>' . "\n");
+		$res = scd($nfw_options['snapdir'], $snapexclude, $fh, $nfw_options['snapnoslink']);
+		fclose($fh);
+	} else {
+		return sprintf( __('Cannot create <code>%s</code>.', 'ninjafirewall'), $nfmon_snapshot . '_tmp');
+	}
+
+	// Error ?
+	if ($res) {
+		if (file_exists($nfmon_snapshot . '_tmp') ) {
+			unlink($nfmon_snapshot . '_tmp');
+		}
+		return $res;
+	}
+
+	// Compare both snapshots :
+
+	$old_files = $file = $new_files =  array();
+	$modified_files = $match = array();
+
+	$fh = fopen($nfmon_snapshot, 'r');
+	while (! feof($fh) ) {
+		$match = explode('::', rtrim(fgets($fh)) . '::' );
+		if (! empty($match[1]) ) {
+			$old_files[$match[0]] = $match[1];
+		}
+	}
+	fclose($fh);
+
+	$fh = fopen($nfmon_snapshot . '_tmp', 'r');
+	while (! feof($fh) ) {
+		$match = explode('::', rtrim(fgets($fh)) . '::' );
+
+		if ( empty($match[1]) ) {
+			continue;
+		}
+
+		// New file ?
+		if ( empty( $old_files[$match[0]] ) ) {
+			$new_files[$match[0]] = $match[1];
+			continue;
+		}
+
+		// Modified file ?
+		if ( $old_files[$match[0]] !=	$match[1] ) {
+			 $modified_files[$match[0]] = $old_files[$match[0]] . '::' . $match[1];
+		}
+
+		// Delete it from old files list :
+		unset( $old_files[$match[0]] );
+	}
+	fclose ($fh);
+
+	// Write changes to file, if any :
+	if ($new_files || $modified_files || $old_files) {
+
+		$fh = fopen($nfmon_diff, 'w');
+		fwrite($fh, '<?php die("Forbidden"); ?>' . "\n");
+
+		if ( $new_files ) {
+			foreach ( $new_files as $fkey => $fvalue ) {
+				fwrite($fh, $fkey . '::N::' . $fvalue . "\n");
+			}
+		}
+
+		if ( $modified_files ) {
+			foreach ( $modified_files as $fkey => $fvalue ) {
+				fwrite($fh, $fkey . '::M::' . $fvalue . "\n");
+			}
+		}
+
+		if ( $old_files ) {
+			foreach ( $old_files as $fkey => $fvalue ) {
+				fwrite($fh, $fkey . '::D::' . $fvalue . "\n");
+			}
+		}
+		fclose($fh);
+		rename( $nfmon_snapshot . '_tmp', $nfmon_snapshot);
+
+	} else {
+		if (file_exists($nfmon_diff) ) {
+			unlink($nfmon_diff);
+		}
+		unlink( $nfmon_snapshot . '_tmp');
+	}
+}
+
+/* ------------------------------------------------------------------ */
+// EOF
