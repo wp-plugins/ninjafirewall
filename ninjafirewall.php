@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.3.1
+Version: 1.3.2
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -23,8 +23,8 @@ Text Domain: ninjafirewall
  | REVISION: 2014-11-14 14:38:27                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.3.1' );
-define( 'NFW_RULES_VERSION',  '20141115' );
+define( 'NFW_ENGINE_VERSION', '1.3.2' );
+define( 'NFW_RULES_VERSION',  '20141127' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
