@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-11-27 12:12:14                                       |
+ | REVISION: 2014-12-04 16:46:23                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -477,7 +477,7 @@ function nfw_integration($err) {
 		}
 		echo '<pre style="background-color:#FFF;border:1px solid #ccc;margin:0px;padding:6px;overflow:auto;' .
 			$height . '">' . "\n" .
-			'<font color="red">' . HTACCESS_BEGIN . "\n" . HTACCESS_DATA . "\n" . HTACCESS_END . "\n" .
+			'<font color="red">' . HTACCESS_BEGIN . "\n" . htmlentities(HTACCESS_DATA) . "\n" . HTACCESS_END . "\n" .
 			'</font>' . $fdata . "\n" .
 			'</pre><br />';
 		if (empty($_SESSION['htaccess_write']) ) {
@@ -502,7 +502,7 @@ function nfw_integration($err) {
 		}
 		echo '<pre style="background-color:#FFF;border:1px solid #ccc;margin:0px;padding:6px;overflow:auto;' .
 			$height . '">' . "\n" .
-			'<font color="red">' . HTACCESS_BEGIN . "\n" . HTACCESS_DATA . "\n" . HTACCESS_END . "\n" .
+			'<font color="red">' . HTACCESS_BEGIN . "\n" . LITESPEED_DATA . "\n" . HTACCESS_END . "\n" .
 			'</font>' . $fdata . "\n" .
 			'</pre><br />';
 		if (empty($_SESSION['htaccess_write']) ) {
@@ -644,8 +644,14 @@ INTEGRATION:
 			// Backup the current .htaccess :
 			copy( $_SESSION['abspath'] . '.htaccess',	$_SESSION['abspath'] . '.htaccess.ninja' . $bakup_file );
 		}
-		file_put_contents($_SESSION['abspath'] . '.htaccess',
-			HTACCESS_BEGIN . "\n" . HTACCESS_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
+		if ($_SESSION['http_server'] == 4) {
+			file_put_contents($_SESSION['abspath'] . '.htaccess',
+				HTACCESS_BEGIN . "\n" . LITESPEED_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
+
+		} else {
+			file_put_contents($_SESSION['abspath'] . '.htaccess',
+				HTACCESS_BEGIN . "\n" . HTACCESS_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
+		}
 		@chmod( $_SESSION['abspath'] . '.htaccess', 0644 );
 		// Save the htaccess path for the uninstaller :
 		$nfw_install['htaccess'] = $_SESSION['abspath'] . '.htaccess';
@@ -765,7 +771,10 @@ function nfw_ini_data() {
 
 	if (! defined('HTACCESS_BEGIN') ) {
 		define( 'HTACCESS_BEGIN', '# BEGIN NinjaFirewall' );
-		define( 'HTACCESS_DATA', 'php_value auto_prepend_file ' . plugin_dir_path(__FILE__) . 'lib/firewall.php' );
+		define( 'HTACCESS_DATA', '<IfModule mod_php5.c>' . "\n" .
+									'   php_value auto_prepend_file ' . plugin_dir_path(__FILE__) . 'lib/firewall.php' . "\n" .
+									'</IfModule>');
+		define( 'LITESPEED_DATA', 'php_value auto_prepend_file ' . plugin_dir_path(__FILE__) . 'lib/firewall.php');
 		define( 'HTACCESS_END', '# END NinjaFirewall' );
 		define( 'PHPINI_BEGIN', '; BEGIN NinjaFirewall' );
 		define( 'PHPINI_DATA', 'auto_prepend_file = ' . plugin_dir_path(__FILE__) . 'lib/firewall.php' );
