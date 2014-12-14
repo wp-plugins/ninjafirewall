@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-10-14 00:09:03                                       |
+ | REVISION: 2014-12-12 14:38:11                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -90,6 +90,11 @@ function nfw_uninstall() {
 		$data = file_get_contents( $ini );
 		$data = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $data);
 		file_put_contents( $ini,  $data );
+	}
+
+	// Remove any scheduled cron job :
+	if ( wp_next_scheduled('nfscanevent') ) {
+		wp_clear_scheduled_hook('nfscanevent');
 	}
 
 	// Delete DB rows :

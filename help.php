@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-11-07 18:04:50                                       |
+ | REVISION: 2014-12-12 16:27:12                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -243,8 +243,8 @@ function help_nfsubnetwork() {	// i18n
 	// Network (multisite version only) :
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'network01',
-		'title'     => __('Network', 'nfwplus'),
-		'content'   => __('<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.', 'nfwplus')
+		'title'     => __('Network', 'ninjafirewall'),
+		'content'   => __('<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.', 'ninjafirewall')
 	) );
 }
 /* ------------------------------------------------------------------ */
@@ -255,7 +255,7 @@ function help_nfsubfilecheck() {	// i18n
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'filecheck01',
 		'title'     => __('File Check', 'ninjafirewall'),
-		'content'   => __('<p>File Check lets you perform file integrity monitoring upon request.
+		'content'   => __('<p>File Check lets you perform file integrity monitoring upon request or on a specific interval.
 		<br />
 		You need to create a snapshot of all your files and then, at a later time, you can scan your system to compare it with the previous snapshot. Any modification will be immediately detected: file content, file permissions, file ownership, timestamp (<code>ctime</code> and <code>mtime</code>) as well as file creation and deletion.
 		</p>
@@ -266,11 +266,24 @@ function help_nfsubfilecheck() {	// i18n
 		<li>Do not follow symbolic links: by default, NinjaFirewall will not follow symbolic links.</li>', 'ninjafirewall')
 	) );
 
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'filecheck02',
+		'title'     => __('Scheduled scans', 'ninjafirewall'),
+		'content'   => __('<p>NinjaFirewall can scan your system on a specific interval (hourly, twicedaily or daily).
+		<br />
+		It can either send you a scan report only if changes are detected, or always send one after each scan.<br />Reports will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
+
+
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Scheduled scans rely on <a href="http://codex.wordpress.org/Category:WP-Cron_Functions">WordPress pseudo cron</a> which works only if your site gets sufficient traffic.</span></p>
+
+		', 'ninjafirewall')
+	) );
+
 }
 
 /* ------------------------------------------------------------------ */
 
-function help_nfsubalerts() {
+function help_nfsubevent() {
 
 	// Event Notifications menu help :
 

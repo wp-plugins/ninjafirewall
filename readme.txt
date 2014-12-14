@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypa
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.0.1
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -175,6 +175,12 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
+= 1.3.3 =
+* File Check can now run scheduled scans on a specific interval (hourly, twicedaily or daily) and send reports by email (see "File Check > Options" menu and its contextual help).
+* Added an option to select Apache/suPHP SAPI during the installation process.
+* Added an option to write all events/alerts to the firewall log (see "Event Notifications > Log").
+* Loosened cookies sanitizing rules to reduce the risk of false-positives.
+
 = 1.3.2 =
 * Updated security rules to protect against new Slider Revolution/Showbiz Pro shell upload exploit (http://nin.link/fd78).
 
@@ -339,8 +345,3 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 = 1.0.0 =
 * Initial release.
-
-== Upgrade Notice ==
-
-= 1.1.5 =
-This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.

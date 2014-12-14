@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-12-04 16:46:23                                       |
+ | REVISION: 2014-12-13 00:25:03                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -43,10 +43,8 @@ if ( empty( $_REQUEST['nfw_act'] ) ) {
 } elseif ( $_REQUEST['nfw_act'] == 'postsave' ) {
 	nfw_postsave();
 
-} elseif ( $_REQUEST['nfw_act'] == 99) {
-	phpinfo(33);
-	exit;
 }
+
 return;
 
 /* ------------------------------------------------------------------ */
@@ -305,6 +303,7 @@ function nfw_presave($err) {
 				<select class="input" name="http_server" onchange="ini_toogle(this.value);">
 					<option value="1"<?php selected($http_server, 1) ?>>Apache + PHP5 module<?php echo $s1 ?></option>
 					<option value="2"<?php selected($http_server, 2) ?>>Apache + CGI/FastCGI<?php echo $s2 ?></option>
+					<option value="6"<?php selected($http_server, 6) ?>>Apache + suPHP</option>
 					<option value="3"<?php selected($http_server, 3) ?>>Nginx + CGI/FastCGI<?php echo $s3 ?></option>
 					<option value="4"<?php selected($http_server, 4) ?>>Litespeed + LSAPI<?php echo $s4 ?></option>
 					<option value="5"<?php selected($http_server, 5) ?>><?php echo 'Other webserver + CGI/FastCGI' . $s5 ?></option>
@@ -373,7 +372,8 @@ function nfw_integration($err) {
 	// 3: Nginx
 	// 4: Litespeed (either LSAPI or Apache-style configuration directives (php_value)
 	// 5: Other + CGI/FastCGI
-	if ( empty($_POST['http_server']) || ! preg_match('/^[1-5]$/', $_POST['http_server']) ) {
+	// 6: Apache + shPHP
+	if ( empty($_POST['http_server']) || ! preg_match('/^[1-6]$/', $_POST['http_server']) ) {
 		nfw_presave( __('select your HTTP server and PHP SAPI.', 'ninjafirewall') );
 		return;
 	}
@@ -413,7 +413,7 @@ function nfw_integration($err) {
 		$directives = '<code>.htaccess</code>';
 		$t1 = 'That file';
 		$t2 = 'if it exists';
-	} elseif ($_SESSION['http_server'] == 4) {
+	} elseif ($_SESSION['http_server'] == 4 || $_SESSION['http_server'] == 6) {
 		$directives = '<code>.htaccess</code> and <code>' . $php_file . '</code>';
 		$t1 = 'Those files';
 		$t2 = 'if they exist';
@@ -535,8 +535,40 @@ function nfw_integration($err) {
 			echo '<img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) .'" border="0" height="16" width="16">&nbsp;' . $not_writable .'<br />';
 		}
 
-	// Other servers (nginx etc): we create the requested INI file only :
+	// Other servers (nginx etc) :
 	} else {
+
+		// Apache + suPHP : we create both INI and .htaccess files as we need
+		// to add the suPHP_ConfigPath directive (otherwise the INI will not
+		// apply recursively) :
+		if ($_SESSION['http_server'] == 6) {
+			if ( file_exists($_SESSION['abspath'] . '.htaccess') ) {
+				// Edit it :
+				if (! is_writable($_SESSION['abspath'] . '.htaccess') ) {
+					$_SESSION['htaccess_write'] = $_SESSION['abspath_writable'] = 0;
+				}
+				printf('<li>'. $add2file .'</li>', $_SESSION['abspath'] . '.htaccess');
+				$fdata = file_get_contents($_SESSION['abspath'] . '.htaccess');
+				$fdata = preg_replace( '/\s?'. HTACCESS_BEGIN .'.+?'. HTACCESS_END .'[^\r\n]*\s?/s' , "\n", $fdata);
+				$fdata = "\n<font color='#444'>" . htmlentities($fdata) . '</font>';
+				$height = 'height:150px;';
+			} else {
+				// Create it :
+				printf('<li>'. $createfile .'</li>', $_SESSION['abspath'] . '.htaccess');
+			}
+			echo '<pre style="background-color:#FFF;border:1px solid #ccc;margin:0px;padding:6px;overflow:auto;' .
+				$height . '">' . "\n" .
+				'<font color="red">' . HTACCESS_BEGIN . "\n" . htmlentities(SUPHP_DATA) . "\n" . HTACCESS_END . "\n" .
+				'</font>' . $fdata . "\n" .
+				'</pre><br />';
+			if (empty($_SESSION['htaccess_write']) ) {
+				echo '<img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) .'" border="0" height="16" width="16">&nbsp;' . $not_writable .'<br />';
+			}
+			echo '<br /><br />';
+			$fdata = $height = '';
+		} // Apache + suPHP
+
+
 		if ( file_exists($_SESSION['abspath'] . $php_file) ) {
 			if (! is_writable($_SESSION['abspath'] . $php_file) ) {
 				$_SESSION['ini_write'] = $_SESSION['abspath_writable'] = 0;
@@ -564,7 +596,7 @@ function nfw_integration($err) {
 
 	echo '<br /><form method="post" name="integration_form">';
 
-	$chg_str1 = __('If you make the changes yourself and one day you wanted to uninstall NinjaFirewall, you would need to manually undo your modifications before uninstalling it.', 'ninjafirewall');
+	$chg_str1 = __('If one day you wanted to uninstall NinjaFirewall, you would need to manually undo your modifications <u>before uninstalling it</u>.', 'ninjafirewall');
 	$chg_str2 = __('Please make those changes, then click on button below.', 'ninjafirewall');
 	if (! empty($_SESSION['abspath_writable']) ) {
 		// We offer to make the changes, or to let the user handle that (could be
@@ -600,7 +632,7 @@ INTEGRATION:
 		nfw_integration($err);
 		return;
 	}
-	if ( empty($_SESSION['http_server']) || ! preg_match('/^[1-5]$/', $_SESSION['http_server']) ) {
+	if ( empty($_SESSION['http_server']) || ! preg_match('/^[1-6]$/', $_SESSION['http_server']) ) {
 		$_POST['abspath'] = $_SESSION['abspath'];
 		nfw_presave( __('select your HTTP server and PHP SAPI.', 'ninjafirewall') );
 		return;
@@ -630,8 +662,8 @@ INTEGRATION:
 
 	$nfw_install['htaccess'] = $nfw_install['phpini'] = 0;
 
-	// Apache module or Litespeed : create/modify .htaccess
-	if ($_SESSION['http_server'] == 1 || $_SESSION['http_server'] == 4 ) {
+	// Apache module or Litespeed or Apache/suPHP : create/modify .htaccess
+	if ($_SESSION['http_server'] == 1 || $_SESSION['http_server'] == 4 || $_SESSION['http_server'] == 6 ) {
 		$fdata = '';
 		if ( file_exists($_SESSION['abspath'] . '.htaccess') ) {
 			if (! is_writable($_SESSION['abspath'] . '.htaccess') ) {
@@ -644,13 +676,18 @@ INTEGRATION:
 			// Backup the current .htaccess :
 			copy( $_SESSION['abspath'] . '.htaccess',	$_SESSION['abspath'] . '.htaccess.ninja' . $bakup_file );
 		}
-		if ($_SESSION['http_server'] == 4) {
+		if ($_SESSION['http_server'] == 6) {
 			file_put_contents($_SESSION['abspath'] . '.htaccess',
-				HTACCESS_BEGIN . "\n" . LITESPEED_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
-
+				HTACCESS_BEGIN . "\n" . SUPHP_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
 		} else {
-			file_put_contents($_SESSION['abspath'] . '.htaccess',
-				HTACCESS_BEGIN . "\n" . HTACCESS_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
+			if ($_SESSION['http_server'] == 4) {
+				file_put_contents($_SESSION['abspath'] . '.htaccess',
+					HTACCESS_BEGIN . "\n" . LITESPEED_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
+
+			} else {
+				file_put_contents($_SESSION['abspath'] . '.htaccess',
+					HTACCESS_BEGIN . "\n" . HTACCESS_DATA . "\n" . HTACCESS_END . "\n\n" . $fdata );
+			}
 		}
 		@chmod( $_SESSION['abspath'] . '.htaccess', 0644 );
 		// Save the htaccess path for the uninstaller :
@@ -744,10 +781,12 @@ function nfw_firewalltest() {
 				</form><br />';
 			}
 			if ($_SESSION['http_server'] == 2) {
-				// User choosed Apache/CGI instead of mod_php:
-				echo '<li>You selected <code>Apache + CGI/FastCGI</code> as your HTTP server &amp; PHP SAPI. Maybe your HTTP server is <code>Apache + mod_php5</code>?
-				<br />
-				You can click the "Go Back" button and try to select another HTTP server type.</li><br />';
+				if ( preg_match('/apache/i', PHP_SAPI) ) {
+					// User choosed Apache/CGI instead of mod_php:
+					echo '<li>You selected <code>Apache + CGI/FastCGI</code> as your HTTP server and PHP SAPI. Maybe your HTTP server is <code>Apache + mod_php5</code>?
+					<br />
+					You can click the "Go Back" button and try to select another HTTP server type.</li><br />';
+				}
 			}
 			echo '<li>Maybe you did not select the correct PHP INI ?
 			<br />
@@ -775,6 +814,9 @@ function nfw_ini_data() {
 									'   php_value auto_prepend_file ' . plugin_dir_path(__FILE__) . 'lib/firewall.php' . "\n" .
 									'</IfModule>');
 		define( 'LITESPEED_DATA', 'php_value auto_prepend_file ' . plugin_dir_path(__FILE__) . 'lib/firewall.php');
+		define( 'SUPHP_DATA', '<IfModule mod_suphp.c>' . "\n" .
+									'   suPHP_ConfigPath ' . rtrim($_SESSION['abspath'], '/') . "\n" .
+									'</IfModule>');
 		define( 'HTACCESS_END', '# END NinjaFirewall' );
 		define( 'PHPINI_BEGIN', '; BEGIN NinjaFirewall' );
 		define( 'PHPINI_DATA', 'auto_prepend_file = ' . plugin_dir_path(__FILE__) . 'lib/firewall.php' );
@@ -836,6 +878,11 @@ function nfw_default_conf() {
 		'a_23' 				=> 0,
 		'a_24' 				=> 0,
 		'a_31' 				=> 1,
+		// v1.3.3 :
+		'a_41' 				=> 1,
+		'sched_scan'		=> 0,
+		'report_scan'		=> 0,
+
 		'alert_email'	 	=> get_option('admin_email'),
 		// v1.1.0 :
 		'alert_sa_only'	=> 2,
@@ -874,6 +921,11 @@ function nfw_default_conf() {
 	// Save to the DB :
 	update_option( 'nfw_options', $nfw_options);
 	update_option( 'nfw_rules', $nfw_rules);
+
+	// Remove any potential scheduled cron job (in case of a re-installation) :
+	if ( wp_next_scheduled('nfscanevent') ) {
+		wp_clear_scheduled_hook('nfscanevent');
+	}
 
 }
 

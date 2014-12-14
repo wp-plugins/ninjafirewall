@@ -6,7 +6,7 @@
  | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
  |                                                                     |
  +---------------------------------------------------------------------+
- | REVISION: 2014-11-14 00:12:30                                       |
+ | REVISION: 2014-12-10 21:22:40                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -22,12 +22,29 @@
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
-if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
-
 $log_dir = WP_CONTENT_DIR . '/nfwlog/cache/';
 $nfmon_snapshot = $log_dir . 'nfilecheck_snapshot.php';
 $nfmon_diff = $log_dir . 'nfilecheck_diff.php';
 $err = $success = '';
+
+// Scheduled scan ?
+if (defined('NFSCANDO') ) {
+	$err = nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff);
+	$nfw_options = get_option('nfw_options');
+	// Changes detected :
+	if (! $err && file_exists($nfmon_diff) ) {
+		nf_scan_email($nfmon_diff, $log_dir);
+	// No changes detected :
+	} else {
+		// Always send a report after a scan ?
+		if (! empty($nfw_options['report_scan']) ) {
+			nf_scan_email(0, 0);
+		}
+	}
+	return;
+}
+
+if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
 
 // Check if we have a snapshot or not:
 if (! file_exists($nfmon_snapshot) ) {
@@ -47,6 +64,15 @@ if (! empty($_REQUEST['nfw_act'])) {
 		if (file_exists($nfmon_snapshot) ) {
 			unlink ($nfmon_snapshot);
 			$success = __('Snapshot file successfully deleted.', 'ninjafirewall');
+			// Clear scheduled scan (if any) and its options :
+			if ( wp_next_scheduled('nfscanevent') ) {
+				wp_clear_scheduled_hook('nfscanevent');
+			}
+			$nfw_options = get_option('nfw_options');
+			$nfw_options['report_scan'] = 0;
+			$nfw_options['sched_scan'] = 0;
+			update_option('nfw_options', $nfw_options);
+
 		} else {
 			$err = __('You did not create any snapshot yet.', 'ninjafirewall');
 		}
@@ -66,6 +92,9 @@ if (! empty($_REQUEST['nfw_act'])) {
 				}
 			}
 		}
+	} elseif ( $_REQUEST['nfw_act'] == 'scheduled') {
+		nf_scheduled_scan();
+		$success = __('Your changes have been saved.', 'ninjafirewall');
 	}
 }
 
@@ -275,7 +304,7 @@ if (file_exists($nfmon_diff) ) {
 				}
 				?>
 				<form method="post">
-					<p><input type="submit" name="dlsnap" value="<?php _e('Download Snapshot', 'nfwplus') ?>" class="button-secondary" />&nbsp;&nbsp;&nbsp;<input type="submit" class="button-secondary" onClick="return delit();" value="<?php _e('Delete Snapshot', 'ninjafirewall') ?>" /><input type="hidden" name="nfw_act" value="delete" /></p>
+					<p><input type="submit" name="dlsnap" value="<?php _e('Download Snapshot', 'ninjafirewall') ?>" class="button-secondary" />&nbsp;&nbsp;&nbsp;<input type="submit" class="button-secondary" onClick="return delit();" value="<?php _e('Delete Snapshot', 'ninjafirewall') ?>" /><input type="hidden" name="nfw_act" value="delete" /></p>
 				</form>
 			</td>
 		</tr>
@@ -410,14 +439,69 @@ if (file_exists($nfmon_diff) ) {
 			</td>
 		</tr>
 	</table>
-	<br />
 	<br />';
 			}
-			?>
+		?>
 	<form method="post">
 		<input type="hidden" name="nfw_act" value="scan" />
-		<p><input type="submit" class="button-primary" value="<?php _e('Scan System For File Changes', 'ninjafirewall') ?>" /></p>
+		<p><input type="submit" class="button-primary" value="<?php _e('Scan System For File Changes', 'ninjafirewall') ?> &#187;" /></p>
 	</form>
+
+	<br />
+	<br />
+	<?php
+	if (! isset($nfw_options['sched_scan']) ) {
+		$sched_scan = 0;
+	} else {
+		$sched_scan = $nfw_options['sched_scan'];
+	}
+	if ( empty($nfw_options['report_scan']) ) {
+		$report_scan = 0;
+	} else {
+		$report_scan = 1;
+	}
+	?>
+	<h3><?php _e('Options', 'ninjafirewall') ?></h3>
+	<form method="post">
+		<table class="form-table">
+			<tr>
+				<th scope="row"><?php _e('Enable scheduled scans', 'ninjafirewall') ?></th>
+				<td align="left">
+					<p><label><input type="radio" name="sched_scan" value="0"<?php checked($sched_scan, 0) ?> /><?php _e('No (default)', 'ninjafirewall') ?></label></p>
+					<p><label><input type="radio" name="sched_scan" value="1"<?php checked($sched_scan, 1) ?> /><?php _e('Hourly', 'ninjafirewall') ?></label></p>
+					<p><label><input type="radio" name="sched_scan" value="2"<?php checked($sched_scan, 2) ?> /><?php _e('Twicedaily', 'ninjafirewall') ?></label></p>
+					<p><label><input type="radio" name="sched_scan" value="3"<?php checked($sched_scan, 3) ?> /><?php _e('Daily', 'ninjafirewall') ?></label></p>
+					<?php
+					if ( $nextscan = wp_next_scheduled('nfscanevent') ) {
+					?>
+						<p><span class="description"><?php printf( __('Next scan will start at approximately %s', 'ninjafirewall'), date_i18n('h:i A', $nextscan) ) ?>
+						<br />
+						<?php printf( __('Current blog time is %s', 'ninjafirewall'), date_i18n('h:i A') ) ?></span></p>
+					<?php
+						// Ensure that the scheduled scan time is in the future,
+						// not in the past, otherwise send a warning because wp-cron
+						// is obviously not working as expected :
+						if ( $nextscan < time() ) {
+						?>
+							<p><img src="<?php echo plugins_url() ?>/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description"><?php _e('The next scheduled scan date is in the past! WordPress wp-cron may not be working or may have been disabled.', 'ninjafirewall'); ?></span>
+						<?php
+						}
+					}
+					?>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php _e('Scheduled scan report', 'ninjafirewall') ?></th>
+				<td align="left">
+					<p><label><input type="radio" name="report_scan" value="0"<?php checked($report_scan, 0) ?> /><?php _e('Send me a report by email only if changes were detected (default)', 'ninjafirewall') ?></label></p>
+					<p><label><input type="radio" name="report_scan" value="1"<?php checked($report_scan, 1) ?> /><?php _e('Always send me a report by email after a scheduled scan', 'ninjafirewall') ?></label></p>
+				</td>
+			</tr>
+		</table>
+		<input type="hidden" name="nfw_act" value="scheduled" />
+		<p><input type="submit" class="button-primary" value="<?php _e('Save Scan Options', 'ninjafirewall') ?>" /></p>
+	</form>
+
 </div>
 <?php
 
@@ -611,6 +695,108 @@ function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
 			unlink($nfmon_diff);
 		}
 		unlink( $nfmon_snapshot . '_tmp');
+	}
+}
+
+/* ------------------------------------------------------------------ */
+
+function nf_scheduled_scan() {
+
+	$nfw_options = get_option('nfw_options');
+
+	if (! isset($_POST['sched_scan']) || ! preg_match('/^[1-3]$/', $_POST['sched_scan']) ) {
+		$nfw_options['sched_scan'] = 0;
+		// Clear scheduled scan, if any :
+		if ( wp_next_scheduled('nfscanevent') ) {
+			wp_clear_scheduled_hook('nfscanevent');
+		}
+	} else {
+		if ($_POST['sched_scan'] == 1) {
+			$schedtype = 'hourly';
+		} elseif ($_POST['sched_scan'] == 2) {
+			$schedtype = 'twicedaily';
+		} else {
+			$schedtype = 'daily';
+		}
+		$nfw_options['sched_scan'] = $_POST['sched_scan'];
+		// Create a new scheduled scan :
+		if ( wp_next_scheduled('nfscanevent') ) {
+			wp_clear_scheduled_hook('nfscanevent');
+		}
+		wp_schedule_event( time() + 3600, $schedtype, 'nfscanevent');
+	}
+
+	if ( empty($_POST['report_scan']) ) {
+		$nfw_options['report_scan'] = 0;
+	} else {
+		$nfw_options['report_scan'] = 1;
+	}
+	update_option('nfw_options', $nfw_options);
+
+}
+
+/* ------------------------------------------------------------------ */
+
+function nf_scan_email($nfmon_diff, $log_dir) {
+
+	$nfw_options = get_option('nfw_options');
+	if ( ( is_multisite() ) && ( $nfw_options['alert_sa_only'] == 2 ) ) {
+		$recipient = get_option('admin_email');
+	} else {
+		$recipient = $nfw_options['alert_email'];
+	}
+
+	nfw_get_blogtimezone();
+
+	// Changes were detected :
+	if ( $nfmon_diff ) {
+		$stat = stat($nfmon_diff);
+		$data = '== NinjaFirewall File Check\'s diff'. "\n";
+		$data.= '== ' . site_url() . "\n";
+		$data.= '== ' . date_i18n('M d, Y @ H:i:s O', $stat['ctime']) . "\n\n";
+		$data.= '[+] = ' . __('New file', 'ninjafirewall') .
+					'      [-] = ' . __('Deleted file', 'ninjafirewall') .
+					'      [!] = ' . __('Modified file', 'ninjafirewall') .
+					"\n\n";
+		$fh = fopen($nfmon_diff, 'r');
+		while (! feof($fh) ) {
+			$res = explode('::', fgets($fh) );
+			if ( empty($res[1]) ) { continue; }
+			// New file :
+			if ($res[1] == 'N') {
+				$data .= '[+] ' . $res[0] . "\n";
+			// Deleted file :
+			} elseif ($res[1] == 'D') {
+				$data .= '[-] ' . $res[0] . "\n";
+			// Modified file:
+			} elseif ($res[1] == 'M') {
+				$data .= '[!] ' . $res[0] . "\n";
+			}
+		}
+		fclose($fh);
+		$data .= "\n== EOF\n";
+		file_put_contents($log_dir . 'nf_filecheck.txt', $data);
+		$subject = __('[NinjaFirewall] Alert: File Check detection', 'ninjafirewall');
+		$msg = __('NinjaFirewall detected that changes were made to your files.', 'ninjafirewall') . "\n\n";
+		$msg .=__('Domain: ', 'ninjafirewall') . site_url() . "\n";
+		$msg .= sprintf( __('Date: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O') )."\n\n";
+		$msg .= __('See attached file for details.' , 'ninjafirewall') . "\n\n" .
+			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
+			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
+
+		wp_mail( $recipient, $subject, $msg, '', $log_dir . 'nf_filecheck.txt' );
+		unlink($log_dir . 'nf_filecheck.txt');
+
+	} else {
+
+		// User asked to always receive a report after a scheduled scan :
+		$subject = __('[NinjaFirewall] File Check report', 'ninjafirewall');
+		$msg = __('NinjaFirewall did not detect changes in your files.', 'ninjafirewall') . "\n\n";
+		$msg .=__('Domain: ', 'ninjafirewall') . site_url() . "\n";
+		$msg .= sprintf( __('Date: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O') ) . "\n\n" .
+			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
+			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
+		wp_mail( $recipient, $subject, $msg );
 	}
 }
 

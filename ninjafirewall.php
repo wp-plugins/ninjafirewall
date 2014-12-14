@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.3.2
+Version: 1.3.3
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -20,11 +20,11 @@ Text Domain: ninjafirewall
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-11-14 14:38:27                                       |
+ | REVISION: 2014-12-12 16:37:17                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.3.2' );
-define( 'NFW_RULES_VERSION',  '20141127' );
+define( 'NFW_ENGINE_VERSION', '1.3.3' );
+define( 'NFW_RULES_VERSION',  '20141214' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -56,7 +56,6 @@ define('NFW_ASCII_CTRL', 500);
 define('NFW_DOC_ROOT', 510);
 define('NFW_WRAPPERS', 520);
 define('NFW_LOOPBACK', 540);
-define('NEW_FEAT', '&nbsp;<sup style="color:red;">New</sup>');
 $err_fw = array(
 	1	=> __('Cannot find WordPress configuration file', 'ninjafirewall'),
 	2	=>	__('Cannot read WordPress configuration file', 'ninjafirewall'),
@@ -352,7 +351,15 @@ function nfw_upgrade() {	//i18n
 			unset($nfw_options['bf_authlog']);
 		}
 		// v1.3.1 update -------------------------------------------------
-		$nfw_options['response_headers'] = '000000';
+		if ( version_compare( $nfw_options['engine_version'], '1.3.1', '<' ) ) {
+			$nfw_options['response_headers'] = '000000';
+		}
+		// v1.3.3 update -------------------------------------------------
+		if ( version_compare( $nfw_options['engine_version'], '1.3.3', '<' ) ) {
+			$nfw_options['a_41'] = 1;
+			$nfw_options['sched_scan'] = 0;
+			$nfw_options['report_scan'] = 0;
+		}
 		// ---------------------------------------------------------------
 
 		$nfw_options['engine_version'] = NFW_ENGINE_VERSION;
@@ -483,6 +490,9 @@ function nfw_login_hook( $user_login, $user ) {
 		// User login:
 		if ( ( ( $nfw_options['a_0'] == 1) && ( $admin_flag )  ) ||	( $nfw_options['a_0'] == 2 ) ) {
 			nfw_send_loginemail( $user_login, $whoami );
+			if (! empty($nfw_options['a_41']) ) {
+				nfw_log2( __('Logged in user', 'ninjafirewall'), $user_login .' ('. $whoami .')', 6, 0);
+			}
 		}
 	}
 
@@ -603,6 +613,12 @@ function ninjafirewall_admin_menu() {
 
 	if (nf_not_allowed( 0, __LINE__ ) ) { return; }
 
+	// Display phpinfo for the installer :
+	if (! empty($_REQUEST['nfw_act']) && $_REQUEST['nfw_act'] == 99) {
+		phpinfo(33);
+		exit;
+	}
+
 	define( 'NFW_DEFAULT_MSG', '<br /><br /><br /><br /><center>Sorry <b>%%REM_ADDRESS%%</b>, ' .
 		'your request cannot be proceeded.<br />For security reason, it was blocked and logged.' .
 		'<br /><br />%%NINJA_LOGO%%<br /><br />If you think that was a mistake, please contact the<br />' .
@@ -673,8 +689,8 @@ function ninjafirewall_admin_menu() {
 
 	// Event Notifications menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Event Notifications', 'Event Notifications', 'manage_options',
-		'nfsubalerts', 'nf_sub_alerts' );
-	add_action( 'load-' . $menu_hook, 'help_nfsubalerts' );
+		'nfsubevent', 'nf_sub_event' );
+	add_action( 'load-' . $menu_hook, 'help_nfsubevent' );
 
 	// Login protection menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Log-in Protection', 'Login Protection', 'manage_options',
@@ -1407,7 +1423,7 @@ function httponly() {
 	}
 
 	?>
-	<h3><?php _e('HTTP response headers', 'ninjafirewall'); echo NEW_FEAT; ?></h3>
+	<h3><?php _e('HTTP response headers', 'ninjafirewall')  ?></h3>
 	<table class="form-table">
 		<tr>
 			<th scope="row"><?php printf( __('Set <code>%s</code> to protect against MIME type confusion attacks', 'ninjafirewall'), '<a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">X-Content-Type-Options</a>') ?></th>
@@ -2490,227 +2506,20 @@ function nf_sub_filecheck() {	// i18n
 
 }
 
-/* ------------------------------------------------------------------ */
+add_action('nfscanevent', 'nfscando');
 
-function nf_sub_alerts() {
+function nfscando() {
 
-	// Alerts menu :
-
-	if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
-
-	$nfw_options = get_option( 'nfw_options' );
-
-	echo '<div class="wrap">
-	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>Event Notifications</h2>
-	<br />';
-
-	// Saved ?
-	if ( isset( $_POST['nfw_options']) ) {
-		nf_sub_alerts_save();
-		echo '<div class="updated settings-error"><p><strong>Your changes have been saved.</strong></p></div>';
-		$nfw_options = get_option( 'nfw_options' );
-	}
-
-	if (! isset( $nfw_options['a_0'] ) ) {
-		$nfw_options['a_0'] = 1;
-	}
-	?>
-	<form method="post" name="nfwalerts">
-
-	<h3>WordPress admin console</h3>
-	<table class="form-table">
-		<tr>
-			<th scope="row">Send me an alert whenever</th>
-			<td align="left">
-			<p><label><input type="radio" name="nfw_options[a_0]" value="1"<?php checked( $nfw_options['a_0'], 1) ?>>&nbsp;An administrator logs in (default)</label></p>
-			<p><label><input type="radio" name="nfw_options[a_0]" value="2"<?php checked( $nfw_options['a_0'], 2) ?>>&nbsp;Someone (user, admin, editor...) logs in</label></p>
-			<p><label><input type="radio" name="nfw_options[a_0]" value="0"<?php checked( $nfw_options['a_0'], 0) ?>>&nbsp;No, thanks</label></p>
-			</td>
-		</tr>
-	</table>
-
-	<br />
-
-	<h3>Plugins</h3>
-	<table class="form-table">
-		<tr>
-			<th scope="row">Send me an alert whenever someone</th>
-			<td align="left">
-			<p><label><input type="checkbox" name="nfw_options[a_11]" value="1"<?php checked( $nfw_options['a_11'], 1) ?>>&nbsp;Uploads a plugin (default)</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_12]" value="1"<?php checked( $nfw_options['a_12'], 1) ?>>&nbsp;Installs a plugin (default)</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_13]" value="1"<?php checked( $nfw_options['a_13'], 1) ?>>&nbsp;Activates a plugin</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_14]" value="1"<?php checked( $nfw_options['a_14'], 1) ?>>&nbsp;Updates a plugin</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_15]" value="1"<?php checked( $nfw_options['a_15'], 1) ?>>&nbsp;Deactivates a plugin (default)</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_16]" value="1"<?php checked( $nfw_options['a_16'], 1) ?>>&nbsp;Deletes a plugin</label></p>
-			</td>
-		</tr>
-	</table>
-
-	<br />
-
-	<h3>Themes</h3>
-	<table class="form-table">
-		<tr>
-			<th scope="row">Send me an alert whenever someone</th>
-			<td align="left">
-			<p><label><input type="checkbox" name="nfw_options[a_21]" value="1"<?php checked( $nfw_options['a_21'], 1) ?>>&nbsp;Uploads a theme (default)</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_22]" value="1"<?php checked( $nfw_options['a_22'], 1) ?>>&nbsp;Installs a theme (default)</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_23]" value="1"<?php checked( $nfw_options['a_23'], 1) ?>>&nbsp;Activates a theme</label></p>
-			<p><label><input type="checkbox" name="nfw_options[a_24]" value="1"<?php checked( $nfw_options['a_24'], 1) ?>>&nbsp;Deletes a theme</label></p>
-			</td>
-		</tr>
-	</table>
-
-	<br />
-
-	<h3>Core</h3>
-	<table class="form-table">
-		<tr>
-			<th scope="row">Send me an alert whenever someone</th>
-			<td align="left">
-			<p><label><input type="checkbox" name="nfw_options[a_31]" value="1"<?php checked( $nfw_options['a_31'], 1) ?>>&nbsp;Updates WordPress (default)</label></p>
-			</td>
-		</tr>
-	</table>
-
-	<br />
-
-	<?php
-	if (! is_multisite() ) {
-	?>
-	<h3>Contact email</h3>
-	<table class="form-table">
-		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-			<th scope="row">Alerts should be sent to</th>
-			<td align="left">
-			<input class="regular-text" type="text" name="nfw_options[alert_email]" size="45" maxlength="250" value="<?php echo empty( $nfw_options['alert_email']) ? get_option('admin_email') : $nfw_options['alert_email'] ?>">
-			<input type="hidden" name="nfw_options[alert_sa_only]" value="2">
-			</td>
-		</tr>
-	</table>
-
-	<?php
-	} else {
-		// Select which admin(s) will recevied alerts in multi-site mode :
-		if (! isset( $nfw_options['alert_sa_only'] ) ) {
-			$nfw_options['alert_sa_only'] = 2;
-		}
-	?>
-	<h3>Contact email</h3>
-	<table class="form-table">
-		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-			<th scope="row">Alerts should be sent to</th>
-			<td align="left">
-			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php checked( $nfw_options['alert_sa_only'], 1 ) ?>>&nbsp;Only to me, the Super Admin (<?php echo get_option('admin_email'); ?>)</label></p>
-			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="2"<?php checked( $nfw_options['alert_sa_only'], 2) ?>>&nbsp;To the administrator of the site where originated the alert (default)</label></p>
-			<input type="hidden" name="nfw_options[alert_email]" value="<?php echo get_option('admin_email'); ?>">
-			</td>
-		</tr>
-	</table>
-	<?php
-	}
-	?>
-
-	<br />
-	<br />
-	<input class="button-primary" type="submit" name="Save" value="Save Event Notifications" />
-
-	</form>
-
-</div>
-<?php
-
+	define('NFSCANDO', 1);
+	nf_sub_filecheck();
 }
+
 /* ------------------------------------------------------------------ */
 
-function nf_sub_alerts_save() {
+function nf_sub_event() {
 
-	// Save Event Notifications :
-
-	if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
-
-	$nfw_options = get_option( 'nfw_options' );
-
-	if (! preg_match('/^[012]$/', $_POST['nfw_options']['a_0']) ) {
-		$nfw_options['a_0'] = 1;
-	} else {
-		$nfw_options['a_0'] = $_POST['nfw_options']['a_0'];
-	}
-
-	if (! preg_match('/^[12]$/', $_POST['nfw_options']['alert_sa_only']) ) {
-		$nfw_options['alert_sa_only'] = 2;
-	} else {
-		$nfw_options['alert_sa_only'] = $_POST['nfw_options']['alert_sa_only'];
-	}
-
-	if ( empty( $_POST['nfw_options']['a_11']) ) {
-		$nfw_options['a_11'] = 0;
-	} else {
-		$nfw_options['a_11'] = $_POST['nfw_options']['a_11'];
-	}
-	if ( empty( $_POST['nfw_options']['a_12']) ) {
-		$nfw_options['a_12'] = 0;
-	} else {
-		$nfw_options['a_12'] = $_POST['nfw_options']['a_12'];
-	}
-	if ( empty( $_POST['nfw_options']['a_13']) ) {
-		$nfw_options['a_13'] = 0;
-	} else {
-		$nfw_options['a_13'] = $_POST['nfw_options']['a_13'];
-	}
-	if ( empty( $_POST['nfw_options']['a_14']) ) {
-		$nfw_options['a_14'] = 0;
-	} else {
-		$nfw_options['a_14'] = $_POST['nfw_options']['a_14'];
-	}
-	if ( empty( $_POST['nfw_options']['a_15']) ) {
-		$nfw_options['a_15'] = 0;
-	} else {
-		$nfw_options['a_15'] = $_POST['nfw_options']['a_15'];
-	}
-	if ( empty( $_POST['nfw_options']['a_16']) ) {
-		$nfw_options['a_16'] = 0;
-	} else {
-		$nfw_options['a_16'] = $_POST['nfw_options']['a_16'];
-	}
-
-	if ( empty( $_POST['nfw_options']['a_21']) ) {
-		$nfw_options['a_21'] = 0;
-	} else {
-		$nfw_options['a_21'] = $_POST['nfw_options']['a_21'];
-	}
-	if ( empty( $_POST['nfw_options']['a_22']) ) {
-		$nfw_options['a_22'] = 0;
-	} else {
-		$nfw_options['a_22'] = $_POST['nfw_options']['a_22'];
-	}
-	if ( empty( $_POST['nfw_options']['a_23']) ) {
-		$nfw_options['a_23'] = 0;
-	} else {
-		$nfw_options['a_23'] = $_POST['nfw_options']['a_23'];
-	}
-	if ( empty( $_POST['nfw_options']['a_24']) ) {
-		$nfw_options['a_24'] = 0;
-	} else {
-		$nfw_options['a_24'] = $_POST['nfw_options']['a_24'];
-	}
-
-	if ( empty( $_POST['nfw_options']['a_31']) ) {
-		$nfw_options['a_31'] = 0;
-	} else {
-		$nfw_options['a_31'] = $_POST['nfw_options']['a_31'];
-	}
-
-	if (! empty( $_POST['nfw_options']['alert_email']) ) {
-		$nfw_options['alert_email'] = sanitize_email( $_POST['nfw_options']['alert_email'] );
-	}
-	if ( empty( $nfw_options['alert_email'] ) ) {
-		$nfw_options['alert_email'] = get_option('admin_email');
-	}
-
-	// Update options :
-	update_option( 'nfw_options', $nfw_options );
+	// Event Notifications menu :
+	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_event.php' );
 
 }
 
@@ -3640,6 +3449,16 @@ function nfw_check_emailalert() {
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
 			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 		wp_mail( $recipient, $subject, $message );
+
+		if (! empty($nfw_options['a_41']) ) {
+			nfw_log2(
+				$alert_array[$a_1][0] . ' ' . $alert_array[$a_1][$a_2] . ' by '. $current_user->user_login,
+				$alert_array[$a_1]['label'] . ' : ' . $a_3,
+				6,
+				0
+			);
+		}
+
 	}
 }
 /* ------------------------------------------------------------------ */

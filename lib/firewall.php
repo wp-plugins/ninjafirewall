@@ -7,7 +7,7 @@
 // +---------------------------------------------------------------------+
 // | http://nintechnet.com/                                              |
 // +---------------------------------------------------------------------+
-// | REVISION: 2014-11-07 23:13:29                                       |
+// | REVISION: 2014-12-14 01:02:13                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -388,7 +388,7 @@ if (! empty($nfw_['nfw_options']['request_sanitise']) && ! empty($_REQUEST) ){
 	$_REQUEST = nfw_sanitise( $_REQUEST, 1, 'REQUEST');
 }
 if (! empty($nfw_['nfw_options']['cookies_sanitise']) && ! empty($_COOKIE) ) {
-	$_COOKIE = nfw_sanitise( $_COOKIE, 1, 'COOKIE');
+	$_COOKIE = nfw_sanitise( $_COOKIE, 3, 'COOKIE');
 }
 if (! empty($nfw_['nfw_options']['ua_sanitise']) && ! empty($_SERVER['HTTP_USER_AGENT']) ) {
 	$_SERVER['HTTP_USER_AGENT'] = nfw_sanitise( $_SERVER['HTTP_USER_AGENT'], 1, 'HTTP_USER_AGENT');
@@ -457,7 +457,7 @@ function nfw_check_upload() {
 				}
 			}
 			// Log and let it go :
-			nfw_log('Uploading file' . $tmp , $f_uploaded[$key]['name'] . ', ' . number_format($f_uploaded[$key]['size']) . ' bytes', 5, 0);
+			nfw_log('Allowing file upload' . $tmp , $f_uploaded[$key]['name'] . ', ' . number_format($f_uploaded[$key]['size']) . ' bytes', 5, 0);
 		}
 	}
 }
@@ -605,7 +605,7 @@ function nfw_sanitise( $str, $how, $msg ) {
 		// -mysql_real_escape_string to escape [\x00], [\n], [\r], [\],
 		//	 ['], ["] and [\x1a]
 		//	-str_replace to escape backtick [`]
-		//	Applies to $_GET, $_POST, $_COOKIE, $_SERVER['HTTP_USER_AGENT']
+		//	Applies to $_GET, $_POST, $_SERVER['HTTP_USER_AGENT']
 		//	and $_SERVER['HTTP_REFERER']
 		//
 		// Or:
@@ -614,12 +614,22 @@ function nfw_sanitise( $str, $how, $msg ) {
 		//	-str_replace to replace [\n], [\r], [\x1a] and [\x00] with [X]
 		//	Applies to $_SERVER['PATH_INFO'], $_SERVER['PATH_TRANSLATED']
 		//	and $_SERVER['PHP_SELF']
+		//
+		// Or:
+		//
+		// -str_replace to escape ['], [`] and , [\]
+		//	-str_replace to replace [\x1a] and [\x00] with [X]
+		//	Applies to $_COOKIE only
+		//
 		if ($how == 1) {
 			$str2 = $nfw_['mysqli']->real_escape_string($str);
 			$str2 = str_replace('`', '\`', $str2);
-		} else {
+		} elseif ($how == 2) {
 			$str2 = str_replace(	array('\\', "'", '"', "\x0d", "\x0a", "\x00", "\x1a", '`', '<', '>'),
 				array('\\\\', "\\'", '\\"', 'X', 'X', 'X', 'X', '\\`', '\\<', '\\>'),	$str);
+		} else {
+			$str2 = str_replace(	array('\\', "'", "\x00", "\x1a", '`'),
+				array('\\\\', "\\'", 'X', 'X', '\\`'),	$str);
 		}
 		if ($str2 != $str) {
 			nfw_log('Sanitising user input', $msg . ': ' . $str, 6, 0);
