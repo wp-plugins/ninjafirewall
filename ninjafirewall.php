@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.3.3
+Version: 1.3.4
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -20,11 +20,11 @@ Text Domain: ninjafirewall
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-12-12 16:37:17                                       |
+ | REVISION: 2015-01-03 01:07:43                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.3.3' );
-define( 'NFW_RULES_VERSION',  '20141214' );
+define( 'NFW_ENGINE_VERSION', '1.3.4' );
+define( 'NFW_RULES_VERSION',  '20150104' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -110,10 +110,31 @@ function nfw_activate() {
 		exit( "NinjaFirewall is not compatible with Windows." );
 	}
 
+	// We must ensure that the plugins dir is named '/plugins/',
+	// otherwise we cannot run (the firewall wouldn't find it) :
+	if (! is_dir( WP_CONTENT_DIR . '/plugins/' ) ) {
+		exit( __('Cannot find the <code>/plugins/</code> folder.', 'ninjafirewall') );
+	}
+
 	// If already installed/setup, just enable the firewall... :
 	if ( $nfw_options = get_option( 'nfw_options' ) ) {
 		$nfw_options['enabled'] = 1;
 		update_option( 'nfw_options', $nfw_options);
+
+		// Re-enable scheduled scan (if any) :
+		if (! empty($nfw_options['sched_scan']) ) {
+			if ($nfw_options['sched_scan'] == 1) {
+				$schedtype = 'hourly';
+			} elseif ($nfw_options['sched_scan'] == 2) {
+				$schedtype = 'twicedaily';
+			} else {
+				$schedtype = 'daily';
+			}
+			if ( wp_next_scheduled('nfscanevent') ) {
+				wp_clear_scheduled_hook('nfscanevent');
+			}
+			wp_schedule_event( time() + 3600, $schedtype, 'nfscanevent');
+		}
 
 		// ...and whitelist the admin if needed :
 		if (! empty( $nfw_options['wl_admin']) ) {
@@ -132,6 +153,12 @@ function nfw_deactivate() {
 	// in the background but will not do anything) :
 	$nfw_options = get_option( 'nfw_options' );
 	$nfw_options['enabled'] = 0;
+
+	// Clear scheduled scan (if any) :
+	if ( wp_next_scheduled('nfscanevent') ) {
+		wp_clear_scheduled_hook('nfscanevent');
+	}
+
 	update_option( 'nfw_options', $nfw_options);
 
 }
@@ -359,6 +386,10 @@ function nfw_upgrade() {	//i18n
 			$nfw_options['a_41'] = 1;
 			$nfw_options['sched_scan'] = 0;
 			$nfw_options['report_scan'] = 0;
+		}
+		// v1.3.4 update -------------------------------------------------
+		if ( version_compare( $nfw_options['engine_version'], '1.3.4', '<' ) ) {
+			$nfw_options['a_51'] = 1;
 		}
 		// ---------------------------------------------------------------
 
@@ -862,7 +893,15 @@ function nf_menu_main() {
 		<tr>
 			<th scope="row">PHP SAPI</th>
 			<td width="20" align="left">&nbsp;</td>
-			<td><?php echo strtoupper(PHP_SAPI) ?></td>
+			<td>
+				<?php
+				if ( defined('HHVM_VERSION') ) {
+					echo 'HHVM';
+				} else {
+					echo strtoupper(PHP_SAPI);
+				}
+				?>
+			</td>
 		</tr>
 		<tr>
 			<th scope="row">Version</th>
@@ -1768,8 +1807,12 @@ function httponly() {
 						<td><label for="wp_03"><code>/<?php echo basename(WP_CONTENT_DIR); ?>/uploads/*</code></label></td>
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
-						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_cache]" id="wp_04"<?php checked( $wp_cache, 1 ) ?>></td>
-						<td><label for="wp_04"><code>*/cache/*</code></label></td>
+						<td align="center" style="vertical-align:top" width="10"><input type="checkbox" name="nfw_options[wp_cache]" id="wp_04"<?php checked( $wp_cache, 1 ) ?>></td>
+						<td style="vertical-align:top"><label for="wp_04"><code>*/cache/*</code></label>
+						<br />
+						<br />
+						<span class="description"><?php _e('Unless you have PHP scripts in a "/cache/" folder that need to be accessed by your visitors, we recommend to enable this option.', 'ninjafirewall' ) ?></span>
+						</td>
 					</tr>
 				</table>
 				<br />&nbsp;
@@ -1779,11 +1822,11 @@ function httponly() {
 
 	<table class="form-table">
 		<tr>
-			<th scope="row">Protect against username enumeration</th>
+			<th scope="row"><?php _e('Protect against username enumeration', 'ninjafirewall') ?></th>
 			<td width="20">&nbsp;</td>
 			<td align="left">
-				<p><label><input type="checkbox" name="nfw_options[enum_archives]" value="1"<?php checked( $enum_archives, 1 ) ?>>&nbsp;Through the author archives</label></p>
-				<p><label><input type="checkbox" name="nfw_options[enum_login]" value="1"<?php checked( $enum_login, 1 ) ?>>&nbsp;Through the login page (default)</label></p>
+				<p><label><input type="checkbox" name="nfw_options[enum_archives]" value="1"<?php checked( $enum_archives, 1 ) ?>>&nbsp;<?php _e('Through the author archives (default)', 'ninjafirewall') ?></label></p>
+				<p><label><input type="checkbox" name="nfw_options[enum_login]" value="1"<?php checked( $enum_login, 1 ) ?>>&nbsp;<?php _e('Through the login page (default)', 'ninjafirewall') ?></label></p>
 			</td>
 		</tr>
 	</table>
@@ -2110,9 +2153,9 @@ function nf_sub_policies_save() {
 
 	// Protect against username enumeration attempts ?
 	if (! isset( $_POST['nfw_options']['enum_archives']) ) {
-		// Default : no
 		$nfw_options['enum_archives'] = 0;
 	} else {
+		// Default : yes
 		$nfw_options['enum_archives'] = 1;
 	}
 	if (! isset( $_POST['nfw_options']['enum_login']) ) {
@@ -2283,8 +2326,8 @@ function nf_sub_policies_default() {
 	$nfw_options['php_path_i']			= 1;
 	$nfw_options['wp_dir'] 				= '/wp-admin/(?:css|images|includes|js)/|' .
 		'/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
-		'/'. basename(WP_CONTENT_DIR) .'/uploads/|/cache/';
-	$nfw_options['enum_archives']		= 0;
+		'/'. basename(WP_CONTENT_DIR) .'/uploads/';
+	$nfw_options['enum_archives']		= 1;
 	$nfw_options['enum_login']			= 1;
 	$nfw_options['no_xmlrpc']			= 0;
 	$nfw_options['no_post_themes']	= 0;
@@ -2386,12 +2429,12 @@ function nf_sub_fileguard() {
 	<form method="post" name="nfwfilefuard" onSubmit="return check_fields();">
 		<table class="form-table">
 			<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-				<th scope="row">Enable File Guard</th>
+				<th scope="row"><?php _e('Enable File Guard', 'ninjafirewall') ?></th>
 				<td align="left">
-				<label><input type="radio" id="fgenable" name="nfw_options[fg_enable]" value="1"<?php checked($nfw_options['fg_enable'], 1) ?> onclick="toogle_table(1);">&nbsp;Yes</label>
+				<label><input type="radio" id="fgenable" name="nfw_options[fg_enable]" value="1"<?php checked($nfw_options['fg_enable'], 1) ?> onclick="toogle_table(1);">&nbsp;<?php _e('Yes', 'ninjafirewall') ?></label>
 				</td>
 				<td align="left">
-				<label><input type="radio" name="nfw_options[fg_enable]" value="0"<?php checked($nfw_options['fg_enable'], 0) ?> onclick="toogle_table(2);">&nbsp;No (default)</label>
+				<label><input type="radio" name="nfw_options[fg_enable]" value="0"<?php checked($nfw_options['fg_enable'], 0) ?> onclick="toogle_table(2);">&nbsp;<?php _e('No', 'ninjafirewall') ?></label>
 				</td>
 			</tr>
 		</table>
@@ -2522,6 +2565,8 @@ function nf_sub_event() {
 	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_event.php' );
 
 }
+
+add_action('init', 'nf_check_dbdata', 1);
 
 /* ------------------------------------------------------------------ */
 
@@ -2751,7 +2796,13 @@ function nf_sub_loginprot() {
 	</table>
 	<br />
 	<br />
-	<input id="save_login" class="button-primary" type="submit" name="Save" value="Save Login Protection" /><div align="right">See benchmark and stress-test: <a href="http://nintechnet.com/1.1.1/" target="_blank">WordPress brute-force detection plugins comparison</a>.</div>
+	<input id="save_login" class="button-primary" type="submit" name="Save" value="<?php _e('Save Login Protection', 'ninjafirewall') ?>" />
+	<div align="right">See our benchmark and stress-test:
+	<br />
+	<a href="http://blog.nintechnet.com/wordpress-brute-force-attack-detection-plugins-comparison/" target="_blank">WordPress brute-force attack detection plugins comparison.</a>
+	<br />
+	<a href="http://blog.nintechnet.com/brute-force-attack-protection-in-a-production-environment/" target="_blank">WordPress brute-force attack protection in a production environment.</a>
+	</div>
 </form>
 </div>
 
@@ -2899,63 +2950,6 @@ function nf_sub_loginprot_save() {
 
 /* ------------------------------------------------------------------ */
 
-function nfw_query( $query ) { // i18n
-
-	$nfw_options = get_option( 'nfw_options' );
-	if ( empty($nfw_options['enum_archives']) || empty($nfw_options['enabled']) ) {
-		return;
-	}
-
-	if ( $query->is_main_query() && $query->is_author() ) {
-		if (! empty($_REQUEST['author']) ) {
-			$tmp = 'author=' . $_REQUEST['author'];
-		} elseif (! empty($_REQUEST['author_name']) ) {
-			$tmp = 'author_name=' . $_REQUEST['author_name'];
-		} else {
-			return;
-		}
-		$query->set('author_name', '0');
-		nfw_log2( __('User enumeration scan (author archives)', 'ninjafirewall'), $tmp, 2, 0);
-		wp_redirect( home_url('/') );
-		exit;
-	}
-}
-
-if (! isset($_SESSION['nfw_goodguy']) ) {
-	add_action('pre_get_posts','nfw_query');
-}
-
-/* ------------------------------------------------------------------ */
-
-function nfw_authenticate( $user ) { // i18n
-
-	// User enumeration (login page) :
-
-	$nfw_options = get_option( 'nfw_options' );
-
-	if ( empty( $nfw_options['enum_login']) || empty($nfw_options['enabled']) ) {
-		return $user;
-	}
-
-	if ( is_wp_error( $user ) ) {
-		if ( preg_match( '/^(?:in(?:correct_password|valid_username)|authentication_failed)$/', $user->get_error_code() ) ) {
-			$user = new WP_Error( 'denied', sprintf( __( '<strong>ERROR</strong>: Invalid username or password.<br /><a href="%s">Lost your password</a>?' ), wp_lostpassword_url() ) );
-			add_filter('shake_error_codes', 'nfw_err_shake');
-		}
-	}
-	return $user;
-}
-
-add_filter( 'authenticate', 'nfw_authenticate', 90, 3 );
-
-function nfw_err_shake( $shake_codes ) {
-	// shake the login box :
-	$shake_codes[] = 'denied';
-	return $shake_codes;
-}
-
-/* ------------------------------------------------------------------ */
-
 function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) { // i18n
 
 	// Write incident to the firewall log :
@@ -3004,13 +2998,25 @@ function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) { // i18n
 	if (! $fh = fopen($log_file, 'a') ) {
 		return;
 	}
+
+	// if $loglevel == 4, we don't log/need SCRIPT_NAME, IP and method :
+	if ( $loglevel == 4 ) {
+		$SCRIPT_NAME = '-';
+		$REQUEST_METHOD = 'N/A';
+		$REMOTE_ADDR = '0.0.0.0';
+		$loglevel = 6;
+	} else {
+		$SCRIPT_NAME = $_SERVER['SCRIPT_NAME'];
+		$REQUEST_METHOD = $_SERVER['REQUEST_METHOD'];
+		$REMOTE_ADDR = $_SERVER['REMOTE_ADDR'];
+	}
    fwrite( $fh,
       '[' . time() . '] ' . '[0] ' .
       '[' . $_SERVER['SERVER_NAME'] . '] ' . '[#' . $num_incident . '] ' .
       '[' . $ruleid . '] ' .
-      '[' . $loglevel . '] ' . '[' . $_SERVER['REMOTE_ADDR'] . '] ' .
-      '[' . $http_ret_code . '] ' . '[' . $_SERVER['REQUEST_METHOD'] . '] ' .
-      '[' . $_SERVER['SCRIPT_NAME'] . '] ' . '[' . $loginfo . '] ' .
+      '[' . $loglevel . '] ' . '[' . $REMOTE_ADDR . '] ' .
+      '[' . $http_ret_code . '] ' . '[' . $REQUEST_METHOD . '] ' .
+      '[' . $SCRIPT_NAME . '] ' . '[' . $loginfo . '] ' .
       '[' . $res . ']' . "\n"
    );
    fclose($fh);
@@ -3225,8 +3231,7 @@ function nf_sub_about() {
 		$changelog = 'Error : cannot find changelog :(';
 	}
 
-	echo '
-<script>
+	echo '<script>
 function show_table(table_id) {
 	var av_table = [11, 12, 13, 14];
 	for (var i = 0; i < av_table.length; i++) {
@@ -3258,21 +3263,21 @@ function show_table(table_id) {
 					<p><a href="https://twitter.com/nintechnet"><img border="0" src="'. plugins_url( '/images/twitter_ntn.png', __FILE__ ) .'" width="116" height="28" target="_blank"></a></p>
 					<table border="0" cellspacing="2" cellpadding="10" width="100%">
 						<tr valign=top>
-							<td align=center style="border-right:dotted 0px #FDCD25;" width="33%">
+							<td align="center" width="33%">
 								<img src="' . plugins_url( '/images/logo_nm_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjamonitoring.com/" title="NinjaMonitoring: monitor your website for suspicious activities"><b>NinjaMonitoring.com</b></a>
 								<br />
-								Monitor your website for suspicious activities for just $4.99 per month.
+								Monitor your website for just $4.99 per month.
 							</td>
-							<td align=center style="border-right:dotted 0px #FDCD25;" width="34%">
+							<td align="center" width="34%">
 								<img src="' . plugins_url( '/images/logo_pro_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjafirewall.com/" title="NinjaFirewall: advanced firewall software for all your PHP applications"><b>NinjaFirewall.com</b></a>
 								<br />
 								Advanced firewall software for all your PHP applications.
 							</td>
-							<td align=center width="33%">
+							<td align="center" width="33%">
 								<img src="' . plugins_url( '/images/logo_nr_65.png', __FILE__ ) . '" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjarecovery.com/" title="NinjaRecovery: Incident response, malware removal and hacking recovery"><b>NinjaRecovery.com</b></a>
@@ -3316,7 +3321,13 @@ function show_table(table_id) {
 			<tr valign="top"><td width="47%;" align="right">SERVER_ADDR</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $_SERVER['SERVER_ADDR'] . '</td></tr>';
 
 	if ( PHP_VERSION ) {
-		echo '<tr valign="top"><td width="47%;" align="right">PHP version</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_VERSION . ' (' . strtoupper( PHP_SAPI ) . ')</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">PHP version</td><td width="3%">&nbsp;</td><td width="50%" align="left">'. PHP_VERSION . ' (';
+		if ( defined('HHVM_VERSION') ) {
+			echo 'HHVM';
+		} else {
+			echo strtoupper(PHP_SAPI);
+		}
+		echo ')</td></tr>';
 	}
 	if ( $_SERVER['SERVER_SOFTWARE'] ) {
 		echo '<tr valign="top"><td width="47%;" align="right">HTTP server</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $_SERVER['SERVER_SOFTWARE'] . '</td></tr>';

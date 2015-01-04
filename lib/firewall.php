@@ -7,7 +7,7 @@
 // +---------------------------------------------------------------------+
 // | http://nintechnet.com/                                              |
 // +---------------------------------------------------------------------+
-// | REVISION: 2014-12-14 01:02:13                                       |
+// | REVISION: 2015-01-03 18:46:21                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -44,8 +44,8 @@ if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninj
 	}
 }
 
-// Get WordPress 'wp_content' directory. This assume that the plugins dir
-// is called 'plugins', but if you changed its name, use the .htninja
+// Get WordPress 'wp_content' directory. This assume that the dir
+// is named 'wp_content', but if you changed its name, use the .htninja
 // file to define the full path to wp-content folder instead
 // ( e.g., $nfw_['wp_content'] = '/foo/bar/wp-content' ) :
 if (empty($nfw_['wp_content'])) {
@@ -640,12 +640,18 @@ function nfw_sanitise( $str, $how, $msg ) {
 	} else if (is_array($str) ) {
 		foreach($str as $key => $value) {
 			if (get_magic_quotes_gpc() ) {$key = stripslashes($key);}
-			// We sanitise variables **name** using :
-			// -str_replace to escape [\], ['] and ["]
-			// -str_replace to replace [\n], [\r], [\x1a] and [\x00] with [X]
-			//	-str_replace to replace [`], [<] and [>] with their HTML entities (&#96; &lt; &gt;)
-			$key2 = str_replace(	array('\\', "'", '"', "\x0d", "\x0a", "\x00", "\x1a", '`', '<', '>'),
-				array('\\\\', "\\'", '\\"', 'X', 'X', 'X', 'X', '&#96;', '&lt;', '&gt;'),	$key, $occ);
+			// COOKIE ?
+			if ($how == 3) {
+				$key2 = str_replace(	array('\\', "'", "\x00", "\x1a", '`', '<', '>'),
+					array('\\\\', "\\'", 'X', 'X', '\\`', '&lt;', '&gt;'),	$key, $occ);
+			} else {
+				// We sanitise variables **name** using :
+				// -str_replace to escape [\], ['] and ["]
+				// -str_replace to replace [\n], [\r], [\x1a] and [\x00] with [X]
+				//	-str_replace to replace [`], [<] and [>] with their HTML entities (&#96; &lt; &gt;)
+				$key2 = str_replace(	array('\\', "'", '"', "\x0d", "\x0a", "\x00", "\x1a", '`', '<', '>'),
+					array('\\\\', "\\'", '\\"', 'X', 'X', 'X', 'X', '&#96;', '&lt;', '&gt;'),	$key, $occ);
+			}
 			if ($occ) {
 				unset($str[$key]);
 				nfw_log('Sanitising user input', $msg . ': ' . $key, 6, 0);

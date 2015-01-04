@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-12-12 16:27:12                                       |
+ | REVISION: 2015-01-03 01:01:56                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -233,7 +233,7 @@ function help_nfsubfileguard() {
 		'title'     => 'File Guard',
 		'content'   => '<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
 		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time). Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
-		<p>Modifications detected by NinjaFirewall include <code>mtime</code> (saved or updated content of a file) and <code>ctime</code> (inode change, e.g., permissions, ownership etc).</p>
+		<p>Modifications detected by NinjaFirewall include <code>mtime</code> (saved or updated content of a file) and <code>ctime</code> (permissions, ownership etc).</p>
 		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</span></p>'
 	) );
 }
@@ -289,8 +289,8 @@ function help_nfsubevent() {
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
-		'title'     => 'Event Notifications',
-		'content'   => '<br />NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.'
+		'title'     => __('Event Notifications', 'ninjafirewall'),
+		'content'   => '<br />' . __('NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login and modification of any administrator account in the database. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.', 'ninjafirewall')
 	) );
 }
 /* ------------------------------------------------------------------ */

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypa
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.1
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
 * Real-time detection (File Guard)
 * File integrity monitoring (File Check)
+* Monitors the database and sends an alert if an administrator account is created, modified or deleted
 * Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`)
 * Sets the `HttpOnly` flag on all cookies
 * Blocks username enumeration scanning attempts through the author archives and the login page
@@ -48,9 +49,9 @@ By processing incoming HTTP requests before your blog and any of its plugins, Ni
 
 See our benchmark and stress-test:
 
-* [WordPress brute-force detection plugins comparison](http://nintechnet.com/wordpress-brute-force-detection-plugins-benchmarks.html "")
+* [WordPress brute-force attack detection plugins comparison](http://blog.nintechnet.com/wordpress-brute-force-attack-detection-plugins-comparison/ "")
 
-* [Brute-force attack protection in a production environment](http://nintechnet.com/ninjafirewall-brute-force-attack-protection.html "")
+* [WordPress brute-force attack protection in a production environment](http://blog.nintechnet.com/brute-force-attack-protection-in-a-production-environment/ "")
 
 The protection applies to the `wp-login.php` script and can also include the `xmlrpc.php` one; the incident can be written to the server `AUTH` log.
 
@@ -61,6 +62,7 @@ NinjaFirewall can alert you by email on specific events triggered within your bl
 Monitored events:
 
 * Administrator login
+* Modification of any administrator account in the database
 * Plugins upload, installation, (de)activation, update, deletion
 * Themes upload, installation, activation, deletion
 * WordPress update
@@ -174,6 +176,14 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 7. NinjaFirewall Contextual Help.
 
 == Changelog ==
+
+= 1.3.4 =
+* Added a new option to monitor the database and send an alert if an administrator account is created, modified or deleted (see "Event Notifications > Database").
+* Added a "Processing time" legend to File Check snapshot description to display the time it took to perform the scan.
+* Updated security rules.
+* On new installations, File Guard will be enabled by default.
+* NinjaFirewall will refuse to install if the WordPress `/plugins/` directory was renamed.
+* Fixed a bug in File Check scheduled scan: it was not disabled when deactivating NinjaFirewall.
 
 = 1.3.3 =
 * File Check can now run scheduled scans on a specific interval (hourly, twicedaily or daily) and send reports by email (see "File Check > Options" menu and its contextual help).

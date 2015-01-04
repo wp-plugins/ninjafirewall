@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-12-13 18:39:45                                       |
+ | REVISION: 2015-01-01 19:01:57                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -46,7 +46,7 @@ if (! isset( $nfw_options['a_0'] ) ) {
 ?>
 	<form method="post" name="nfwalerts">
 
-	<h3><?php _e('WordPress admin console', 'ninjafirewall') ?></h3>
+	<h3><?php _e('WordPress admin dashboard', 'ninjafirewall') ?></h3>
 	<table class="form-table">
 		<tr>
 			<th scope="row"><?php _e('Send me an alert whenever', 'ninjafirewall') ?></th>
@@ -98,6 +98,23 @@ if (! isset( $nfw_options['a_0'] ) ) {
 			<th scope="row"><?php _e('Send me an alert whenever someone', 'ninjafirewall') ?></th>
 			<td align="left">
 			<p><label><input type="checkbox" name="nfw_options[a_31]" value="1"<?php checked( $nfw_options['a_31'], 1) ?>>&nbsp;<?php _e('Updates WordPress (default)', 'ninjafirewall') ?></label></p>
+			</td>
+		</tr>
+	</table>
+
+	<br />
+
+	<?php
+	if (! isset( $nfw_options['a_51']) ) {
+		$nfw_options['a_51'] = 1;
+	}
+	?>
+	<h3><?php _e('Database', 'ninjafirewall') ?></h3>
+	<table class="form-table">
+		<tr>
+			<th scope="row"><?php _e('Send me an alert whenever', 'ninjafirewall') ?></th>
+			<td align="left">
+				<p><label><input type="checkbox" name="nfw_options[a_51]" value="1"<?php checked( $nfw_options['a_51'], 1) ?>>&nbsp;<?php _e('An administrator account is created, modified or deleted in the database (default)', 'ninjafirewall') ?></label></p>
 			</td>
 		</tr>
 	</table>
@@ -250,6 +267,12 @@ function nf_sub_event_save() {
 		$nfw_options['a_41'] = 0;
 	} else {
 		$nfw_options['a_41'] = 1;
+	}
+
+	if ( empty( $_POST['nfw_options']['a_51']) ) {
+		$nfw_options['a_51'] = 0;
+	} else {
+		$nfw_options['a_51'] = 1;
 	}
 
 	if (! empty( $_POST['nfw_options']['alert_email']) ) {

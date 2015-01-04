@@ -6,7 +6,7 @@
  | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
  |                                                                     |
  +---------------------------------------------------------------------+
- | REVISION: 2014-12-10 21:22:40                                       |
+ | REVISION: 2015-01-03 17:45:06                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -29,8 +29,14 @@ $err = $success = '';
 
 // Scheduled scan ?
 if (defined('NFSCANDO') ) {
+
+	$snapproc = microtime(true);
 	$err = nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff);
 	$nfw_options = get_option('nfw_options');
+	if (empty($nfw_options['enabled']) ) { return; }
+	$nfw_options['snapproc'] = ceil( microtime(true) - $snapproc );
+	update_option('nfw_options', $nfw_options);
+
 	// Changes detected :
 	if (! $err && file_exists($nfmon_diff) ) {
 		nf_scan_email($nfmon_diff, $log_dir);
@@ -81,7 +87,12 @@ if (! empty($_REQUEST['nfw_act'])) {
 		if (! file_exists($nfmon_snapshot) ) {
 			$err = __('You must create a snapshot first.', 'ninjafirewall');
 		} else {
+
+			$snapproc = microtime(true);
 			$err = nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff);
+			$nfw_options = get_option('nfw_options');
+			$nfw_options['snapproc'] = ceil( microtime(true) - $snapproc );
+			update_option('nfw_options', $nfw_options);
 
 			if (! $err) {
 				if (file_exists($nfmon_diff) ) {
@@ -302,6 +313,9 @@ if (file_exists($nfmon_diff) ) {
 					}
 					echo '</p>';
 				}
+				if (! empty($nfw_options['snapproc']) ) {
+					echo '<p>' . sprintf( __('Processing time : %s seconds', 'ninjafirewall'), $nfw_options['snapproc']) . '</p>';
+				}
 				?>
 				<form method="post">
 					<p><input type="submit" name="dlsnap" value="<?php _e('Download Snapshot', 'ninjafirewall') ?>" class="button-secondary" />&nbsp;&nbsp;&nbsp;<input type="submit" class="button-secondary" onClick="return delit();" value="<?php _e('Delete Snapshot', 'ninjafirewall') ?>" /><input type="hidden" name="nfw_act" value="delete" /></p>
@@ -473,10 +487,11 @@ if (file_exists($nfmon_diff) ) {
 					<p><label><input type="radio" name="sched_scan" value="3"<?php checked($sched_scan, 3) ?> /><?php _e('Daily', 'ninjafirewall') ?></label></p>
 					<?php
 					if ( $nextscan = wp_next_scheduled('nfscanevent') ) {
+						$sched = new DateTime( date('M d, Y H:i:s', $nextscan) );
+						$now = new DateTime( date('M d, Y H:i:s', time() ) );
+						$diff = $now->diff($sched);
 					?>
-						<p><span class="description"><?php printf( __('Next scan will start at approximately %s', 'ninjafirewall'), date_i18n('h:i A', $nextscan) ) ?>
-						<br />
-						<?php printf( __('Current blog time is %s', 'ninjafirewall'), date_i18n('h:i A') ) ?></span></p>
+						<p><span class="description"><?php printf( __('Next scan will start in approximately %s days, %s hours, %s minutes and %s seconds.', 'ninjafirewall'), $diff->format('%a') % 7, $diff->format('%h'), $diff->format('%i'), $diff->format('%s') ) ?></span></p>
 					<?php
 						// Ensure that the scheduled scan time is in the future,
 						// not in the past, otherwise send a warning because wp-cron
@@ -603,6 +618,8 @@ function scd($snapdir, $snapexclude, $fh, $snapnoslink) {
 function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
 
 	$nfw_options = get_option('nfw_options');
+
+	if (empty($nfw_options['enabled']) ) { return; }
 
 	if (! isset($nfw_options['snapexclude']) || ! isset($nfw_options['snapdir']) || ! isset($nfw_options['snapnoslink']) ) {
 		return sprintf( __('Missing options line %s, please try again.', 'ninjafirewall'), __LINE__ );
