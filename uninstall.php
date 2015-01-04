@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2014-01-10 19:09:02                                       |
+ | REVISION: 2014-12-12 14:38:11                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -28,7 +28,7 @@ if (! session_id() ) { session_start(); }
 
 nfw_uninstall();
 
-/* ================================================================== */
+/* ------------------------------------------------------------------ */
 
 function nfw_uninstall() {
 
@@ -49,7 +49,7 @@ function nfw_uninstall() {
 	}
 
 	// clean-up .htaccess :
-	if ( file_exists( @$nfw_install['htaccess'] ) ) {
+	if (! empty($nfw_install['htaccess']) && file_exists($nfw_install['htaccess']) ) {
 		$htaccess_file = $nfw_install['htaccess'];
 	} elseif ( file_exists( ABSPATH . '.htaccess' ) ) {
 		$htaccess_file = ABSPATH . '.htaccess';
@@ -61,16 +61,12 @@ function nfw_uninstall() {
 	if (! empty($htaccess_file) && is_writable( $htaccess_file ) ) {
 		$data = file_get_contents( $htaccess_file );
 		// Find / delete instructions :
-		$pos_start = strpos( $data, HTACCESS_BEGIN );
-		$pos_end   = strpos( $data, HTACCESS_END );
-		if ( ( $pos_start !== FALSE ) && ( $pos_end !== FALSE ) && ( $pos_end > $pos_start ) ) {
-			$data = substr( $data, $pos_end + strlen( HTACCESS_END ) );
-			file_put_contents( $htaccess_file,  $data );
-		}
+		$data = preg_replace( '/\s?'. HTACCESS_BEGIN .'.+?'. HTACCESS_END .'[^\r\n]*\s?/s' , "\n", $data);
+		file_put_contents( $htaccess_file,  $data );
 	}
 
 	// Clean up PHP INI file :
-	if ( file_exists( @$nfw_install['phpini'] ) ) {
+	if (! empty($nfw_install['phpini']) && file_exists($nfw_install['phpini']) ) {
 		if ( is_writable( $nfw_install['phpini'] ) ) {
 			$phpini[] = $nfw_install['phpini'];
 		}
@@ -92,24 +88,22 @@ function nfw_uninstall() {
 	}
 	foreach( $phpini as $ini ) {
 		$data = file_get_contents( $ini );
-		$pos_start = strpos( $data, PHPINI_BEGIN );
-		$pos_end   = strpos( $data, PHPINI_END );
+		$data = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $data);
+		file_put_contents( $ini,  $data );
+	}
 
-		if ( ( $pos_start !== FALSE ) && ( $pos_end !== FALSE ) && ( $pos_end > $pos_start ) ) {
-			$data = substr( $data, $pos_end + strlen( PHPINI_END ) );
-			file_put_contents( $ini,  $data );
-		}
+	// Remove any scheduled cron job :
+	if ( wp_next_scheduled('nfscanevent') ) {
+		wp_clear_scheduled_hook('nfscanevent');
 	}
 
 	// Delete DB rows :
-	delete_option( 'nfw_options' );
-	delete_option( 'nfw_rules' );
-	delete_option( 'nfw_install' );
+	delete_option('nfw_options');
+	delete_option('nfw_rules');
+	delete_option('nfw_install');
 	delete_option( 'nfw_tmp' );
 
 }
 
-/* ================================================================== */
-
+/* ------------------------------------------------------------------ */
 // EOF
-?>

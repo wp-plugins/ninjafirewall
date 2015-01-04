@@ -1,9 +1,10 @@
 === NinjaFirewall (WP edition) ===
-Contributors: nintechnet
-Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
+Contributors: nintechnet, bruandet
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypal%40ninjafirewall%2ecom&lc=US&item_name=Donation %20to%20NinjaFirewall%20WP%20Edition%20Plugin&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
+Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
-Tested up to: 3.9.2
-Stable tag: 1.2.5
+Tested up to: 4.1
+Stable tag: 1.3.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +26,10 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Sanitises variables names and values
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
 * Real-time detection (File Guard)
+* File integrity monitoring (File Check)
+* Monitors the database and sends an alert if an administrator account is created, modified or deleted
+* Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`)
+* Sets the `HttpOnly` flag on all cookies
 * Blocks username enumeration scanning attempts through the author archives and the login page
 * Blocks/allows uploads, sanitises uploaded file names
 * Blocks suspicious bots and scanners
@@ -36,14 +41,19 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Rules editor to enable/disable built-in security rules
 * Activity log and statistics
 * Debugging mode
+* Possibility to [prepend your own PHP code](http://ninjafirewall.com/wordpress/htninja/ "") to the firewall
 
 = Brute-Force Attack Protection =
 
-By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the **only plugin** for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
+By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
 
-See our benchmark and stress-test: [WordPress brute-force detection plugins comparison](http://nintechnet.com/1.1.1/ "").
+See our benchmark and stress-test:
 
-The protection applies to the `wp-login.php` script and can also include the `xmlrpc.php` one. We recommend to enable it for both scripts.
+* [WordPress brute-force attack detection plugins comparison](http://blog.nintechnet.com/wordpress-brute-force-attack-detection-plugins-comparison/ "")
+
+* [WordPress brute-force attack protection in a production environment](http://blog.nintechnet.com/brute-force-attack-protection-in-a-production-environment/ "")
+
+The protection applies to the `wp-login.php` script and can also include the `xmlrpc.php` one; the incident can be written to the server `AUTH` log.
 
 = Events Notification =
 
@@ -52,6 +62,7 @@ NinjaFirewall can alert you by email on specific events triggered within your bl
 Monitored events:
 
 * Administrator login
+* Modification of any administrator account in the database
 * Plugins upload, installation, (de)activation, update, deletion
 * Themes upload, installation, activation, deletion
 * WordPress update
@@ -124,7 +135,7 @@ NinjaFirewall does not require any root privilege and is fully compatible with s
 
 = Does it work with Nginx ? =
 
-NinjaFirewall works with any Unix-based HTTP server (Apache, Nginx, LiteSpeed etc). Please [follow these steps](http://wordpress.org/support/topic/nginx-instructions "").
+NinjaFirewall works with Nginx and others Unix-based HTTP servers (Apache, LiteSpeed etc). Its installer will detect it.
 
 = Do I need to alter my PHP scripts ? =
 
@@ -132,11 +143,11 @@ You do not need to make any modifications to your scripts. NinjaFirewall hooks a
 
 = I moved my wp-config.php file to another directory. Will it work with NinjaFirewall ? =
 
-Since version 1.1.3, you can use an optional configuration file to tell NinjaFirewall where is located your WordPress configuration file, wp-config.php, if you moved it to another directory. Please [follow these steps](http://nintechnet.com/nfwp/1.1.3/ "").
+Since version 1.1.3, you can use an optional configuration file to tell NinjaFirewall where is located your WordPress configuration file, wp-config.php, if you moved it to another directory. Please [follow these steps](http://ninjafirewall.com/wordpress/htninja/ "").
 
 = Will NinjaFirewall detect the correct IP of my visitors if I am behind a CDN service like Cloudflare ? =
 
-You can use an optional configuration file to tell NinjaFirewall which IP to use. Please [follow these steps](http://nintechnet.com/nfwp/1.1.3/ "").
+You can use an optional configuration file to tell NinjaFirewall which IP to use. Please [follow these steps](http://ninjafirewall.com/wordpress/htninja/ "").
 
 = Will it slow down my site ? =
 
@@ -164,12 +175,63 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 6. NinjaFirewall Log page.
 7. NinjaFirewall Contextual Help.
 
-== Upgrade Notice ==
-
-= 1.2.5 =
-This update fixes a few issues. See Changelog for more details.
-
 == Changelog ==
+
+= 1.3.4 =
+* Added a new option to monitor the database and send an alert if an administrator account is created, modified or deleted (see "Event Notifications > Database").
+* Added a "Processing time" legend to File Check snapshot description to display the time it took to perform the scan.
+* Updated security rules.
+* On new installations, File Guard will be enabled by default.
+* NinjaFirewall will refuse to install if the WordPress `/plugins/` directory was renamed.
+* Fixed a bug in File Check scheduled scan: it was not disabled when deactivating NinjaFirewall.
+
+= 1.3.3 =
+* File Check can now run scheduled scans on a specific interval (hourly, twicedaily or daily) and send reports by email (see "File Check > Options" menu and its contextual help).
+* Added an option to select Apache/suPHP SAPI during the installation process.
+* Added an option to write all events/alerts to the firewall log (see "Event Notifications > Log").
+* Loosened cookies sanitizing rules to reduce the risk of false-positives.
+
+= 1.3.2 =
+* Updated security rules to protect against new Slider Revolution/Showbiz Pro shell upload exploit (http://nin.link/fd78).
+
+= 1.3.1 =
+* Added a new set of options that can hook the HTTP response headers, including cookies, and modify them on-the-fly to help mitigate threats such as XSS, phishing and clickjacking attacks (see "Firewall Policies > HTTP response headers").
+* Updated security rules.
+* The function detecting if the firewall is enabled was rewritten and is more accurate and flexible.
+* File Check will display date & time using the blog timezone rather than the user localtime.
+
+= 1.3 =
+* Added a new feature that can detect changes made to your files (see "File Check" menu and its contextual help).
+* Updated security rules.
+
+= 1.2.8 =
+* Added a drop-down menu to the "Statistics" page to select and view stats from the previous months.
+* Added a drop-down menu to the "Firewall Log" page to select and view logs from the previous months.
+* New simpler and intuitive installer.
+* Fixed the FORCE_SSL_ADMIN alert that was unnecessarily displayed when the site was already in HTTPS mode.
+* Fixed a potential bug in the user enumeration protection that could block a legitimate user.
+* Added a warning to WordPress admin console if the log directory does not exist.
+* Added missing MIME and charset headers to all emails sent by the firewall.
+* Updated "File Guard" contextual help.
+* Updated security rules.
+* Fixed various small bugs and typos.
+
+= 1.2.7 =
+* Added an option to import/export NinjaFirewall configuration (see "Firewall Options" page).
+* The firewall logs will be saved to the `wp-content/nfwlog/` folder, to prevent WordPress from deleting them during an update.
+* Added a warning to the "Overview" page if the administrator is not whitelisted by the firewall.
+* Non-RFC compliant uppercase IPv6 addresses found in the X_FORWARDED_FOR header will no longer be blocked by the firewall (rule #312).
+* Rules #151 and #152 (HTTP header injection) were removed to prevent false positives from occurring.
+* The "AUTH log" option from the "Login Protection" page will be disabled if the server does not support it.
+* Cookies and GET variable sanitizing, as well as HTTP_REFERER scan will be disabled by default in the Firewall Policies page.
+* Added a rule to protect against the `shellshock` bash code injection vulnerability (CVE-2014-6271).
+
+= 1.2.6 =
+* Added a new option to record brute-force attacks to the server AUTH log (see Login Protection > AUTH log).
+* NinjaFirewall is now able to parse the wp-config.php script if the DB_HOST constant is using a "host:port", "host:socket" or "host:port:socket" format.
+* Fixed installer bug that could corrupt the .htaccess.
+* Fixed Cloudflare and Incapsula detection warning in the "Overview" page. It will not be displayed when the correct IP is used.
+* We opened a Twitter account for all updates and upgrades: @nintechnet.
 
 = 1.2.5 =
 * Fixed IE browsers italic text bug in the File Guard page.
@@ -219,7 +281,7 @@ This update fixes a few issues. See Changelog for more details.
 * The "Protect against username enumeration" option ("Firewall Policies" page) will not be enabled by default, to prevent Google bot from being blocked.
 * Modified the handling of session_start.
 * Added a stats file to summarize the firewall log statistics in order to speed up the display of the dashboard widget when the log is huge.
-* Added new features to the `.htninja` file to quickly allow or block visitors. See `http://nintechnet.com/nfwp/1.1.3/` for full details.
+* Added new features to the `.htninja` file to quickly allow or block visitors. See `http://ninjafirewall.com/wordpress/htninja/` for full details.
 
 = 1.1.7 =
 * Updated firewall rules.
@@ -253,7 +315,7 @@ This update fixes a few issues. See Changelog for more details.
 = 1.1.3 =
 * Added an option to block username enumeration scanning attempts through the author archives and the login page (Firewall Policies page).
 * Added an option to always enforce HTTP Basic authentication to protect the login page and the possibility to set a custom 'realm' message (Login Protection page).
-* Added an optional configuration file that can be used to tell NinjaFirewall where is located the `wp-config.php` file, in the case it was moved to another directory (see `http://nintechnet.com/nfwp/1.1.3/` for full details).
+* Added an optional configuration file that can be used to tell NinjaFirewall where is located the `wp-config.php` file, in the case it was moved to another directory (see `http://ninjafirewall.com/wordpress/htninja/` for full details).
 * Added a warning about blocking direct access to PHP scripts located in the `/wp-includes/` directory because it could prevent non-admin users from using the TinyMCE WYSIWYG editor.
 
 = 1.1.2 =
@@ -293,8 +355,3 @@ This update fixes a few issues. See Changelog for more details.
 
 = 1.0.0 =
 * Initial release.
-
-== Upgrade Notice ==
-
-= 1.1.5 =
-This update fixes a few bugs, improves some features and installs a new set of security rules. See Changelog for more details.
