@@ -148,7 +148,7 @@ function nf_check_dbdata() {
 	// Don't do anything if NinjaFirewall is disabled or DB monitoring option is off :
 	if ( empty( $nfw_options['enabled'] ) || empty($nfw_options['a_51']) ) { return; }
 
-	$nfdbhash = WP_CONTENT_DIR . '/nfwlog/cache/nfdbhash.php';
+	$nfdbhash = WP_CONTENT_DIR . '/nfwlog/cache/nfdbhash.' . $_SERVER['SERVER_NAME'] . '.php';
 
 	$adm_users = nf_get_dbdata();
 	if (! $adm_users) { return; }
