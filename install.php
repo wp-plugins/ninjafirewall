@@ -881,7 +881,7 @@ function nfw_default_conf() {
 		// v1.3.3 :
 		'a_41' 				=> 1,
 		// v1.3.4 :
-		'a_51' 				=> 1,
+		'a_51' 				=> 0,
 		'sched_scan'		=> 0,
 		'report_scan'		=> 0,
 

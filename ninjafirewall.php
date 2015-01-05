@@ -389,7 +389,7 @@ function nfw_upgrade() {	//i18n
 		}
 		// v1.3.4 update -------------------------------------------------
 		if ( version_compare( $nfw_options['engine_version'], '1.3.4', '<' ) ) {
-			$nfw_options['a_51'] = 1;
+			$nfw_options['a_51'] = 0;
 		}
 		// ---------------------------------------------------------------
 

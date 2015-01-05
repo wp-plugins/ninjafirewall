@@ -114,7 +114,7 @@ if (! isset( $nfw_options['a_0'] ) ) {
 		<tr>
 			<th scope="row"><?php _e('Send me an alert whenever', 'ninjafirewall') ?></th>
 			<td align="left">
-				<p><label><input type="checkbox" name="nfw_options[a_51]" value="1"<?php checked( $nfw_options['a_51'], 1) ?>>&nbsp;<?php _e('An administrator account is created, modified or deleted in the database (default)', 'ninjafirewall') ?></label></p>
+				<p><label><input type="checkbox" name="nfw_options[a_51]" value="1"<?php checked( $nfw_options['a_51'], 1) ?>>&nbsp;<?php _e('An administrator account is created, modified or deleted in the database', 'ninjafirewall') ?></label></p>
 			</td>
 		</tr>
 	</table>
