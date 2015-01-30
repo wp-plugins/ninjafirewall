@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.3.4
+Version: 1.3.5
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -20,11 +20,11 @@ Text Domain: ninjafirewall
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2015-01-03 01:07:43                                       |
+ | REVISION: 2015-01-30 15:20:33                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.3.4' );
-define( 'NFW_RULES_VERSION',  '20150104' );
+define( 'NFW_ENGINE_VERSION', '1.3.5' );
+define( 'NFW_RULES_VERSION',  '20150130' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -50,6 +50,7 @@ if (version_compare(PHP_VERSION, '5.4', '<') ) {
 /* ------------------------------------------------------------------ */
 
 // Some constants & variables first :
+define('NFI18N', 'ninjafirewall');
 define('NFW_NULL_BYTE', 2);
 define('NFW_SCAN_BOTS', 531);
 define('NFW_ASCII_CTRL', 500);
@@ -202,7 +203,7 @@ function nfw_upgrade() {	//i18n
 		if (file_exists(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php') ) {
 			$stat = stat(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php');
 			nfw_get_blogtimezone();
-			$data = '== NinjaFirewall File Check\'s diff'. "\n";
+			$data = '== NinjaFirewall File Check (diff)'. "\n";
 			$data.= '== ' . site_url() . "\n";
 			$data.= '== ' . date_i18n('M d, Y @ H:i:s O', $stat['ctime']) . "\n\n";
 			$data.= '[+] = ' . __('New file', 'ninjafirewall') .
@@ -241,7 +242,7 @@ function nfw_upgrade() {	//i18n
 		if (file_exists(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_snapshot.php') ) {
 			$stat = stat(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_snapshot.php');
 			nfw_get_blogtimezone();
-			$data = '== NinjaFirewall File Check\'s Snapshot'. "\n";
+			$data = '== NinjaFirewall File Check (snapshot)'. "\n";
 			$data.= '== ' . site_url() . "\n";
 			$data.= '== ' . date_i18n('M d, Y @ H:i:s O', $stat['ctime']) . "\n\n";
 			$fh = fopen(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_snapshot.php', 'r');
@@ -390,6 +391,21 @@ function nfw_upgrade() {	//i18n
 		// v1.3.4 update -------------------------------------------------
 		if ( version_compare( $nfw_options['engine_version'], '1.3.4', '<' ) ) {
 			$nfw_options['a_51'] = 1;
+		}
+		// v1.3.5 update -------------------------------------------------
+		if ( version_compare( $nfw_options['engine_version'], '1.3.5', '<' ) ) {
+			$nfw_options['fg_exclude'] = '';
+		}
+		// v1.3.6 update -------------------------------------------------
+		if ( version_compare( $nfw_options['engine_version'], '1.3.6', '<' ) ) {
+			// Remove all old nfdbhash* files :
+			$path = WP_CONTENT_DIR . '/nfwlog/cache/';
+			$glob = glob($path . "nfdbhash*php");
+			if ( is_array($glob)) {
+				foreach($glob as $file) {
+					unlink($file);
+				}
+			}
 		}
 		// ---------------------------------------------------------------
 
@@ -623,6 +639,13 @@ function is_nfw_enabled() {
 	// NF was disabled by the admin :
 	if ( isset($nfw_options['enabled']) && $nfw_options['enabled'] == '0' ) {
 		define('NF_DISABLED', 9);
+		return;
+	}
+
+	// There is another instance of NinjaFirewall firewall running,
+	// maybe in the parent directory:
+	if (NFW_STATUS == 21 || NFW_STATUS == 22 || NFW_STATUS == 23) {
+		define('NF_DISABLED', 10);
 		return;
 	}
 
@@ -1866,10 +1889,10 @@ function httponly() {
 			<th scope="row">Disable the plugin and theme editor <code><a href="http://codex.wordpress.org/Editing_wp-config.php#Disable_the_Plugin_and_Theme_Editor" target="_blank">DISALLOW_FILE_EDIT</a></code></th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
-				<label><input type="radio" name="nfw_options[disallow_edit]" value="1"<?php checked( $disallow_edit, 1 ) ?>>&nbsp;Yes (default)</label>
+				<label><input type="radio" name="nfw_options[disallow_edit]" value="1"<?php checked( $disallow_edit, 1 ) ?>>&nbsp;Yes</label>
 			</td>
 			<td align="left">
-				<label><input type="radio" name="nfw_options[disallow_edit]" value="0"<?php checked( $disallow_edit, 0 ) ?>>&nbsp;No</label>
+				<label><input type="radio" name="nfw_options[disallow_edit]" value="0"<?php checked( $disallow_edit, 0 ) ?>>&nbsp;No (default)</label>
 			</td>
 		</tr>
 		<tr valign="top">
@@ -2192,9 +2215,9 @@ function nf_sub_policies_save() {
 
 	// Disable the plugin and theme editor
 	if ( empty( $_POST['nfw_options']['disallow_edit']) ) {
+		// Default : no
 		$nfw_options['disallow_edit'] = 0;
 	} else {
-		// Default : yes
 		$nfw_options['disallow_edit'] = 1;
 	}
 
@@ -2332,7 +2355,7 @@ function nf_sub_policies_default() {
 	$nfw_options['no_xmlrpc']			= 0;
 	$nfw_options['no_post_themes']	= 0;
 	$nfw_options['force_ssl'] 			= 0;
-	$nfw_options['disallow_edit'] 	= 1;
+	$nfw_options['disallow_edit'] 	= 0;
 	$nfw_options['disallow_mods'] 	= 0;
 	$nfw_options['post_b64']			= 1;
 	$nfw_options['wl_admin']			= 1;
@@ -2384,13 +2407,13 @@ function nf_sub_fileguard() {
 		var e = document.getElementById(id);
 		if (! e.value ) { return }
 		if (! /^[1-9][0-9]?$/.test(e.value) ) {
-			alert("Please enter a number from 1 to 99.");
+			alert("<?php _e('Please enter a number from 1 to 99.', NFI18N) ?>");
 			e.value = e.value.substring(0, e.value.length-1);
 		}
 	}
 	function check_fields() {
 		if (! document.nfwfilefuard.elements["nfw_options[fg_mtime]"]){
-			alert("Please enter a number from 1 to 99.");
+			alert("<?php _e('Please enter a number from 1 to 99.', NFI18N) ?>");
 			return false;
 		}
 		return true;
@@ -2399,7 +2422,7 @@ function nf_sub_fileguard() {
 
 	<div class="wrap">
 		<div style="width:54px;height:52px;background-image:url(<?php echo plugins_url() ?>/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-		<h2>File Guard</h2>
+		<h2><?php _e('File Guard', NFI18N) ?></h2>
 		<br />
 	<?php
 
@@ -2422,6 +2445,9 @@ function nf_sub_fileguard() {
 	}
 	if ( empty($nfw_options['fg_mtime']) || ! preg_match('/^[1-9][0-9]?$/', $nfw_options['fg_mtime']) ) {
 		$nfw_options['fg_mtime'] = 10;
+	}
+	if ( empty($nfw_options['fg_exclude']) ) {
+		$nfw_options['fg_exclude'] = '';
 	}
 
 	?>
@@ -2447,6 +2473,10 @@ function nf_sub_fileguard() {
 				<td align="left">
 					Monitor file activity and send an alert when someone is accessing a PHP script that was modified or created less than <input maxlength="2" size="2" value="<?php echo $nfw_options['fg_mtime'] ?>" name="nfw_options[fg_mtime]" id="mtime" onkeyup="is_number('mtime')" type="text" title="Enter a value from 1 to 99" /> hour(s) ago.
 				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php _e('Exclude the following folder (optional)', NFI18N) ?></th>
+				<td align="left"><input class="regular-text" type="text" name="nfw_options[fg_exclude]" value="<?php echo htmlspecialchars($nfw_options['fg_exclude']); ?>" placeholder="<?php _e('e.g.,', NFI18N) ?> /foo/bar/cache/" maxlength="150"><br /><span class="description"><?php _e('A full or partial case-sensitive string, max 150 characters.', NFI18N) ?></span></td>
 			</tr>
 		</table>
 		<br />
@@ -2477,6 +2507,13 @@ function nf_sub_fileguard_save() {
 	} else {
 		$nfw_options['fg_mtime'] = $_POST['nfw_options']['fg_mtime'];
 	}
+
+	if ( empty($_POST['nfw_options']['fg_exclude']) || strlen($_POST['nfw_options']['fg_exclude']) > 150 ) {
+		$nfw_options['fg_exclude'] = '';
+	} else {
+		$nfw_options['fg_exclude'] = stripslashes($_POST['nfw_options']['fg_exclude']);
+	}
+
 	// Update :
 	update_option( 'nfw_options', $nfw_options );
 
@@ -2766,8 +2803,8 @@ function nf_sub_loginprot() {
 		<tr valign="top">
 			<th scope="row">HTTP authentication</th>
 			<td align="left">
-				User:&nbsp;<input maxlength="20" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" title="Enter user name (from 6 to 20 characters)" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="20" placeholder="<?php echo $placeholder ?>" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" title="Enter password (from 6 to 20 characters)" />
-				<br /><span class="description">&nbsp;User and Password must be from 6 to 20 characters.</span>
+				User:&nbsp;<input maxlength="32" type="text" autocomplete="off" value="<?php echo $auth_name ?>" size="12" name="nfw_options[auth_name]" onkeyup="auth_user_valid();" />&nbsp;&nbsp;&nbsp;&nbsp;Password:&nbsp;<input maxlength="32" placeholder="<?php echo $placeholder ?>" type="password" autocomplete="off" value="" size="12" name="nfw_options[auth_pass]" />
+				<br /><span class="description">&nbsp;<?php _e('User and Password must be from 6 to 32 characters.', NFI18N) ?></span>
 				<br /><br />Message (max. 150 ASCII characters):<br />
 				<input type="text" autocomplete="off" value="<?php echo $auth_msg ?>" maxlength="150" size="50" name="nfw_options[auth_msg]" onkeyup="realm_valid();" />
 			</td>
@@ -2900,7 +2937,7 @@ function nf_sub_loginprot_save() {
 
 	if ( empty($_POST['nfw_options']['auth_name']) ) {
 		return( 'Error : please enter a user name for HTTP authentication.');
-	} elseif (! preg_match('`^[-/\\_.a-zA-Z0-9]{6,20}$`', $_POST['nfw_options']['auth_name']) ) {
+	} elseif (! preg_match('`^[-/\\_.a-zA-Z0-9]{6,32}$`', $_POST['nfw_options']['auth_name']) ) {
 		return( 'Error : HTTP authentication user name is not valid.');
 	}
 	$auth_name = $_POST['nfw_options']['auth_name'];
@@ -2909,8 +2946,8 @@ function nf_sub_loginprot_save() {
 		if ( empty($auth_name) || empty($auth_pass) ) {
 			return( 'Error : please enter a user name and password for HTTP authentication.');
 		}
-	} elseif ( (strlen($_POST['nfw_options']['auth_pass']) < 6 ) || (strlen($_POST['nfw_options']['auth_pass']) > 20 ) ) {
-		return( 'Error : password must be from 6 to 20 characters.');
+	} elseif ( (strlen($_POST['nfw_options']['auth_pass']) < 6 ) || (strlen($_POST['nfw_options']['auth_pass']) > 32 ) ) {
+		return( __('Error : password must be from 6 to 32 characters.', NFI18N) );
 	} else {
 		// Use stripslashes() to prevent WordPress from escaping the password:
 		$auth_pass = sha1( stripslashes( $_POST['nfw_options']['auth_pass'] ) );
@@ -2959,7 +2996,7 @@ function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) { // i18n
 	if (! empty($nfw_options['debug']) ) {
 		$num_incident = '0000000';
 		$loglevel = 7;
-		$http_ret_code = '200 OK';
+		$http_ret_code = '200';
 	// Create a random incident number :
 	} else {
 		$num_incident = mt_rand(1000000, 9000000);
@@ -3294,20 +3331,15 @@ function show_table(table_id) {
 		<input class="button-secondary" type="button" value="Changelog" onclick="show_table(12);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-primary" type="button" value="Spread the word about the Ninja !" onclick="show_table(11);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="System Info" onclick="show_table(13);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="Privacy Policy" onclick="show_table(14);">
 		<br />
 		<br />
+
 		<table id="11" border="0" style="display:none;" width="500">
-			<tr style="text-align:center">
-				<td style="border: solid 1px #DFDFDF;width:25%;"><img src="' . plugins_url( '/images/ninjafirewall_32.png', __FILE__ ) . '" width="32" height="32"></td>
-				<td style="border: solid 1px #DFDFDF;width:25%;"><img src="' . plugins_url( '/images/ninjafirewall_50.png', __FILE__ ) . '" width="50" height="50"></td>
-				<td style="border: solid 1px #DFDFDF;width:25%;"><img src="' . plugins_url( '/images/ninjafirewall_75.png', __FILE__ ) . '" width="75" height="75"></td>
-				<td style="border: solid 1px #DFDFDF;width:25%;"><img src="' . plugins_url( '/images/ninjafirewall_100.png', __FILE__ ) . '" width="100" height="100"></td>
-			</tr>
-			<tr style="text-align:center" valign="top">
-				<td><a href="' . plugins_url( '/images/ninjafirewall_32.png', __FILE__ ) . '">ninjafirewall_32.png</a><br />32x32</td>
-				<td><a href="' . plugins_url( '/images/ninjafirewall_50.png', __FILE__ ) . '">ninjafirewall_50.png</a><br />50x50</td>
-				<td><a href="' . plugins_url( '/images/ninjafirewall_75.png', __FILE__ ) . '">ninjafirewall_75.png</a><br />75x75</td>
-				<td><a href="' . plugins_url( '/images/ninjafirewall_100.png', __FILE__ ) . '">ninjafirewall_100.png</a><br />100x100</td>
+			<tr style="text-align:center;">
+				<td><a href="http://www.facebook.com/sharer.php?u=http://ninjafirewall.com/" target="_blank"><img src="' . plugins_url( '/images/facebook.png', __FILE__ ) . '" width="90" height="90" style="border: 0px solid #DFDFDF;padding:0px;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;background-color:#FCFCFC;"></a></td>
+				<td><a href="https://plus.google.com/share?url=http://ninjafirewall.com/" target="_blank"><img src="' . plugins_url( '/images/google.png', __FILE__ ) . '" width="90" height="90" style="border: 0px solid #DFDFDF;padding:0px;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;background-color:#FCFCFC;"></a></td>
+				<td><a href="http://twitter.com/share?text=NinjaFirewall&url=http://ninjafirewall.com/" target="_blank"><img src="' . plugins_url( '/images/twitter.png', __FILE__ ) . '" width="90" height="90" style="border: 0px solid #DFDFDF;padding:0px;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;background-color:#FCFCFC;"></a></td>
 			</tr>
 		</table>
+
 		<table id="12" style="display:none;" width="500">
 			<tr>
 				<td>
