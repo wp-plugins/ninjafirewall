@@ -178,7 +178,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 == Changelog ==
 
 = 1.3.6 =
-* Added protection against Fancybox 0day.
+* Added protection against Fancybox 0day vulnerability.
 
 = 1.3.5 =
 * Updated security rules.
