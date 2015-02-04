@@ -7,7 +7,7 @@
 // +---------------------------------------------------------------------+
 // | http://nintechnet.com/                                              |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-01-03 18:46:21                                       |
+// | REVISION: 2015-01-21 18:10:40                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -290,36 +290,39 @@ if ( (@$nfw_['nfw_options']['scan_protocol'] == 2) && ($_SERVER['SERVER_PORT'] !
 
 // File Guard :
 if (! empty($nfw_['nfw_options']['fg_enable']) ) {
-	// Stat() the requested script :
-	if ( $nfw_['nfw_options']['fg_stat'] = stat( $_SERVER['SCRIPT_FILENAME'] ) ) {
-		// Was is created/modified lately ?
-		if ( time() - $nfw_['nfw_options']['fg_mtime'] * 3660 < $nfw_['nfw_options']['fg_stat']['ctime'] ) {
-			// Did we check it already ?
-			if (! file_exists( $nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php' ) ) {
-				// We need to alert the admin :
-				if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
-					$nfw_['nfw_options']['tzstring'] = 'UTC';
+	// Look for exclusion :
+	if ( empty($nfw_['nfw_options']['fg_exclude']) || strpos($_SERVER['SCRIPT_FILENAME'], $nfw_['nfw_options']['fg_exclude']) === FALSE ) {
+		// Stat() the requested script :
+		if ( $nfw_['nfw_options']['fg_stat'] = stat( $_SERVER['SCRIPT_FILENAME'] ) ) {
+			// Was is created/modified lately ?
+			if ( time() - $nfw_['nfw_options']['fg_mtime'] * 3660 < $nfw_['nfw_options']['fg_stat']['ctime'] ) {
+				// Did we check it already ?
+				if (! file_exists( $nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php' ) ) {
+					// We need to alert the admin :
+					if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
+						$nfw_['nfw_options']['tzstring'] = 'UTC';
+					}
+					date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+					$nfw_['nfw_options']['m_headers'] = 'From: "NinjaFirewall" <postmaster@'. $_SERVER['SERVER_NAME'] . ">\r\n";
+					$nfw_['nfw_options']['m_headers'] .= "Content-Transfer-Encoding: 7bit\r\n";
+					$nfw_['nfw_options']['m_headers'] .= "Content-Type: text/plain; charset=\"UTF-8\"\r\n";
+					$nfw_['nfw_options']['m_headers'] .= "MIME-Version: 1.0\r\n";
+					$nfw_['nfw_options']['m_subject'] = '[NinjaFirewall] Alert: File Guard detection';
+					$nfw_['nfw_options']['m_msg'] = 	'Someone accessed a script that was modified or created less than ' .
+						$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
+						'SERVER_NAME    : ' . $_SERVER['SERVER_NAME'] . "\n" .
+						'SCRIPT_FILENAME: ' . $_SERVER['SCRIPT_FILENAME'] . "\n" .
+						'REQUEST_URI    : ' . $_SERVER['REQUEST_URI'] . "\n" .
+						'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
+						'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n" .
+						'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
+						'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
+					mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
+					// Remember it so that we don't spam the admin each time the script is requested :
+					touch($nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php');
+					// Log it :
+					nfw_log('Access to a script modified/created less than ' . $nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago', $_SERVER['SCRIPT_FILENAME'], 2, 0);
 				}
-				date_default_timezone_set($nfw_['nfw_options']['tzstring']);
-				$nfw_['nfw_options']['m_headers'] = 'From: "NinjaFirewall" <postmaster@'. $_SERVER['SERVER_NAME'] . ">\r\n";
-				$nfw_['nfw_options']['m_headers'] .= "Content-Transfer-Encoding: 7bit\r\n";
-				$nfw_['nfw_options']['m_headers'] .= "Content-Type: text/plain; charset=\"UTF-8\"\r\n";
-				$nfw_['nfw_options']['m_headers'] .= "MIME-Version: 1.0\r\n";
-				$nfw_['nfw_options']['m_subject'] = '[NinjaFirewall] Alert: File Guard detection';
-				$nfw_['nfw_options']['m_msg'] = 	'Someone accessed a script that was modified or created less than ' .
-					$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
-					'SERVER_NAME    : ' . $_SERVER['SERVER_NAME'] . "\n" .
-					'SCRIPT_FILENAME: ' . $_SERVER['SCRIPT_FILENAME'] . "\n" .
-					'REQUEST_URI    : ' . $_SERVER['REQUEST_URI'] . "\n" .
-					'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
-					'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n" .
-					'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
-					'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
-				mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
-				// Remember it so that we don't spam the admin each time the script is requested :
-				touch($nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php');
-				// Log it :
-				nfw_log('Access to a script modified/created less than ' . $nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago', $_SERVER['SCRIPT_FILENAME'], 2, 0);
 			}
 		}
 	}
@@ -824,7 +827,7 @@ function nfw_bfd($where) {
 			return;
 		} else {
 			// Reset counter :
-			unlink($bf_conf_dir . '/bf_blocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand);
+			@unlink($bf_conf_dir . '/bf_blocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand);
 		}
 	}
 
