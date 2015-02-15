@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.3.6
+Version: 1.3.7
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -20,10 +20,10 @@ Text Domain: ninjafirewall
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2015-02-05 03:38:01                                       |
+ | REVISION: 2015-02-11 19:29:34                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.3.6' );
+define( 'NFW_ENGINE_VERSION', '1.3.7' );
 define( 'NFW_RULES_VERSION',  '20150204' );
  /*
  +---------------------------------------------------------------------+
@@ -756,6 +756,11 @@ function ninjafirewall_admin_menu() {
 		'nfsublog', 'nf_sub_log' );
 	add_action( 'load-' . $menu_hook, 'help_nfsublog' );
 
+	// Live log menu :
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Live Log', 'Live Log', 'manage_options',
+		'nfsublive', 'nf_sub_live' );
+	add_action( 'load-' . $menu_hook, 'help_nfsublivelog' );
+
 	// Rules Editor menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Rules Editor', 'Rules Editor', 'manage_options',
 		'nfsubedit', 'nf_sub_edit' );
@@ -938,7 +943,7 @@ function nf_menu_main() {
 		<tr>
 			<th scope="row"><?php _e('Admin user', 'ninjafirewall') ?></th>
 			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
-			<td><?php _e('You are not whitelisted. Ensure that the <span class="description">Do not block WordPress administrator</span> option is enabled in the <a href="?page=nfsubpolicies">Firewall Policies menu</a>, otherwise you will likely get blocked by the firewall while working from the WordPress administration console.', 'ninjafirewall') ?></td>
+			<td><?php _e('You are not whitelisted. Ensure that the <span class="description">Do not block WordPress administrator</span> option is enabled in the <a href="?page=nfsubpolicies">Firewall Policies menu</a>, otherwise you will likely get blocked by the firewall while working from the WordPress administration dashboard.', 'ninjafirewall') ?></td>
 		</tr>
 	<?php
 	}
@@ -990,14 +995,15 @@ function nf_menu_main() {
 	}
 
 	// check for NinjaFirewall optional config file :
-	if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+	if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ||
+		@file_exists( $file = getenv('DOCUMENT_ROOT') . '/.htninja') ) {
 		echo '<tr><th scope="row">Optional configuration file</th>';
-		if ( is_writable(dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+		if ( is_writable( $file ) ) {
 			echo '<td width="20" align="left"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
-			<td><code>' .  dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja</code> is writable. Consider changing its permissions to read-only.</td>';
+			<td><code>' .  $file . '</code> is writable. Consider changing its permissions to read-only.</td>';
 		} else {
 			echo '<td width="20">&nbsp;</td>
-				<td><code>' .  dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja</code></td>';
+				<td><code>' .  $file . '</code></td>';
 		}
 		echo '</tr>';
 	}
@@ -1822,7 +1828,7 @@ function httponly() {
 						<p><code>/wp-includes/theme-compat/*</code></p>
 						</label>
 						<br />
-						<span class="description">Uncheck this option if you have users with Editor, Author or Contributor roles, otherwise it could prevent them from using the TinyMCE WYSIWYG editor.</span>
+						<span class="description">NinjaFirewall will not block access to the TinyMCE WYSIWYG editor even if this option is enabled.</span>
 						</td>
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
@@ -2162,7 +2168,7 @@ function nf_sub_policies_save() {
 		$tmp .= '/wp-admin/(?:css|images|includes|js)/|';
 	}
 	if ( isset( $_POST['nfw_options']['wp_inc']) ) {
-		$tmp .= '/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|';
+		$tmp .= '/wp-includes/(?:(?:css|images|js(?!/tinymce/wp-tinymce\.php)|theme-compat)/|[^/]+\.php)|';
 	}
 	if ( isset( $_POST['nfw_options']['wp_upl']) ) {
 		$tmp .= '/' . basename(WP_CONTENT_DIR) .'/uploads/|';
@@ -2348,7 +2354,7 @@ function nf_sub_policies_default() {
 	$nfw_options['php_path_t']			= 1;
 	$nfw_options['php_path_i']			= 1;
 	$nfw_options['wp_dir'] 				= '/wp-admin/(?:css|images|includes|js)/|' .
-		'/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
+		'/wp-includes/(?:(?:css|images|js(?!/tinymce/wp-tinymce\.php)|theme-compat)/|[^/]+\.php)|' .
 		'/'. basename(WP_CONTENT_DIR) .'/uploads/';
 	$nfw_options['enum_archives']		= 1;
 	$nfw_options['enum_login']			= 1;
@@ -2611,6 +2617,14 @@ function nf_sub_log() {
 
 	// Firewall Log menu :
 	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_log.php' );
+
+}
+/* ------------------------------------------------------------------ */
+
+function nf_sub_live() {
+
+	// Firewall Log menu :
+	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_livelog.php' );
 
 }
 /* ------------------------------------------------------------------ */

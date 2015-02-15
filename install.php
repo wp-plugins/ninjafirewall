@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2015-02-05 03:41:39                                       |
+ | REVISION: 2015-02-11 19:26:58                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -669,7 +669,7 @@ function nfw_postsave() {
 
 	if ( @$_POST['makechange'] != 'usr' && @$_POST['makechange'] != 'nfw' ) {
 		$err =  __('you must select how to make changes to your files.', 'ninjafirewall');
-INTEGRATION:
+NFW_INTEGRATION:
 		$_POST['abspath']      = $_SESSION['abspath'];
 		$_POST['http_server']  = $_SESSION['http_server'];
 		$_POST['php_ini_type'] = $_SESSION['php_ini_type'];
@@ -696,7 +696,7 @@ INTEGRATION:
 
 	if ( empty($_SESSION['abspath_writable']) ) {
 		$err = __('your WordPress root directory is not writable, I cannot make those changes for you.', 'ninjafirewall');
-		goto INTEGRATION;
+		goto NFW_INTEGRATION;
 		exit;
 	}
 
@@ -732,7 +732,7 @@ INTEGRATION:
 		if ( file_exists($_SESSION['abspath'] . '.htaccess') ) {
 			if (! is_writable($_SESSION['abspath'] . '.htaccess') ) {
 				$err = sprintf(__('cannot write to <code>%s</code>, it is read-only.', 'ninjafirewall'), $_SESSION['abspath'] . '.htaccess');
-				goto INTEGRATION;
+				goto NFW_INTEGRATION;
 				exit;
 			}
 			$fdata = file_get_contents($_SESSION['abspath'] . '.htaccess');
@@ -774,7 +774,7 @@ INTEGRATION:
 		if ( file_exists($_SESSION['abspath'] . $php_file) ) {
 			if (! is_writable($_SESSION['abspath'] . $php_file) ) {
 				$err = sprintf(__('cannot write to <code>%s</code>, it is read-only.', 'ninjafirewall'), $_SESSION['abspath'] . $php_file);
-				goto INTEGRATION;
+				goto NFW_INTEGRATION;
 				exit;
 			}
 			$fdata = file_get_contents($_SESSION['abspath'] . $php_file);
@@ -947,7 +947,7 @@ function nfw_default_conf() {
 		'php_path_t'		=> 1,
 		'php_path_i'		=> 1,
 		'wp_dir'				=> '/wp-admin/(?:css|images|includes|js)/|' .
-									'/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
+									'/wp-includes/(?:(?:css|images|js(?!/tinymce/wp-tinymce\.php)|theme-compat)/|[^/]+\.php)|' .
 									'/'. basename(WP_CONTENT_DIR) .'/uploads/',
 		'no_post_themes'	=> 0,
 		'force_ssl'			=> 0,

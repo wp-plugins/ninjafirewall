@@ -7,7 +7,7 @@
 // +---------------------------------------------------------------------+
 // | http://nintechnet.com/                                              |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-01-21 18:10:40                                       |
+// | REVISION: 2015-02-08 23:41:36                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -28,7 +28,8 @@ $nfw_['fw_starttime'] = microtime(true);
 
 // Optional NinjaFirewall configuration file
 // ( see http://ninjafirewall.com/wordpress/htninja/ ) :
-if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+if ( @file_exists($nfw_['file'] = dirname(getenv('DOCUMENT_ROOT')) .'/.htninja') ||
+	@file_exists($nfw_['file'] = getenv('DOCUMENT_ROOT') .'/.htninja') ) {
 	$nfw_['res'] = @include($nfw_['file']);
 	// Allow and stop filtering :
 	if ( $nfw_['res'] == 'ALLOW' ) {
@@ -44,10 +45,10 @@ if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninj
 	}
 }
 
-// Get WordPress 'wp_content' directory. This assume that the dir
-// is named 'wp_content', but if you changed its name, use the .htninja
-// file to define the full path to wp-content folder instead
-// ( e.g., $nfw_['wp_content'] = '/foo/bar/wp-content' ) :
+// ** DO NOT USE **
+// As of January 2015, the "$nfw_['wp_content']" variable is deprecated.
+// It is kept here only for backward compatibility, but will be removed
+// soon :
 if (empty($nfw_['wp_content'])) {
 	$nfw_['wp_content'] = strstr(__DIR__, '/plugins/ninjafirewall/lib', true);
 }
@@ -214,7 +215,7 @@ if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 		} elseif ( $_GET['action'] == 'upgrade-plugin' ) {
 			$nfw_['a_msg'] = '1:4:' . @$_REQUEST['plugin'];
 		} elseif ( $_GET['action'] == 'activate-plugin' ) {
-			$nfw_['a_msg'] = '1:3:' . @$_GET['plugins'];
+			$nfw_['a_msg'] = '1:3:' . @$_GET['plugin'];
 		} elseif ( $_GET['action'] == 'install-plugin' ) {
 			$nfw_['a_msg'] = '1:2:' . @$_REQUEST['plugin'];
 		} elseif ( $_GET['action'] == 'upload-plugin' ) {
@@ -254,9 +255,90 @@ if (! session_id() ) {
 // Do not scan/filter WordPress admin (if logged in) ?
 if (! empty($_SESSION['nfw_goodguy']) ) {
 	$nfw_['mysqli']->close();
+
+	// Look for Live Log AJAX request...
+		if ( isset($_POST['livecls']) && isset($_POST['lines'])) {
+		$nfw_['livelog'] = $nfw_['wp_content'] . '/nfwlog/cache/livelog.php';
+		if ( file_exists($nfw_['livelog']) ) {
+			// Check if we need to flush it :
+			if ($_POST['livecls'] > 0) {
+				$fh = fopen($nfw_['livelog'],'w');
+				fclose($fh);
+			}
+			$count = 0;
+			$buffer = '';
+			if ( $fh = fopen($nfw_['livelog'], 'r' ) ) {
+				while (! feof($fh) ) {
+					if ( $count >= $_POST['lines'] ) {
+						$buffer .= fgets($fh);
+					} else {
+						fgets($fh);
+					}
+					$count++;
+				}
+			}
+			fclose($fh);
+
+			// Return the log content :
+			header('HTTP/1.0 200 OK');
+			if ( $buffer ) {
+				echo $buffer;
+			} else {
+				echo '*';
+			}
+			touch($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+		} else {
+			// Something went wrong :
+			header('HTTP/1.0 503 Service Unavailable');
+		}
+		exit;
+	}
+	// ...or go ahead :
 	define( 'NFW_STATUS', 20 );
 	unset($nfw_);
 	return;
+}
+
+// Live Log : record the request if needed
+if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
+	$nfw_['stats'] = stat($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+
+	// If the file was not accessed for more than 100s, we assume
+	// the admin has stopped watching the live log from WordPress
+	// dashboard (max refresh rate is 45s) :
+	if ( $nfw_['fw_starttime'] - $nfw_['stats']['mtime'] > 100 ) {
+		unlink($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+		// If the log was not modified for the past 10mn, we delete it as well :
+		$nfw_['livelog'] = $nfw_['wp_content'] . '/nfwlog/cache/livelog.php';
+		if ( file_exists($nfw_['livelog']) ) {
+			$nfw_['stats'] = stat($nfw_['livelog']);
+			if ( $nfw_['fw_starttime'] - $nfw_['stats']['mtime'] > 600 ) {
+				unlink( $nfw_['livelog'] );
+			}
+		}
+	} else {
+		if ( empty($_SERVER['PHP_AUTH_USER']) ) { $PHP_AUTH_USER = '-'; }
+		else { $PHP_AUTH_USER = $_SERVER['PHP_AUTH_USER']; }
+		if ( empty($_SERVER['HTTP_REFERER']) ) { $HTTP_REFERER = '-'; }
+		else { $HTTP_REFERER = $_SERVER['HTTP_REFERER']; }
+		if ( empty($_SERVER['HTTP_USER_AGENT']) ) {	$HTTP_USER_AGENT = '-'; }
+		else { $HTTP_USER_AGENT = $_SERVER['HTTP_USER_AGENT']; }
+		if ( empty($_SERVER['HTTP_X_FORWARDED_FOR']) ) { $HTTP_X_FORWARDED_FOR = '-'; }
+		else { $HTTP_X_FORWARDED_FOR = $_SERVER['HTTP_X_FORWARDED_FOR']; }
+		if ( empty($_SERVER['HTTP_HOST']) ) { $HTTP_HOST = '-'; }
+		else { $HTTP_HOST = $_SERVER['HTTP_HOST']; }
+
+		if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
+			$nfw_['nfw_options']['tzstring'] = 'UTC';
+		}
+		date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+		// Log the request :
+		file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
+			'['. date('d/M/y:H:i:s O', time()) .'] '.	htmlspecialchars(
+			$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
+			$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
+			$HTTP_X_FORWARDED_FOR .'" "'. $HTTP_HOST, ENT_NOQUOTES) ."\"\n", FILE_APPEND);
+	}
 }
 
 // Hide PHP notice/error messages ?

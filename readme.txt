@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypa
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.1
-Stable tag: 1.3.6
+Stable tag: 1.3.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,15 +18,16 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 = Web Application Firewall =
 
-* Full standalone web application firewall
+* Full standalone web application firewall; works before WordPress is loaded
 * Multi-site support
 * IPv6 compatible
 * Protects against RFI, LFI, XSS, code execution, SQL injections, brute-force scanners, shell scripts, backdoors and many other threats
 * Scans and/or sanitises GET / POST requests, HTTP / HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
 * Sanitises variables names and values
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
-* Real-time detection (File Guard)
-* File integrity monitoring (File Check)
+* Real-time detection (`File Guard`)
+* File integrity monitoring to scan your website hourly/twicedaily/daily (`File Check`)
+* `Live Log` to watch your website traffic in real time
 * Monitors the database and sends an alert if an administrator account is created, modified or deleted
 * Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`)
 * Sets the `HttpOnly` flag on all cookies
@@ -177,8 +178,14 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
+= 1.3.7 =
+* Added a new feature: "Live Log". It lets you watch your website traffic in real time.
+* Fixed a bug in the "Event Notifications" email alert: after an update, the name of the (re)activated plugin was missing.
+* It is now possible to create the ".htninja" optional configuration file in either the document root or its parent directory (see http://ninjafirewall.com/wordpress/htninja/).
+* NinjaFirewall will not block access to the TinyMCE WYSIWYG editor even if the option to block direct access to any PHP file located in the `/wp-includes/` folder is enabled (see "Firewall Policies" page).
+
 = 1.3.6 =
-* Added protection against Fancybox 0day vulnerability.
+* Added protection against the FancyBox for WordPress 0-day vulnerability.
 
 = 1.3.5 =
 * Updated security rules.

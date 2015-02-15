@@ -8,7 +8,7 @@
  +---------------------------------------------------------------------+
  | http://nintechnet.com/                                              |
  +---------------------------------------------------------------------+
- | REVISION: 2015-01-29 15:13:23                                       |
+ | REVISION: 2015-02-07 15:59:00                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -372,9 +372,25 @@ function help_nfsublog() {
 }
 /* ------------------------------------------------------------------ */
 
+function help_nfsublivelog() {
+
+	// Firewall Live Log menu help :
+
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'log01',
+		'title'     => __('Live Log', NFI18N),
+		'content'   => __('<p>Live Log lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Note that requests sent to static elements like JS/CSS files and images are not managed by NinjaFirewall.</p>
+		<p>You can enable/disable the monitoring process, change the refresh rate, clear the screen and enable automatic vertical scrolling.</p>', NFI18N) .
+		'<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;' . __('<span class="description">Live Log does not make use of any WordPress core file (e.g., <code>admin-ajax.php</code>). It communicates directly with the firewall without loading WordPress bootstrap. Consequently, it is fast, light and it should not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).</span>
+		', NFI18N)
+	) );
+}
+
+/* ------------------------------------------------------------------ */
+
 function help_nfsubedit() {
 
-	// Firewall log menu help :
+	// Firewall Rules Editor menu help :
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
