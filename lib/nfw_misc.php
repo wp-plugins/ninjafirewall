@@ -6,7 +6,7 @@
  | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
  |                                                                     |
  +---------------------------------------------------------------------+
- | REVISION: 2015-01-01 19:10:17                                       |
+ | REVISION: 2015-01-24 10:55:16                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -148,7 +148,13 @@ function nf_check_dbdata() {
 	// Don't do anything if NinjaFirewall is disabled or DB monitoring option is off :
 	if ( empty( $nfw_options['enabled'] ) || empty($nfw_options['a_51']) ) { return; }
 
-	$nfdbhash = WP_CONTENT_DIR . '/nfwlog/cache/nfdbhash.' . $_SERVER['SERVER_NAME'] . '.php';
+	if ( is_multisite() ) {
+		global $current_blog;
+		$nfdbhash = WP_CONTENT_DIR .'/nfwlog/cache/nfdbhash.'. $current_blog->site_id .'-'. $current_blog->blog_id .'.php';
+	} else {
+		global $blog_id;
+		$nfdbhash = WP_CONTENT_DIR .'/nfwlog/cache/nfdbhash.'. $blog_id .'.php';
+	}
 
 	$adm_users = nf_get_dbdata();
 	if (! $adm_users) { return; }

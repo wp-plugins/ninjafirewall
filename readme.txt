@@ -1,10 +1,10 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet, bruandet
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypal%40ninjafirewall%2ecom&lc=US&item_name=Donation %20to%20NinjaFirewall%20WP%20Edition%20Plugin&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
-Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
+Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.1
-Stable tag: 1.3.4
+Stable tag: 1.3.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,15 +18,16 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 = Web Application Firewall =
 
-* Full standalone web application firewall
+* Full standalone web application firewall; works before WordPress is loaded
 * Multi-site support
 * IPv6 compatible
 * Protects against RFI, LFI, XSS, code execution, SQL injections, brute-force scanners, shell scripts, backdoors and many other threats
 * Scans and/or sanitises GET / POST requests, HTTP / HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
 * Sanitises variables names and values
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
-* Real-time detection (File Guard)
-* File integrity monitoring (File Check)
+* Real-time detection (`File Guard`)
+* File integrity monitoring to scan your website hourly/twicedaily/daily (`File Check`)
+* `Live Log` to watch your website traffic in real time
 * Monitors the database and sends an alert if an administrator account is created, modified or deleted
 * Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`)
 * Sets the `HttpOnly` flag on all cookies
@@ -109,8 +110,8 @@ Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall
 
 = Requirements =
 
-* WordPress 3.3 or higher
-* PHP 5.3 or higher
+* WordPress 3.3+
+* PHP 5.3+ or [HHVM 3.4+](http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/ "")
 * Apache / Nginx / LiteSpeed
 * Unix-like OS (Linux, BSD) only
 
@@ -176,6 +177,27 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 7. NinjaFirewall Contextual Help.
 
 == Changelog ==
+
+= 1.3.7 =
+* Added a new feature: "Live Log". It lets you watch your website traffic in real time.
+* Fixed a bug in the "Event Notifications" email alert: after an update, the name of the (re)activated plugin was missing.
+* It is now possible to create the ".htninja" optional configuration file in either the document root or its parent directory (see http://ninjafirewall.com/wordpress/htninja/).
+* NinjaFirewall will not block access to the TinyMCE WYSIWYG editor even if the option to block direct access to any PHP file located in the `/wp-includes/` folder is enabled (see "Firewall Policies" page).
+
+= 1.3.6 =
+* Added protection against the FancyBox for WordPress 0-day vulnerability.
+
+= 1.3.5 =
+* Updated security rules.
+* Added an option to select HHVM (HipHop Virtual Machine) during the installation process. See our blog about installing NinjaFirewall on HHVM (http://nin.link/hhvm).
+* The plugin and theme editors will no longer be disabled by default.
+* The maximum length of the username and password from the "Login Protection" option was increased to 32 characters.
+* Added an option to exclude a folder from being monitored by File Guard (see "File Guard > Exclude the following folder" option).
+* The installer will send an email to the administrator with some info and links that could be helpful if there was a problem or crash during NinajFirewall installation/activation.
+* The installer will comment out any `auto_prepend_file` directive that may be found in the PHP INI file prior to insert its own one.
+* The database monitoring option will save its data to a file whose name will be based on the `blog_id` and `site_id` variables to prevent potential false detection alerts.
+* [WP+ edition] The priority of the antispam `add filter` and `add_action` hooks was lowered in order to execute them earlier.
+* [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
 
 = 1.3.4 =
 * Added a new option to monitor the database and send an alert if an administrator account is created, modified or deleted (see "Event Notifications > Database").
