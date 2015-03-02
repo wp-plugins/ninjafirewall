@@ -168,13 +168,16 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Screenshots ==
 
-1. NinjaFirewall Options page.
-2. NinjaFirewall Policies page.
-3. NinjaFirewall Statistics page.
-4. NinjaFirewall Brute Force Protection page.
-5. NinjaFirewall event Notifications page.
-6. NinjaFirewall Log page.
-7. NinjaFirewall Contextual Help.
+1. The firewall options page.
+2. NinjaFirewall Statistics. A dashboard widget is also available.
+3. Firewall Policies page (1/2): NinjaFirewall has a large list of powerful and unique policies that you can tweak accordingly to your needs.
+4. Firewall Policies page (2/2): NinjaFirewall has a large list of powerful and unique policies that you can tweak accordingly to your needs.
+5. File Guard is a totally unique feature, because it can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.
+6. File Check lets you perform file integrity monitoring upon request or on a specific interval (hourly, twicedaily, daily).
+7. Live Log lets you watch your website traffic in real time. It is fast, light and it does not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).
+8. NinjaFirewall Login Protection is the fastest and most efficient brute-force attack protection for WordPress.
+9. Event Notifications can alert you by email on specific events triggered within your blog.
+10. The firewall log displays blocked and sanitised requests as well as some useful information.
 
 == Changelog ==
 
