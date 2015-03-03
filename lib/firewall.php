@@ -2,12 +2,9 @@
 // +---------------------------------------------------------------------+
 // | NinjaFirewall (WP edition)                                          |
 // |                                                                     |
-// | (c) NinTechNet                                                      |
-// | <wordpress@nintechnet.com>                                          |
+// | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | http://nintechnet.com/                                              |
-// +---------------------------------------------------------------------+
-// | REVISION: 2015-02-08 23:41:36                                       |
+// | REVISION: 2015-02-22 01:24:10                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -144,7 +141,7 @@ if ( empty($nfw_['nfw_options']['enabled']) ) {
 }
 
 // Response headers hook :
-if (! empty($nfw_['nfw_options']['response_headers']) && $nfw_['nfw_options']['response_headers'] != '000000' ) {
+if (! empty($nfw_['nfw_options']['response_headers']) ) {
 	define('NFW_RESHEADERS', $nfw_['nfw_options']['response_headers']);
 	@header_register_callback('nfw_response_headers');
 }
@@ -257,7 +254,7 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 	$nfw_['mysqli']->close();
 
 	// Look for Live Log AJAX request...
-		if ( isset($_POST['livecls']) && isset($_POST['lines'])) {
+	if (! empty($_SESSION['nfw_livelog']) &&  isset($_POST['livecls']) && isset($_POST['lines'])) {
 		$nfw_['livelog'] = $nfw_['wp_content'] . '/nfwlog/cache/livelog.php';
 		if ( file_exists($nfw_['livelog']) ) {
 			// Check if we need to flush it :
@@ -276,13 +273,13 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 					}
 					$count++;
 				}
+				fclose($fh);
 			}
-			fclose($fh);
 
 			// Return the log content :
 			header('HTTP/1.0 200 OK');
 			if ( $buffer ) {
-				echo $buffer;
+				echo '^'.$buffer;
 			} else {
 				echo '*';
 			}
@@ -332,12 +329,22 @@ if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
 			$nfw_['nfw_options']['tzstring'] = 'UTC';
 		}
 		date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+
 		// Log the request :
-		file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
+		if (! empty($nfw_['nfw_options']['liveformat']) ) {
+			// User-defined format :
+			$nfw_['tmp'] = str_replace(
+				array( '%time', '%name', '%client', '%method', '%uri', '%referrer', '%ua', '%forward', '%host' ),
+				array( date('d/M/y:H:i:s O', time()), $PHP_AUTH_USER, $_SERVER["REMOTE_ADDR"], $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $HTTP_REFERER, $HTTP_USER_AGENT, $HTTP_X_FORWARDED_FOR, $HTTP_HOST ), $nfw_['nfw_options']['liveformat']	);
+			file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php', htmlspecialchars($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND);
+		} else {
+			// Default format :
+			file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
 			'['. date('d/M/y:H:i:s O', time()) .'] '.	htmlspecialchars(
 			$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
 			$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
 			$HTTP_X_FORWARDED_FOR .'" "'. $HTTP_HOST, ENT_NOQUOTES) ."\"\n", FILE_APPEND);
+		}
 	}
 }
 
@@ -985,6 +992,7 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 			return;
 		}
 	}
+	session_destroy();
 
 	// Ask for authentication :
 	header('HTTP/1.0 401 Unauthorized');
@@ -1026,8 +1034,8 @@ function nfw_response_headers() {
 	$NFW_RESHEADERS = NFW_RESHEADERS;
 	// NFW_RESHEADERS:
 	// 000000
-	// ||||||_ (reserved)
-	// |||||__ (reserved)
+	// ||||||_ Strict-Transport-Security (includeSubDomains) [0-1]
+	// |||||__ Strict-Transport-Security [0-3]
 	// ||||___ X-XSS-Protection [0-1]
 	// |||____ X-Frame-Options [0-2]
 	// ||_____ X-Content-Type-Options [0-1]
@@ -1074,6 +1082,31 @@ function nfw_response_headers() {
 	if ($NFW_RESHEADERS[3] == 1) {
 		header('X-XSS-Protection: 1; mode=block');
 	}
+
+	// We don't send HSTS headers over HTTP :
+	if ($_SERVER['SERVER_PORT'] != 443) {
+		return;
+	}
+	if ($NFW_RESHEADERS[4] == 0) {
+		// Send an empty max-age to signal the UA to
+		// cease regarding the host as a known HSTS Host :
+		$max_age = 'max-age=0';
+	} else {
+		if ($NFW_RESHEADERS[4] == 1) {
+			// 1 month :
+			$max_age = 'max-age=2628000';
+		} elseif ($NFW_RESHEADERS[4] == 2) {
+			// 6 months :
+			$max_age = 'max-age=15768000';
+		} else {
+			// 12 months
+			$max_age = 'max-age=31536000';
+		}
+		if ($NFW_RESHEADERS[5] == 1) {
+			$max_age .= ' ; includeSubDomains';
+		}
+	}
+	header('Strict-Transport-Security: '. $max_age);
 }
 
 // =====================================================================

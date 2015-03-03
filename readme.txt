@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypa
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.1.1
-Stable tag: 1.3.7
+Stable tag: 1.3.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,15 +21,15 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Full standalone web application firewall; works before WordPress is loaded
 * Multi-site support
 * IPv6 compatible
-* Protects against RFI, LFI, XSS, code execution, SQL injections, brute-force scanners, shell scripts, backdoors and many other threats
-* Scans and/or sanitises GET / POST requests, HTTP / HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
+* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injections, brute-force scanners, shell scripts, backdoors and many other threats
+* Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
 * Sanitises variables names and values
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
 * Real-time detection (`File Guard`)
 * File integrity monitoring to scan your website hourly/twicedaily/daily (`File Check`)
 * `Live Log` to watch your website traffic in real time
 * Monitors the database and sends an alert if an administrator account is created, modified or deleted
-* Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`)
+* Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`)
 * Sets the `HttpOnly` flag on all cookies
 * Blocks username enumeration scanning attempts through the author archives and the login page
 * Blocks/allows uploads, sanitises uploaded file names
@@ -179,12 +179,21 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 9. Event Notifications can alert you by email on specific events triggered within your blog.
 10. The firewall log displays blocked and sanitised requests as well as some useful information.
 
+
 == Changelog ==
+
+= 1.3.8 =
+* Added an option to customize the log format in Live Log (see "Live Log > Options > Log format").
+* Added a new HTTP response header: `Strict-Transport-Security`, to defend against cookie hijacking and Man-in-the-Middle attacks (see "Firewall Policies > HTTP response headers").
+* Updated security rules.
+* When importing NinjaFirewall configuration from another site, File Check configuration will not be imported.
+* Fixed an "Undefined index: php_ini_type" PHP notice during the installation process.
+* Fixed some minor typos and bugs.
 
 = 1.3.7 =
 * Added a new feature: "Live Log". It lets you watch your website traffic in real time.
 * Fixed a bug in the "Event Notifications" email alert: after an update, the name of the (re)activated plugin was missing.
-* It is now possible to create the ".htninja" optional configuration file in either the document root or its parent directory (see http://ninjafirewall.com/wordpress/htninja/).
+* It is now possible to create the ".htninja" optional configuration file in either the document root or its parent directory (see http://ninjafirewall.com/wordpress/htninja/ ).
 * NinjaFirewall will not block access to the TinyMCE WYSIWYG editor even if the option to block direct access to any PHP file located in the `/wp-includes/` folder is enabled (see "Firewall Policies" page).
 
 = 1.3.6 =

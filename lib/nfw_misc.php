@@ -1,12 +1,11 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WP  edition)                                         |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
- |                                                                     |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-01-24 10:55:16                                       |
+ | REVISION: 2015-02-23 15:41:40                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -162,7 +161,7 @@ function nf_check_dbdata() {
 	if (! file_exists($nfdbhash) ) {
 		// We don't have any hash yet, let's create one and quit
 		// (md5 is faster than sha1 or crc32 with long strings) :
-		file_put_contents( $nfdbhash, md5( serialize( $adm_users) ) );
+		@file_put_contents( $nfdbhash, md5( serialize( $adm_users) ) );
 		return;
 	}
 

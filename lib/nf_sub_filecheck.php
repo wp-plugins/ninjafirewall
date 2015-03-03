@@ -1,12 +1,11 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WP  edition)                                         |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
- |                                                                     |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-01-22 02:16:19                                       |
+ | REVISION: 2015-02-23 00:20:16                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -110,7 +109,7 @@ if (! empty($_REQUEST['nfw_act'])) {
 }
 
 $nfw_options = get_option('nfw_options');
-if (! isset($nfw_options['snapdir']) ) {
+if ( empty($nfw_options['snapdir']) ) {
 	$nfw_options['snapdir'] = '';
 	if ( file_exists($nfmon_snapshot) ) {
 		unlink($nfmon_snapshot);

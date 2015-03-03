@@ -3,12 +3,9 @@
  +---------------------------------------------------------------------+
  | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet                                                      |
- | <wordpress@nintechnet.com>                                          |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | http://nintechnet.com/                                              |
- +---------------------------------------------------------------------+
- | REVISION: 2015-02-03 16:47:45                                       |
+ | REVISION: 2015-02-24 14:14:56                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -33,7 +30,7 @@ if (NF_DISABLED) {
 	$err_msg = __('Error: NinjaFirewall must be enabled and working in order to use the Live Log feature.', NFI18N );
 }
 if ( empty($_SESSION['nfw_goodguy']) ) {
-	$err_msg = __('Error: You must be whitelisted in order to use that feature.', NFI18N );
+	$err_msg = __('Error: You must be whitelisted in order to use that feature: click on the <a href="?page=nfsubpolicies">Firewall Policies</a> menu and ensure that the "Do not block WordPress administrator" option is enabled.', NFI18N );
 }
 if (! empty($err_msg) ) {
 	?>
@@ -50,6 +47,7 @@ if (! empty($err_msg) ) {
 // Create an empty log :
 $fh = fopen( WP_CONTENT_DIR . '/nfwlog/cache/livelog.php', 'w');
 fclose($fh);
+$_SESSION['nfw_livelog'] = 1;
 
 // jQuery ? No, thanks :
 ?>
@@ -100,18 +98,23 @@ function live_fetchRes() {
 			if (http.responseText == '') {
 				document.liveform.txtlog.value = '<?php _e('No traffic yet, please wait...', NFI18N) ?>' + "\n";
 			} else if (http.responseText != '*') {
-				// Get number of lines :
-				var res = http.responseText.split(/\n/).length - 1;
-				// Work around for old IE bug :
-				if (! res) { res = 1; }
-				if (lines == 0) {
-					document.liveform.txtlog.value = http.responseText;
+				if ( http.responseText.charAt(0) != '^' ) {
+					document.liveform.txtlog.value = '<?php _e('Error: Live Log did not receive the expected response from your server:', NFI18N) ?>' + "\n\n" + http.responseText;
 				} else {
-					document.liveform.txtlog.value += http.responseText;
-				}
-				lines += res;
-				if (scroll) {
-					document.getElementById("idtxtlog").scrollTop = document.getElementById("idtxtlog").scrollHeight;
+					var line = http.responseText.substr(1);
+					// Get number of lines :
+					var res = line.split(/\n/).length - 1;
+					// Work around for old IE bug :
+					if (! res) { res = 1; }
+					if (lines == 0) {
+						document.liveform.txtlog.value = line;
+					} else {
+						document.liveform.txtlog.value += line;
+					}
+					lines += res;
+					if (scroll) {
+						document.getElementById("idtxtlog").scrollTop = document.getElementById("idtxtlog").scrollHeight;
+					}
 				}
 			}
 		} else if (http.status == 404) {
@@ -182,9 +185,16 @@ function is_scroll() {
 	<h2><?php _e('Live Log', NFI18N) ?></h2>
 	<br />
 <?php
+if ( isset($_POST['lf']) ) {
+	$res = nf_sub_liveloge_save();
+	if ($res) {
+		echo '<div class="error settings-error"><p><strong>' . $res . '</strong></p></div>';
+	} else {
+		echo '<div class="updated settings-error"><p><strong>Your changes have been saved.</strong></p></div>';
+	}
+}
 $nfw_options = get_option('nfw_options');
 ?>
-
 <form name="liveform">
 	<table class="form-table">
 		<tr>
@@ -208,9 +218,52 @@ $nfw_options = get_option('nfw_options');
 	</table>
 	<div align="right"><span class="description"><?php _e('Live Log will not include yourself or any other whitelisted users.', NFI18N) ?></span></div>
 </form>
-
+<?php
+if ( empty($nfw_options['liveformat']) ) {
+	$lf = 0;
+	$liveformat = '';
+} else {
+	$lf = 1;
+	$liveformat = htmlspecialchars($nfw_options['liveformat']);
+}
+?>
+<form method="post">
+	<h3><?php _e('Options', NFI18N) ?></h3>
+	<table class="form-table">
+		<tr>
+			<th scope="row"><?php _e('Log format', NFI18N) ?></th>
+			<td align="left">
+				<p><label><input type="radio" name="lf" value="0"<?php checked($lf, 0) ?> onclick="document.getElementById('liveformat').disabled=true"><code>[%time] %name %client &quot;%method %uri&quot; &quot;%referrer&quot; &quot;%ua&quot; &quot;%forward&quot; &quot;%host&quot;</code></label></p>
+				<p><label><input type="radio" name="lf" value="1"<?php checked($lf, 1) ?> onclick="document.getElementById('liveformat').disabled=false"><?php _e('Custom', NFI18N) ?> </label><input id="liveformat" type="text" class="regular-text" name="liveformat" value="<?php echo $liveformat ?>"<?php disabled($lf, 0) ?> autocomplete="off"></p>
+				<span class="description"><?php _e('See contextual help for available log format.', NFI18N) ?></span>
+			</td>
+		</tr>
+	</table>
+	<p><input type="submit" class="button-primary" value="<?php _e('Save Log Format', NFI18N) ?>" /></p>
+</form>
 </div>
 <?php
+
+/* ------------------------------------------------------------------ */
+function nf_sub_liveloge_save() {
+
+	$nfw_options = get_option('nfw_options');
+
+	if ( empty($_POST['lf']) ) {
+		$nfw_options['liveformat'] = '';
+	} else {
+		if (! empty($_POST['liveformat']) ) {
+			$tmp = stripslashes($_POST['liveformat']);
+			// Keep only the allowed characters :
+			$nfw_options['liveformat'] = preg_replace('`[^a-z%[\]\'"\x20]`', '', $tmp);
+		}
+		if (empty($_POST['liveformat']) ) {
+			return __('Error: please enter the custom log format.', NFI18N);
+		}
+	}
+
+	$nfw_options = update_option('nfw_options', $nfw_options);
+}
 
 /* ------------------------------------------------------------------ */
 // EOF

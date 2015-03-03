@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.3.7
+Version: 1.3.8
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -13,18 +13,15 @@ Text Domain: ninjafirewall
 
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WordPress edition)                                   |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c)2012-2013 NinTechNet                                             |
- | <wordpress@nintechnet.com>                                          |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | http://nintechnet.com/                                              |
- +---------------------------------------------------------------------+
- | REVISION: 2015-02-11 19:29:34                                       |
+ | REVISION: 2015-02-23 16:36:30                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.3.7' );
-define( 'NFW_RULES_VERSION',  '20150204' );
+define( 'NFW_ENGINE_VERSION', '1.3.8' );
+define( 'NFW_RULES_VERSION',  '20150223' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -616,6 +613,10 @@ function nfw_logout_hook() {
 	if ( isset( $_SESSION['nfw_goodguy'] ) ) {
 		unset( $_SESSION['nfw_goodguy'] );
 	}
+	// And the Live Log flag as well :
+	if (isset($_SESSION['nfw_livelog']) ) {
+		unset($_SESSION['nfw_livelog']);
+	}
 }
 
 add_action( 'wp_logout', 'nfw_logout_hook' );
@@ -995,8 +996,9 @@ function nf_menu_main() {
 	}
 
 	// check for NinjaFirewall optional config file :
-	if ( @file_exists( $file = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ||
-		@file_exists( $file = getenv('DOCUMENT_ROOT') . '/.htninja') ) {
+	$doc_root = rtrim(getenv('DOCUMENT_ROOT'), '/');
+	if ( @file_exists( $file = dirname( $doc_root ) . '/.htninja') ||
+		@file_exists( $file = $doc_root . '/.htninja') ) {
 		echo '<tr><th scope="row">Optional configuration file</th>';
 		if ( is_writable( $file ) ) {
 			echo '<td width="20" align="left"><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" border="0" height="16" width="16"></td>
@@ -1130,7 +1132,7 @@ function ssl_warn() {';
 echo '
 }
 function httponly() {
-	if (confirm("' . __('If your website sends cookies that need to be accessed from JavaScript, you should keep this option disabled.\nGo ahead ?', 'ninjafirewall') . '")){
+	if (confirm("' . __('If your PHP scripts send cookies that need to be accessed from JavaScript, you should keep this option disabled.\nGo ahead ?', 'ninjafirewall') . '")){
 		return true;
 	}
 	return false;
@@ -1491,10 +1493,10 @@ function httponly() {
 	}
 
 	?>
-	<h3><?php _e('HTTP response headers', 'ninjafirewall')  ?></h3>
+	<h3><?php _e('HTTP response headers', NFI18N)  ?></h3>
 	<table class="form-table">
 		<tr>
-			<th scope="row"><?php printf( __('Set <code>%s</code> to protect against MIME type confusion attacks', 'ninjafirewall'), '<a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">X-Content-Type-Options</a>') ?></th>
+			<th scope="row"><?php printf( __('Set %s to protect against MIME type confusion attacks', NFI18N), '<code><a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">X-Content-Type-Options</a></code>') ?></th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[x_content_type_options]" value="1"<?php checked( $nfw_options['response_headers'][1], 1 ); disabled($err, 1); ?>><?php echo $yes; ?></label>
@@ -1504,16 +1506,16 @@ function httponly() {
 			</td>
 		</tr>
 		<tr>
-			<th scope="row"><?php printf( __('Set <code>%s</code> to protect against clickjacking attempts', 'ninjafirewall'), '<a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">X-Frame-Options</a>') ?></th>
+			<th scope="row"><?php printf( __('Set %s to protect against clickjacking attempts', NFI18N), '<code><a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">X-Frame-Options</a></code>') ?></th>
 			<td width="20">&nbsp;</td>
-			<td align="left" width="120">
+			<td align="left" width="120" style="vertical-align:top;">
 				<p><label><input type="radio" name="nfw_options[x_frame_options]" value="1"<?php checked( $nfw_options['response_headers'][2], 1 ); disabled($err, 1); ?>><code>SAMEORIGIN</code></label></p>
 				<p><label><input type="radio" name="nfw_options[x_frame_options]" value="2"<?php checked( $nfw_options['response_headers'][2], 2 ); disabled($err, 1); ?>><code>DENY</code></label></p>
 			</td>
-			<td align="left"><label><input type="radio" name="nfw_options[x_frame_options]" value="0"<?php checked( $nfw_options['response_headers'][2], 0 ); disabled($err, 1); ?>><?php echo $no . $default; ?></label><?php echo $err_msg ?></td>
+			<td align="left" style="vertical-align:top;"><p><label><input type="radio" name="nfw_options[x_frame_options]" value="0"<?php checked( $nfw_options['response_headers'][2], 0 ); disabled($err, 1); ?>><?php echo $no . $default; ?></label><?php echo $err_msg ?></p></td>
 		</tr>
 		<tr>
-			<th scope="row"><?php printf( __("Set <code>%s</code> to enable browser's built-in XSS filter (IE, Chrome and Safari)", 'ninjafirewall'), '<a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">X-XSS-Protection</a>') ?></th>
+			<th scope="row"><?php printf( __("Set %s to enable browser's built-in XSS filter (IE, Chrome and Safari)", NFI18N), '<code><a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">X-XSS-Protection</a></code>') ?></th>
 			<td width="20"></td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[x_xss_protection]" value="1"<?php checked( $nfw_options['response_headers'][3], 1 ); disabled($err, 1); ?>><?php echo $yes ?></label>
@@ -1522,15 +1524,37 @@ function httponly() {
 				<label><input type="radio" name="nfw_options[x_xss_protection]" value="0"<?php checked( $nfw_options['response_headers'][3], 0 ); disabled($err, 1); ?>><?php echo $no . $default; ?></label><?php echo $err_msg ?>
 			</td>
 		</tr>
-
 		<tr>
-			<th scope="row"><?php printf( __('Force <code>%s</code> flag on all cookies to mitigate XSS attacks', 'ninjafirewall'), '<a href="https://www.owasp.org/index.php/HttpOnly" target="_blank">HttpOnly</a>') ?></th>
+			<th scope="row"><?php printf( __('Force %s flag on all cookies to mitigate XSS attacks', NFI18N), '<code><a href="https://www.owasp.org/index.php/HttpOnly" target="_blank">HttpOnly</a></code>') ?></th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
-				<label><input type="radio" name="nfw_options[cookies_httponly]" value="1"<?php checked( $nfw_options['response_headers'][0], 1 ); disabled($err, 1); ?> onclick="return httponly();">&nbsp;<?php _e('Yes', 'ninjafirewall') ?></label>
+				<label><input type="radio" name="nfw_options[cookies_httponly]" value="1"<?php checked( $nfw_options['response_headers'][0], 1 ); disabled($err, 1); ?> onclick="return httponly();">&nbsp;<?php echo $yes ?></label>
 			</td>
 			<td align="left">
-				<label><input type="radio" name="nfw_options[cookies_httponly]" value="0"<?php checked( $nfw_options['response_headers'][0], 0 ); disabled($err, 1); ?>>&nbsp;<?php _e('No (default)', 'ninjafirewall') ?></label><?php echo $err_msg ?>
+				<label><input type="radio" name="nfw_options[cookies_httponly]" value="0"<?php checked( $nfw_options['response_headers'][0], 0 ); disabled($err, 1); ?>>&nbsp;<?php echo $no . $default; ?></label><?php echo $err_msg ?>
+			</td>
+		</tr>
+		<?php
+		// We don't send HSTS headers over HTTP :
+		if ($_SERVER['SERVER_PORT'] != 443) {
+			$err = 1;
+			$hsts_msg = '<br /><img src="' . plugins_url() . '/ninjafirewall/images/icon_warn_16.png" border="0" height="16" width="16">&nbsp;<span class="description">' . __('HSTS headers can only be set when you are accessing your site over HTTPS.', NFI18N) . '</span>';
+		} else {
+			$hsts_msg = '';
+		}
+		?>
+		<tr>
+			<th scope="row"><?php printf( __('Set %s (HSTS) to enforce secure connections to the server', NFI18N), '<code><a href="https://www.owasp.org/index.php/List_of_useful_HTTP_headers" target="_blank">Strict-Transport-Security</a></code>') ?></th>
+			<td width="20">&nbsp;</td>
+			<td align="left" width="120" style="vertical-align:top;">
+				<p><label><input type="radio" name="nfw_options[strict_transport]" value="1"<?php checked( $nfw_options['response_headers'][4], 1 ); disabled($err, 1); ?>><?php _e('1 month', NFI18N) ?></label></p>
+				<p><label><input type="radio" name="nfw_options[strict_transport]" value="2"<?php checked( $nfw_options['response_headers'][4], 2 ); disabled($err, 1); ?>><?php _e('6 months', NFI18N) ?></label></p>
+				<p><label><input type="radio" name="nfw_options[strict_transport]" value="3"<?php checked( $nfw_options['response_headers'][4], 3 ); disabled($err, 1); ?>><?php _e('1 year', NFI18N) ?></label></p>
+				<br />
+				<label><input type="checkbox" name="nfw_options[strict_transport_sub]" value="1"<?php checked( $nfw_options['response_headers'][5], 1 ); disabled($err, 1); ?>><?php _e('Apply to subdomains', NFI18N) ?></label>
+			</td>
+			<td align="left" style="vertical-align:top;"><p><label><input type="radio" name="nfw_options[strict_transport]" value="0"<?php checked( $nfw_options['response_headers'][4], 0 ); disabled($err, 1); ?>><?php echo $no . $default; ?></label><?php echo $err_msg ?></p>
+			<?php echo $hsts_msg; ?>
 			</td>
 		</tr>
 	</table>
@@ -2059,7 +2083,22 @@ function nf_sub_policies_save() {
 	} else {
 		$nfw_options['response_headers'][0] = 1;
 	}
-
+	// Strict-Transport-Security ?
+	if (! isset( $_POST['nfw_options']['strict_transport_sub']) ) {
+		$nfw_options['response_headers'][5] = 0;
+	} else {
+		$nfw_options['response_headers'][5] = 1;
+	}
+	if ( empty( $_POST['nfw_options']['strict_transport']) ) {
+		$nfw_options['response_headers'][4] = 0;
+		$nfw_options['response_headers'][5] = 0;
+	} elseif ( $_POST['nfw_options']['strict_transport'] == 1) {
+		$nfw_options['response_headers'][4] = 1;
+	} elseif ( $_POST['nfw_options']['strict_transport'] == 2) {
+		$nfw_options['response_headers'][4] = 2;
+	} else {
+		$nfw_options['response_headers'][4] = 3;
+	}
 
 	// Scan COOKIES requests ?
 	if ( empty( $_POST['nfw_options']['cookies_scan']) ) {
@@ -3213,57 +3252,7 @@ function nf_sub_wplus() {
 
 	// WP+ intro
 
-	if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
-
-	echo '<div class="wrap">
-	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;" title="NinTechNet"></div>
-	<h2><font color="#21759B">WP+</font> Edition</h2>
-	<br />
-	<br />
-	<center>
-		<table style="border: 1px solid #DFDFDF;padding:10px;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;background-color:#FCFCFC;">
-			<tr style="text-align:center">
-				<td>
-					<table border="0" cellspacing="2" cellpadding="5" width="100%">
-						<tr valign=top>
-							<td align="center">
-							<font style="font-size: 1.2em; font-weight: bold;">
-							Need more security ?
-							<br />
-							Check out our new supercharged edition :
-							<br /><br />
-							NinjaFirewall (<font color="#21759B">WP+</font> edition)
-							</font>
-							</td>
-						</tr>
-						<tr>
-							<td align="left">
-							<li>Unix shared memory use for inter-process communication and blazing fast performances.</li>
-							<li>IP-based Access Control.</li>
-							<li>Country-based Access Control via geolocation.</li>
-							<li>Role-based Access Control.</li>
-							<li>URL-based Access Control.</li>
-							<li>Bot-based Access Control.</li>
-							<li>Antispam for comment and user regisration forms.</li>
-							<li>Rate limiting option to block aggressive bots, crawlers, web scrapers and HTTP DoS attacks.</li>
-							<li>Response body filter to scan the output of the HTML page right before it is sent to your visitors browser.</li>
-							<li>Better File uploads management.</li>
-							<li>Better logs management.</li>
-							<li>Full IPv6 compatibility.</li>
-							<center>
-								<h3><a href="http://ninjafirewall.com/wordpress/nfwplus.php">Learn more</a> about the <font color="#21759B">WP+</font> edition unique features.</h3>
-								<h3><a href="http://ninjafirewall.com/wordpress/overview.php">Compare</a> the WP and <font color="#21759B">WP+</font> editions.</h3>
-							</center>
-							</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-
-	</center>
-</div>';
-
+	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_wplus.php' );
 }
 
 /* ------------------------------------------------------------------ */

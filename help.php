@@ -3,12 +3,9 @@
  +---------------------------------------------------------------------+
  | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet                                                      |
- | <wordpress@nintechnet.com>                                          |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | http://nintechnet.com/                                              |
- +---------------------------------------------------------------------+
- | REVISION: 2015-02-07 15:59:00                                       |
+ | REVISION: 2015-02-22 20:33:07                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -93,7 +90,9 @@ function help_nfsubopt() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt04',
 		'title'     => 'Export/import configuration',
-		'content'   => '<br />This options lets you export you current configuration or import it from another NinjaFirewall (WP edition) installation. The imported file must match your current version otherwise it will be rejected. Note that importing will override all firewall rules and options.'
+		'content'   => '<br />This options lets you export you current configuration or import it from another NinjaFirewall (WP edition) installation. The imported file must match your current version otherwise it will be rejected. Note that importing will override all firewall rules and options.' .
+		'<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">' .
+		__('"File Check" configuration will not be exported/imported.', NFI18N) . '</span></p>'
 	) );
 }
 /* ------------------------------------------------------------------ */
@@ -180,7 +179,8 @@ function help_nfsubpolicies() {
 			Since v3.1.3, WordPress sets this value to <code>SAMEORIGIN</code> for the administrator and the login page only.</li>
 		<li>Set <code>X-XSS-Protection</code> to enable browser\'s built-in XSS filter (IE, Chrome and Safari):<span class="description"> this header allows compatible browsers to identify and block XSS attack by preventing the malicious script from executing. NinjaFirewall will set its value to <code>1; mode=block</code>.</span></li>
 		<li>Force <code>HttpOnly</code> flag on all cookies to mitigate XSS attacks:<span class="description"> adding this flag to cookies helps to mitigate the risk of cross-site scripting by preventing them from being accessed through client-side script. NinjaFirewall can hook all cookies sent by your blog, its plugins or any other PHP script, add the <code>HttpOnly</code> flag if it is missing, and re-inject those cookies back into your server HTTP response headers right before they are sent to your visitors. Note that WordPress sets that flag on the logged in user cookies only.</span></li>
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">If you have cookies that need to be accessed from JavaScript, you should keep that option disabled.</span></p>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">If your PHP scripts send cookies that need to be accessed from JavaScript, you should keep that option disabled.</span></p>
+		<li>Set <code>Strict-Transport-Security</code> (HSTS) to enforce secure connections to the server:<span class="description"> this policy enforces secure HTTPS connections to the server. Web browsers will not allow the user to access the web application over insecure HTTP protocol. It helps to defend against cookie hijacking and Man-in-the-middle attacks. Most recent browsers support HSTS headers.</span></li>
 
 		<br />
 
@@ -379,10 +379,31 @@ function help_nfsublivelog() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
 		'title'     => __('Live Log', NFI18N),
-		'content'   => __('<p>Live Log lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Note that requests sent to static elements like JS/CSS files and images are not managed by NinjaFirewall.</p>
-		<p>You can enable/disable the monitoring process, change the refresh rate, clear the screen and enable automatic vertical scrolling.</p>', NFI18N) .
-		'<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;' . __('<span class="description">Live Log does not make use of any WordPress core file (e.g., <code>admin-ajax.php</code>). It communicates directly with the firewall without loading WordPress bootstrap. Consequently, it is fast, light and it should not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).</span>
-		', NFI18N)
+		'content'   => '<p>' .
+			__('Live Log lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Note that requests sent to static elements like JS/CSS files and images are not managed by NinjaFirewall.', NFI18N) .
+			'</p>
+			<p>' .
+			__('You can enable/disable the monitoring process, change the refresh rate, clear the screen, enable automatic vertical scrolling and change the log format.', NFI18N) .
+			'</p><p>' .
+			__('Live Log does not make use of any WordPress core file (e.g., <code>admin-ajax.php</code>). It communicates directly with the firewall without loading WordPress bootstrap. Consequently, it is fast, light and it should not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).', NFI18N) .
+			'</p><p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">' .
+			__('If you are using the optional <code>.htninja</code> configuration file to whitelist your IP, the Live Log feature will not work.', NFI18N) .
+		'</span>'
+	) );
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'log02',
+		'title'     => __('Log Format', NFI18N),
+		'content'   => '<p>'. __('You can easily customize the log format. Possible values are:', NFI18N) .'</p>' .
+			'<li>'. __('<code>%time</code>: the server date, time and timezone.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%name</code>: authenticated user (HTTP basic auth), if any.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%client</code>: the client REMOTE_ADDR. If you are behind a load balancer or CDN, this will be its IP.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%method</code>: HTTP method (i.e., GET, POST).', NFI18N) . '</li>' .
+			'<li>'. __('<code>%uri</code>: the URI which was given in order to access the page (REQUEST_URI).', NFI18N) . '</li>' .
+			'<li>'. __('<code>%referrer</code>: the referrer (HTTP_REFERER), if any.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%ua</code>: the user-agent (HTTP_USER_AGENT), if any.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%forward</code>: HTTP_X_FORWARDED_FOR, if any. If you are behind a load balancer or CDN, this will likely be the visitor true IP.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%host</code>: the requested host (HTTP_HOST), if any.', NFI18N) . '</li>' .
+			__('Additionally, you can include any of the following characters: <code>\'</code>, <code>"</code>, <code>%</code>, <code>[</code>, <code>]</code>, <code>space</code> and lowercase letters <code>a-z</code>.', NFI18N)
 	) );
 }
 
