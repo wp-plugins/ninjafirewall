@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-02-22 01:24:10                                       |
+// | REVISION: 2015-03-03 23:02:59                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -141,7 +141,7 @@ if ( empty($nfw_['nfw_options']['enabled']) ) {
 }
 
 // Response headers hook :
-if (! empty($nfw_['nfw_options']['response_headers']) ) {
+if (! empty($nfw_['nfw_options']['response_headers']) && function_exists('header_register_callback')) {
 	define('NFW_RESHEADERS', $nfw_['nfw_options']['response_headers']);
 	@header_register_callback('nfw_response_headers');
 }
