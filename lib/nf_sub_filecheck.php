@@ -1,12 +1,11 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WP  edition)                                         |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
- |                                                                     |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-01-03 17:45:06                                       |
+ | REVISION: 2015-02-23 00:20:16                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -110,7 +109,7 @@ if (! empty($_REQUEST['nfw_act'])) {
 }
 
 $nfw_options = get_option('nfw_options');
-if (! isset($nfw_options['snapdir']) ) {
+if ( empty($nfw_options['snapdir']) ) {
 	$nfw_options['snapdir'] = '';
 	if ( file_exists($nfmon_snapshot) ) {
 		unlink($nfmon_snapshot);
@@ -508,7 +507,7 @@ if (file_exists($nfmon_diff) ) {
 			<tr>
 				<th scope="row"><?php _e('Scheduled scan report', 'ninjafirewall') ?></th>
 				<td align="left">
-					<p><label><input type="radio" name="report_scan" value="0"<?php checked($report_scan, 0) ?> /><?php _e('Send me a report by email only if changes were detected (default)', 'ninjafirewall') ?></label></p>
+					<p><label><input type="radio" name="report_scan" value="0"<?php checked($report_scan, 0) ?> /><?php _e('Send me a report by email only if changes are detected (default)', 'ninjafirewall') ?></label></p>
 					<p><label><input type="radio" name="report_scan" value="1"<?php checked($report_scan, 1) ?> /><?php _e('Always send me a report by email after a scheduled scan', 'ninjafirewall') ?></label></p>
 				</td>
 			</tr>
@@ -768,7 +767,7 @@ function nf_scan_email($nfmon_diff, $log_dir) {
 	// Changes were detected :
 	if ( $nfmon_diff ) {
 		$stat = stat($nfmon_diff);
-		$data = '== NinjaFirewall File Check\'s diff'. "\n";
+		$data = '== NinjaFirewall File Check (diff)'. "\n";
 		$data.= '== ' . site_url() . "\n";
 		$data.= '== ' . date_i18n('M d, Y @ H:i:s O', $stat['ctime']) . "\n\n";
 		$data.= '[+] = ' . __('New file', 'ninjafirewall') .
