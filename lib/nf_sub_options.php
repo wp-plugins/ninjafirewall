@@ -1,12 +1,11 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WP  edition)                                         |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
- |                                                                     |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2014-11-07 23:21:45                                       |
+ | REVISION: 2015-02-23 00:29:30                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -254,12 +253,16 @@ function nf_sub_options_import() {
 	// Fix paths and directories :
 	$nfw_options['logo'] = plugins_url() . '/ninjafirewall/images/ninjafirewall_75.png';
 	$nfw_options['wp_dir'] = '/wp-admin/(?:css|images|includes|js)/|' .
-									 '/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
+									 '/wp-includes/(?:(?:css|images|js(?!/tinymce/wp-tinymce\.php)|theme-compat)/|[^/]+\.php)|' .
 									 '/'. basename(WP_CONTENT_DIR) .'/uploads/|/cache/';
 	// $nfw_options['alert_email'] = get_option('admin_email');
 
 	// We don't import the File Check 'snapshot directory' path:
 	$nfw_options['snapdir'] = '';
+	// We delete any File Check cron jobs :
+	if ( wp_next_scheduled('nfscanevent') ) {
+		wp_clear_scheduled_hook('nfscanevent');
+	}
 
 	// If brute force protection is enabled, we need to create a new config file :
 	$nfwbfd_log = WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php';

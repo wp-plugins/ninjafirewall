@@ -2,12 +2,9 @@
 // +---------------------------------------------------------------------+
 // | NinjaFirewall (WP edition)                                          |
 // |                                                                     |
-// | (c) NinTechNet                                                      |
-// | <wordpress@nintechnet.com>                                          |
+// | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | http://nintechnet.com/                                              |
-// +---------------------------------------------------------------------+
-// | REVISION: 2015-01-03 18:46:21                                       |
+// | REVISION: 2015-03-03 23:02:59                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -28,7 +25,8 @@ $nfw_['fw_starttime'] = microtime(true);
 
 // Optional NinjaFirewall configuration file
 // ( see http://ninjafirewall.com/wordpress/htninja/ ) :
-if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninja') ) {
+if ( @file_exists($nfw_['file'] = dirname(getenv('DOCUMENT_ROOT')) .'/.htninja') ||
+	@file_exists($nfw_['file'] = getenv('DOCUMENT_ROOT') .'/.htninja') ) {
 	$nfw_['res'] = @include($nfw_['file']);
 	// Allow and stop filtering :
 	if ( $nfw_['res'] == 'ALLOW' ) {
@@ -44,10 +42,10 @@ if ( @file_exists( $nfw_['file'] = dirname(getenv('DOCUMENT_ROOT') ) . '/.htninj
 	}
 }
 
-// Get WordPress 'wp_content' directory. This assume that the dir
-// is named 'wp_content', but if you changed its name, use the .htninja
-// file to define the full path to wp-content folder instead
-// ( e.g., $nfw_['wp_content'] = '/foo/bar/wp-content' ) :
+// ** DO NOT USE **
+// As of January 2015, the "$nfw_['wp_content']" variable is deprecated.
+// It is kept here only for backward compatibility, but will be removed
+// soon :
 if (empty($nfw_['wp_content'])) {
 	$nfw_['wp_content'] = strstr(__DIR__, '/plugins/ninjafirewall/lib', true);
 }
@@ -143,7 +141,7 @@ if ( empty($nfw_['nfw_options']['enabled']) ) {
 }
 
 // Response headers hook :
-if (! empty($nfw_['nfw_options']['response_headers']) && $nfw_['nfw_options']['response_headers'] != '000000' ) {
+if (! empty($nfw_['nfw_options']['response_headers']) && function_exists('header_register_callback')) {
 	define('NFW_RESHEADERS', $nfw_['nfw_options']['response_headers']);
 	@header_register_callback('nfw_response_headers');
 }
@@ -214,7 +212,7 @@ if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 		} elseif ( $_GET['action'] == 'upgrade-plugin' ) {
 			$nfw_['a_msg'] = '1:4:' . @$_REQUEST['plugin'];
 		} elseif ( $_GET['action'] == 'activate-plugin' ) {
-			$nfw_['a_msg'] = '1:3:' . @$_GET['plugins'];
+			$nfw_['a_msg'] = '1:3:' . @$_GET['plugin'];
 		} elseif ( $_GET['action'] == 'install-plugin' ) {
 			$nfw_['a_msg'] = '1:2:' . @$_REQUEST['plugin'];
 		} elseif ( $_GET['action'] == 'upload-plugin' ) {
@@ -254,9 +252,100 @@ if (! session_id() ) {
 // Do not scan/filter WordPress admin (if logged in) ?
 if (! empty($_SESSION['nfw_goodguy']) ) {
 	$nfw_['mysqli']->close();
+
+	// Look for Live Log AJAX request...
+	if (! empty($_SESSION['nfw_livelog']) &&  isset($_POST['livecls']) && isset($_POST['lines'])) {
+		$nfw_['livelog'] = $nfw_['wp_content'] . '/nfwlog/cache/livelog.php';
+		if ( file_exists($nfw_['livelog']) ) {
+			// Check if we need to flush it :
+			if ($_POST['livecls'] > 0) {
+				$fh = fopen($nfw_['livelog'],'w');
+				fclose($fh);
+			}
+			$count = 0;
+			$buffer = '';
+			if ( $fh = fopen($nfw_['livelog'], 'r' ) ) {
+				while (! feof($fh) ) {
+					if ( $count >= $_POST['lines'] ) {
+						$buffer .= fgets($fh);
+					} else {
+						fgets($fh);
+					}
+					$count++;
+				}
+				fclose($fh);
+			}
+
+			// Return the log content :
+			header('HTTP/1.0 200 OK');
+			if ( $buffer ) {
+				echo '^'.$buffer;
+			} else {
+				echo '*';
+			}
+			touch($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+		} else {
+			// Something went wrong :
+			header('HTTP/1.0 503 Service Unavailable');
+		}
+		exit;
+	}
+	// ...or go ahead :
 	define( 'NFW_STATUS', 20 );
 	unset($nfw_);
 	return;
+}
+
+// Live Log : record the request if needed
+if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
+	$nfw_['stats'] = stat($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+
+	// If the file was not accessed for more than 100s, we assume
+	// the admin has stopped watching the live log from WordPress
+	// dashboard (max refresh rate is 45s) :
+	if ( $nfw_['fw_starttime'] - $nfw_['stats']['mtime'] > 100 ) {
+		unlink($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+		// If the log was not modified for the past 10mn, we delete it as well :
+		$nfw_['livelog'] = $nfw_['wp_content'] . '/nfwlog/cache/livelog.php';
+		if ( file_exists($nfw_['livelog']) ) {
+			$nfw_['stats'] = stat($nfw_['livelog']);
+			if ( $nfw_['fw_starttime'] - $nfw_['stats']['mtime'] > 600 ) {
+				unlink( $nfw_['livelog'] );
+			}
+		}
+	} else {
+		if ( empty($_SERVER['PHP_AUTH_USER']) ) { $PHP_AUTH_USER = '-'; }
+		else { $PHP_AUTH_USER = $_SERVER['PHP_AUTH_USER']; }
+		if ( empty($_SERVER['HTTP_REFERER']) ) { $HTTP_REFERER = '-'; }
+		else { $HTTP_REFERER = $_SERVER['HTTP_REFERER']; }
+		if ( empty($_SERVER['HTTP_USER_AGENT']) ) {	$HTTP_USER_AGENT = '-'; }
+		else { $HTTP_USER_AGENT = $_SERVER['HTTP_USER_AGENT']; }
+		if ( empty($_SERVER['HTTP_X_FORWARDED_FOR']) ) { $HTTP_X_FORWARDED_FOR = '-'; }
+		else { $HTTP_X_FORWARDED_FOR = $_SERVER['HTTP_X_FORWARDED_FOR']; }
+		if ( empty($_SERVER['HTTP_HOST']) ) { $HTTP_HOST = '-'; }
+		else { $HTTP_HOST = $_SERVER['HTTP_HOST']; }
+
+		if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
+			$nfw_['nfw_options']['tzstring'] = 'UTC';
+		}
+		date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+
+		// Log the request :
+		if (! empty($nfw_['nfw_options']['liveformat']) ) {
+			// User-defined format :
+			$nfw_['tmp'] = str_replace(
+				array( '%time', '%name', '%client', '%method', '%uri', '%referrer', '%ua', '%forward', '%host' ),
+				array( date('d/M/y:H:i:s O', time()), $PHP_AUTH_USER, $_SERVER["REMOTE_ADDR"], $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $HTTP_REFERER, $HTTP_USER_AGENT, $HTTP_X_FORWARDED_FOR, $HTTP_HOST ), $nfw_['nfw_options']['liveformat']	);
+			file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php', htmlspecialchars($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND);
+		} else {
+			// Default format :
+			file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
+			'['. date('d/M/y:H:i:s O', time()) .'] '.	htmlspecialchars(
+			$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
+			$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
+			$HTTP_X_FORWARDED_FOR .'" "'. $HTTP_HOST, ENT_NOQUOTES) ."\"\n", FILE_APPEND);
+		}
+	}
 }
 
 // Hide PHP notice/error messages ?
@@ -290,36 +379,39 @@ if ( (@$nfw_['nfw_options']['scan_protocol'] == 2) && ($_SERVER['SERVER_PORT'] !
 
 // File Guard :
 if (! empty($nfw_['nfw_options']['fg_enable']) ) {
-	// Stat() the requested script :
-	if ( $nfw_['nfw_options']['fg_stat'] = stat( $_SERVER['SCRIPT_FILENAME'] ) ) {
-		// Was is created/modified lately ?
-		if ( time() - $nfw_['nfw_options']['fg_mtime'] * 3660 < $nfw_['nfw_options']['fg_stat']['ctime'] ) {
-			// Did we check it already ?
-			if (! file_exists( $nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php' ) ) {
-				// We need to alert the admin :
-				if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
-					$nfw_['nfw_options']['tzstring'] = 'UTC';
+	// Look for exclusion :
+	if ( empty($nfw_['nfw_options']['fg_exclude']) || strpos($_SERVER['SCRIPT_FILENAME'], $nfw_['nfw_options']['fg_exclude']) === FALSE ) {
+		// Stat() the requested script :
+		if ( $nfw_['nfw_options']['fg_stat'] = stat( $_SERVER['SCRIPT_FILENAME'] ) ) {
+			// Was is created/modified lately ?
+			if ( time() - $nfw_['nfw_options']['fg_mtime'] * 3660 < $nfw_['nfw_options']['fg_stat']['ctime'] ) {
+				// Did we check it already ?
+				if (! file_exists( $nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php' ) ) {
+					// We need to alert the admin :
+					if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
+						$nfw_['nfw_options']['tzstring'] = 'UTC';
+					}
+					date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+					$nfw_['nfw_options']['m_headers'] = 'From: "NinjaFirewall" <postmaster@'. $_SERVER['SERVER_NAME'] . ">\r\n";
+					$nfw_['nfw_options']['m_headers'] .= "Content-Transfer-Encoding: 7bit\r\n";
+					$nfw_['nfw_options']['m_headers'] .= "Content-Type: text/plain; charset=\"UTF-8\"\r\n";
+					$nfw_['nfw_options']['m_headers'] .= "MIME-Version: 1.0\r\n";
+					$nfw_['nfw_options']['m_subject'] = '[NinjaFirewall] Alert: File Guard detection';
+					$nfw_['nfw_options']['m_msg'] = 	'Someone accessed a script that was modified or created less than ' .
+						$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
+						'SERVER_NAME    : ' . $_SERVER['SERVER_NAME'] . "\n" .
+						'SCRIPT_FILENAME: ' . $_SERVER['SCRIPT_FILENAME'] . "\n" .
+						'REQUEST_URI    : ' . $_SERVER['REQUEST_URI'] . "\n" .
+						'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
+						'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n" .
+						'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
+						'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
+					mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
+					// Remember it so that we don't spam the admin each time the script is requested :
+					touch($nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php');
+					// Log it :
+					nfw_log('Access to a script modified/created less than ' . $nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago', $_SERVER['SCRIPT_FILENAME'], 2, 0);
 				}
-				date_default_timezone_set($nfw_['nfw_options']['tzstring']);
-				$nfw_['nfw_options']['m_headers'] = 'From: "NinjaFirewall" <postmaster@'. $_SERVER['SERVER_NAME'] . ">\r\n";
-				$nfw_['nfw_options']['m_headers'] .= "Content-Transfer-Encoding: 7bit\r\n";
-				$nfw_['nfw_options']['m_headers'] .= "Content-Type: text/plain; charset=\"UTF-8\"\r\n";
-				$nfw_['nfw_options']['m_headers'] .= "MIME-Version: 1.0\r\n";
-				$nfw_['nfw_options']['m_subject'] = '[NinjaFirewall] Alert: File Guard detection';
-				$nfw_['nfw_options']['m_msg'] = 	'Someone accessed a script that was modified or created less than ' .
-					$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
-					'SERVER_NAME    : ' . $_SERVER['SERVER_NAME'] . "\n" .
-					'SCRIPT_FILENAME: ' . $_SERVER['SCRIPT_FILENAME'] . "\n" .
-					'REQUEST_URI    : ' . $_SERVER['REQUEST_URI'] . "\n" .
-					'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
-					'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n" .
-					'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
-					'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
-				mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
-				// Remember it so that we don't spam the admin each time the script is requested :
-				touch($nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php');
-				// Log it :
-				nfw_log('Access to a script modified/created less than ' . $nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago', $_SERVER['SCRIPT_FILENAME'], 2, 0);
 			}
 		}
 	}
@@ -824,7 +916,7 @@ function nfw_bfd($where) {
 			return;
 		} else {
 			// Reset counter :
-			unlink($bf_conf_dir . '/bf_blocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand);
+			@unlink($bf_conf_dir . '/bf_blocked' . $where . $_SERVER['SERVER_NAME'] . $bf_rand);
 		}
 	}
 
@@ -900,6 +992,7 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 			return;
 		}
 	}
+	session_destroy();
 
 	// Ask for authentication :
 	header('HTTP/1.0 401 Unauthorized');
@@ -941,8 +1034,8 @@ function nfw_response_headers() {
 	$NFW_RESHEADERS = NFW_RESHEADERS;
 	// NFW_RESHEADERS:
 	// 000000
-	// ||||||_ (reserved)
-	// |||||__ (reserved)
+	// ||||||_ Strict-Transport-Security (includeSubDomains) [0-1]
+	// |||||__ Strict-Transport-Security [0-3]
 	// ||||___ X-XSS-Protection [0-1]
 	// |||____ X-Frame-Options [0-2]
 	// ||_____ X-Content-Type-Options [0-1]
@@ -989,6 +1082,31 @@ function nfw_response_headers() {
 	if ($NFW_RESHEADERS[3] == 1) {
 		header('X-XSS-Protection: 1; mode=block');
 	}
+
+	// We don't send HSTS headers over HTTP :
+	if ($_SERVER['SERVER_PORT'] != 443) {
+		return;
+	}
+	if ($NFW_RESHEADERS[4] == 0) {
+		// Send an empty max-age to signal the UA to
+		// cease regarding the host as a known HSTS Host :
+		$max_age = 'max-age=0';
+	} else {
+		if ($NFW_RESHEADERS[4] == 1) {
+			// 1 month :
+			$max_age = 'max-age=2628000';
+		} elseif ($NFW_RESHEADERS[4] == 2) {
+			// 6 months :
+			$max_age = 'max-age=15768000';
+		} else {
+			// 12 months
+			$max_age = 'max-age=31536000';
+		}
+		if ($NFW_RESHEADERS[5] == 1) {
+			$max_age .= ' ; includeSubDomains';
+		}
+	}
+	header('Strict-Transport-Security: '. $max_age);
 }
 
 // =====================================================================

@@ -1,9 +1,4 @@
-##############################################
-# Only *.png files can be accessed directly. #
-# Access to any other files MUST be blocked  #
-##############################################
-Order Deny,Allow
-Deny from all
-<FilesMatch "\.png$">
- Allow from all
-</FilesMatch>
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteRule !\.png$ - [L,R=404]
+</IfModule>
