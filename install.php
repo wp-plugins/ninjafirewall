@@ -3,12 +3,9 @@
  +---------------------------------------------------------------------+
  | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet                                                      |
- | <wordpress@nintechnet.com>                                          |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | http://nintechnet.com/                                              |
- +---------------------------------------------------------------------+
- | REVISION: 2015-01-03 00:22:35                                       |
+ | REVISION: 2015-02-28 15:18:33                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -59,6 +56,9 @@ function nfw_welcome() {
 	}
 	if ( isset($_SESSION['php_ini_type']) ) {
 		unset($_SESSION['php_ini_type']);
+	}
+	if (isset($_SESSION['email_install']) ) {
+		unset($_SESSION['email_install']);
 	}
 
 ?>
@@ -125,10 +125,34 @@ function nfw_logdir() {
 		if (! file_exists(WP_CONTENT_DIR . '/nfwlog/cache') ) {
 			mkdir( WP_CONTENT_DIR . '/nfwlog/cache', 0755);
 		}
+
+		$deny_rules = <<<'DENY'
+<Files "*">
+	<IfModule mod_version.c>
+		<IfVersion < 2.4>
+			Order Deny,Allow
+			Deny from All
+		</IfVersion>
+		<IfVersion >= 2.4>
+			Require all denied
+		</IfVersion>
+	</IfModule>
+	<IfModule !mod_version.c>
+		<IfModule !mod_authz_core.c>
+			Order Deny,Allow
+			Deny from All
+		</IfModule>
+		<IfModule mod_authz_core.c>
+			Require all denied
+		</IfModule>
+	</IfModule>
+</Files>
+DENY;
+
 		touch( WP_CONTENT_DIR . '/nfwlog/index.html' );
 		touch( WP_CONTENT_DIR . '/nfwlog/cache/index.html' );
-		file_put_contents(WP_CONTENT_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all");
-		file_put_contents(WP_CONTENT_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all");
+		file_put_contents(WP_CONTENT_DIR . '/nfwlog/.htaccess', $deny_rules);
+		file_put_contents(WP_CONTENT_DIR . '/nfwlog/cache/.htaccess', $deny_rules);
 		file_put_contents(WP_CONTENT_DIR . '/nfwlog/readme.txt', "This is NinjaFirewall's logs and cache directory.");
 	}
 	if ( empty($err) ) {
@@ -207,9 +231,15 @@ function nfw_presave($err) {
 	nfw_default_conf();
 
 	// Let's try to detect the system configuration :
-	$s1 = $s2 = $s3 = $s4 = $s5 = '';
+	$s1 = $s2 = $s3 = $s4 = $s5 = $s7 = '';
 	$recommended = ' (recommended)';
-	if ( preg_match('/apache/i', PHP_SAPI) ) {
+	if ( defined('HHVM_VERSION') ) {
+		// HHVM
+		$http_server = 7;
+		$s7 = $recommended;
+		$htaccess = 0;
+		$php_ini = 0;
+	} elseif ( preg_match('/apache/i', PHP_SAPI) ) {
 		// Apache running php as a module :
 		$http_server = 1;
 		$s1 = $recommended;
@@ -251,7 +281,8 @@ function nfw_presave($err) {
 				break;
 			}
 		}
-		if (! ischecked && document.presave_form.http_server.value != 1) {
+		// Dont warn if user selected Apache/mod_php5 or HHVM
+		if (! ischecked && document.presave_form.http_server.value != 1 && document.presave_form.http_server.value != 7) {
 			alert('<?php echo 'Please select the PHP initialization file supported by your server.' ?>');
 			return false;
 		}
@@ -260,8 +291,13 @@ function nfw_presave($err) {
 	function ini_toogle(what) {
 		if (what == 1) {
 			document.getElementById('trini').style.display = 'none';
+			document.getElementById('hhvm').style.display = 'none';
+		} else if(what == 7) {
+			document.getElementById('trini').style.display = 'none';
+			document.getElementById('hhvm').style.display = '';
 		} else {
 			document.getElementById('trini').style.display = '';
+			document.getElementById('hhvm').style.display = 'none';
 		}
 	}
 	</script>
@@ -306,8 +342,17 @@ function nfw_presave($err) {
 					<option value="6"<?php selected($http_server, 6) ?>>Apache + suPHP</option>
 					<option value="3"<?php selected($http_server, 3) ?>>Nginx + CGI/FastCGI<?php echo $s3 ?></option>
 					<option value="4"<?php selected($http_server, 4) ?>>Litespeed + LSAPI<?php echo $s4 ?></option>
-					<option value="5"<?php selected($http_server, 5) ?>><?php echo 'Other webserver + CGI/FastCGI' . $s5 ?></option>
+					<option value="5"<?php selected($http_server, 5) ?>>Other webserver + CGI/FastCGI<?php echo $s5 ?></option>
+					<option value="7"<?php selected($http_server, 7) ?>>Other webserver + HHVM<?php echo $s7 ?></option>
 				</select>&nbsp;&nbsp;&nbsp;<span class="description"><a class="links" href="javascript:popup('?page=NinjaFirewall&nfw_act=99',700,500,0);">view PHPINFO</a></span>
+				<?php
+				if ($http_server == 7) {
+					echo '<p id="hhvm">';
+				} else {
+					echo '<p id="hhvm" style="display:none;">';
+				}
+				?>
+				<a href="http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/"><?php _e('Please check our blog</a> if you want to install NinjaFirewall on HHVM.', 'ninjafirewall') ?></p>
 			</td>
 		</tr>
 
@@ -331,8 +376,8 @@ function nfw_presave($err) {
 			$php_ini_type = 3;
 		}
 
-		if ($http_server == 1) {
-			// Obviously, we don't need PHP INI if the server is running Apache/mod_php5 :
+		if ($http_server == 1 || $http_server == 7) {
+			// We don't need PHP INI if the server is running Apache/mod_php5 or HHVM :
 			echo '<tr id="trini" style="display:none;">';
 		} else {
 			echo '<tr id="trini">';
@@ -372,18 +417,21 @@ function nfw_integration($err) {
 	// 3: Nginx
 	// 4: Litespeed (either LSAPI or Apache-style configuration directives (php_value)
 	// 5: Other + CGI/FastCGI
-	// 6: Apache + shPHP
-	if ( empty($_POST['http_server']) || ! preg_match('/^[1-6]$/', $_POST['http_server']) ) {
+	// 6: Apache + suPHP
+	// 7: Other + HHVM
+	if ( empty($_POST['http_server']) || ! preg_match('/^[1-7]$/', $_POST['http_server']) ) {
 		nfw_presave( __('select your HTTP server and PHP SAPI.', 'ninjafirewall') );
 		return;
 	}
 
-	// We must have a PHP INI type, except if the server is running Apache/mod_php5:
-	if ($_POST['http_server'] != 1) {
+	// We must have a PHP INI type, except if the server is running Apache/mod_php5 or HHVM:
+	if ( preg_match('/^[2-6]$/', $_POST['http_server']) ) {
 		if ( empty($_POST['php_ini_type']) || ! preg_match('/^[1-3]$/', $_POST['php_ini_type']) ) {
 			nfw_presave( __('select the PHP initialization file supported by your server.', 'ninjafirewall') );
 			return;
 		}
+	} else {
+		$_POST['php_ini_type'] = 0;
 	}
 
 	nfw_ini_data();
@@ -443,15 +491,20 @@ function nfw_integration($err) {
 	}
 	?>
 	<h3>Firewall Integration</h3>
-	<p>In order to hook and protect all PHP files, NinjaFirewall needs to add some specific directives to your <?php echo $directives ?> located inside WordPress root directory. <?php echo $t1 ?> will have to be created or, <?php echo $t2 ?>, to be edited. If your WordPress root directory is writable, I can make those changes for you.</p>
+	<?php
+	// Skip that section if we are running with HHVM:
+	if ($_SESSION['http_server'] != 7) {
+		?>
+		<p>In order to hook and protect all PHP files, NinjaFirewall needs to add some specific directives to your <?php echo $directives ?> located inside WordPress root directory. <?php echo $t1 ?> will have to be created or, <?php echo $t2 ?>, to be edited. If your WordPress root directory is writable, I can make those changes for you.</p>
 
-	<li>Checking if WordPress root directory is writable&nbsp;: <strong><?php
-	if ( $_SESSION['abspath_writable']) {
-		echo '<font color="green">YES</font>';
-	} else {
-		echo '<font color="red">NO</font>';
+		<li>Checking if WordPress root directory is writable&nbsp;: <strong><?php
+		if ( $_SESSION['abspath_writable']) {
+			echo '<font color="green">YES</font>';
+		} else {
+			echo '<font color="red">NO</font>';
+		}
+		echo '</strong></li><br />';
 	}
-	echo '</strong></li><br />';
 
 	$fdata = $height = '';
 
@@ -535,6 +588,14 @@ function nfw_integration($err) {
 			echo '<img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) .'" border="0" height="16" width="16">&nbsp;' . $not_writable .'<br />';
 		}
 
+	// HHVM
+	} elseif ($_SESSION['http_server'] == 7) {
+		?>
+		<li>Add the following code to your <code>/etc/hhvm/php.ini</code> file, and restart HHVM afterwards:</li>
+		<pre style="background-color:#FFF;border:1px solid #ccc;margin:0px;padding:6px;overflow:auto;height:70px;"><font color="red"><?php echo PHPINI_DATA ?></font></pre>
+		<br />
+		<?php
+
 	// Other servers (nginx etc) :
 	} else {
 
@@ -596,16 +657,25 @@ function nfw_integration($err) {
 
 	echo '<br /><form method="post" name="integration_form">';
 
-	$chg_str1 = __('If one day you wanted to uninstall NinjaFirewall, you would need to manually undo your modifications <u>before uninstalling it</u>.', 'ninjafirewall');
-	$chg_str2 = __('Please make those changes, then click on button below.', 'ninjafirewall');
-	if (! empty($_SESSION['abspath_writable']) ) {
-		// We offer to make the changes, or to let the user handle that (could be
-		// useful if the admin wants to use a PHP INI or .htaccess in another folder) :
-		echo '<p><label><input type="radio" name="makechange" onClick="diy_chg(this.value)" value="nfw" checked="checked">Let NinjaFirewall make the above changes (recommended).</label></p>
-		<p><label><input type="radio" name="makechange" onClick="diy_chg(this.value)" value="usr">I want to make the changes myself.</label></p>
-		<p id ="diy" style="display:none;"><font color="red">'. $chg_str1 .'</font><br />' . $chg_str2 . '</p>';
+	// Skip that section if we are running with HHVM:
+	if ($_SESSION['http_server'] != 7) {
+		$chg_str1 = __('If one day you wanted to uninstall NinjaFirewall, you would need to manually undo your modifications <u>before uninstalling it</u>.', 'ninjafirewall');
+		$chg_str2 = __('Please make those changes, then click on button below.', 'ninjafirewall');
+		if (! empty($_SESSION['abspath_writable']) ) {
+			// We offer to make the changes, or to let the user handle that (could be
+			// useful if the admin wants to use a PHP INI or .htaccess in another folder) :
+			echo '<p><label><input type="radio" name="makechange" onClick="diy_chg(this.value)" value="nfw" checked="checked">Let NinjaFirewall make the above changes (recommended).</label></p>
+			<p><label><input type="radio" name="makechange" onClick="diy_chg(this.value)" value="usr">I want to make the changes myself.</label></p>
+			<p id ="diy" style="display:none;"><font color="red">'. $chg_str1 .'</font><br />' . $chg_str2 . '</p>';
+		} else {
+			echo '<p style="font-weight:bold">'. $chg_str2 .'</p>';
+		}
 	} else {
-		echo '<p style="font-weight:bold">'. $chg_str2 .'</p>';
+		// Unused but usefull...:
+		$_SESSION['php_ini_type'] = 1;
+		echo '<input type="hidden" name="makechange" value="usr">
+		<a href="http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/">' . __('Please check our blog if you want to install NinjaFirewall on HHVM.', 'ninjafirewall') . '</a>
+		<br />';
 	}
 	?>
 	<br />
@@ -625,14 +695,14 @@ function nfw_postsave() {
 
 	if ( @$_POST['makechange'] != 'usr' && @$_POST['makechange'] != 'nfw' ) {
 		$err =  __('you must select how to make changes to your files.', 'ninjafirewall');
-INTEGRATION:
+NFW_INTEGRATION:
 		$_POST['abspath']      = $_SESSION['abspath'];
 		$_POST['http_server']  = $_SESSION['http_server'];
 		$_POST['php_ini_type'] = $_SESSION['php_ini_type'];
 		nfw_integration($err);
 		return;
 	}
-	if ( empty($_SESSION['http_server']) || ! preg_match('/^[1-6]$/', $_SESSION['http_server']) ) {
+	if ( empty($_SESSION['http_server']) || ! preg_match('/^[1-7]$/', $_SESSION['http_server']) ) {
 		$_POST['abspath'] = $_SESSION['abspath'];
 		nfw_presave( __('select your HTTP server and PHP SAPI.', 'ninjafirewall') );
 		return;
@@ -652,11 +722,31 @@ INTEGRATION:
 
 	if ( empty($_SESSION['abspath_writable']) ) {
 		$err = __('your WordPress root directory is not writable, I cannot make those changes for you.', 'ninjafirewall');
-		goto INTEGRATION;
+		goto NFW_INTEGRATION;
 		exit;
 	}
 
 	nfw_ini_data();
+
+	if ( empty($_SESSION['email_install']) ) {
+		// We send an email to the admin (or super admin) with some details
+		// about how to undo the changes if the site crashed after applying
+		// those changes :
+		$recipient = get_option('admin_email');
+		$subject = '[NinjaFirewall] ' . __('Installation & Troubleshooting Guide', NFI18N);
+		$message = __('Hi,', NFI18N) . "\n\n";
+		$message.= __('This is NinjaFirewall\'s installer. Below are some info and links that could be helpful if you were having problems installing NinajFirewall:', NFI18N) . "\n\n";
+		$message.= "------------------------------------------------------------------------\n\n";
+		$message.= __('You are locked out of your site, blocked by NinjaFirewall or WordPress crashed right after installing NinjaFirewall? Follow this link:', NFI18N) . "\n   http://ninjafirewall.com/wordpress/help.php#lockedout\n\n";
+		$message.= "------------------------------------------------------------------------\n\n";
+		$message.= __('NinjaFirewall returns a "firewall is not loaded" error message? Follow this link:', NFI18N) . "\n   http://ninjafirewall.com/wordpress/help.php#troubleshooting\n\n";
+		$message.= "------------------------------------------------------------------------\n\n";
+		$message.= __('You can also check our FAQ and Installation Help:', NFI18N) . ' http://ninjafirewall.com/wordpress/help.php' . "\n";
+		$message.= __('The WordPress support forum:', NFI18N) . ' http://wordpress.org/support/plugin/ninjafirewall' . "\n\n";
+		$message.= 'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n";
+		wp_mail( $recipient, $subject, $message );
+		$_SESSION['email_install'] = 1;
+	}
 
 	$bakup_file = time();
 
@@ -668,7 +758,7 @@ INTEGRATION:
 		if ( file_exists($_SESSION['abspath'] . '.htaccess') ) {
 			if (! is_writable($_SESSION['abspath'] . '.htaccess') ) {
 				$err = sprintf(__('cannot write to <code>%s</code>, it is read-only.', 'ninjafirewall'), $_SESSION['abspath'] . '.htaccess');
-				goto INTEGRATION;
+				goto NFW_INTEGRATION;
 				exit;
 			}
 			$fdata = file_get_contents($_SESSION['abspath'] . '.htaccess');
@@ -697,6 +787,7 @@ INTEGRATION:
 	// Non-Apache HTTP servers: create/modify PHP INI
 	if ($_SESSION['http_server'] != 1) {
 		$fdata = '';
+		$ini_array = array('php.ini', '.user.ini','php5.ini');
 
 		if ($_SESSION['php_ini_type'] == 1) {
 			$php_file = 'php.ini';
@@ -709,10 +800,11 @@ INTEGRATION:
 		if ( file_exists($_SESSION['abspath'] . $php_file) ) {
 			if (! is_writable($_SESSION['abspath'] . $php_file) ) {
 				$err = sprintf(__('cannot write to <code>%s</code>, it is read-only.', 'ninjafirewall'), $_SESSION['abspath'] . $php_file);
-				goto INTEGRATION;
+				goto NFW_INTEGRATION;
 				exit;
 			}
 			$fdata = file_get_contents($_SESSION['abspath'] . $php_file);
+			$fdata = preg_replace( '/auto_prepend_file/' , ";auto_prepend_file", $fdata);
 			$fdata = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $fdata);
 			// Backup the current .htaccess :
 			copy( $_SESSION['abspath'] . $php_file,	$_SESSION['abspath'] . $php_file . '.ninja' . $bakup_file );
@@ -722,6 +814,19 @@ INTEGRATION:
 		@chmod( $_SESSION['abspath'] . $php_file, 0644 );
 		// Save the htaccess path for the uninstaller :
 		$nfw_install['phpini'] = $_SESSION['abspath'] . $php_file;
+
+		// Look for other INI files, edit them to remove any NinjaFirewall instructions:
+		foreach ( $ini_array as $ini_file ) {
+			if ($ini_file == $php_file) { continue; }
+			if ( file_exists($_SESSION['abspath'] . $ini_file) ) {
+				if ( is_writable($_SESSION['abspath'] . $ini_file) ) {
+					$ini_data = file_get_contents($_SESSION['abspath'] . $ini_file);
+					$ini_data = preg_replace( '/auto_prepend_file/' , ";auto_prepend_file", $ini_data);
+					$ini_data = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $ini_data);
+					file_put_contents($_SESSION['abspath'] . $ini_file, $ini_data );
+				}
+			}
+		}
 	}
 	update_option( 'nfw_install', $nfw_install);
 
@@ -731,7 +836,16 @@ INTEGRATION:
 	<h2>NinjaFirewall (WP edition)</h2>
 	<br />
 	<br />
-	<div class="updated settings-error"><p>Your configuration was saved.</p></div>
+	<div class="updated settings-error"><p>Your configuration was saved.
+	<?php
+	if (! empty($recipient) ) {
+	?>
+		<br />
+		A "Installation & Troubleshooting Guide" email was sent to <code><?php echo $recipient ?></code>.
+	<?php
+	}
+	?>
+	</p></div>
 	Please click the button below to test if the firewall integration was successful.
 	<form method="POST">
 		<p><input type="submit" class="button-primary" value="Test Firewall &#187;" /></p>
@@ -759,7 +873,7 @@ function nfw_firewalltest() {
 	<br />
 	<br />
 	<?php
-	if (! defined('NFW_STATUS') ) {
+	if (! defined('NFW_STATUS') || NFW_STATUS != 20 ) {
 		// The firewall is not loaded :
 		echo '<div class="error settings-error"><p><strong>Error :</strong> the firewall is not loaded.</p></div>
 		<h3>Suggestions:</h3>
@@ -800,6 +914,7 @@ function nfw_firewalltest() {
 		<input type="hidden" name="nfw_firstrun" value="1" />
 		</form>
 		</ol>
+		<h3>Need help ? Check our blog: <a href="http://blog.nintechnet.com/troubleshoot-ninjafirewall-installation-problems/" target="_blank">Troubleshoot NinjaFirewall installation problems</a>.</h3>
 </div>';
 	}
 }
@@ -858,11 +973,11 @@ function nfw_default_conf() {
 		'php_path_t'		=> 1,
 		'php_path_i'		=> 1,
 		'wp_dir'				=> '/wp-admin/(?:css|images|includes|js)/|' .
-									'/wp-includes/(?:(?:css|images|js|theme-compat)/|[^/]+\.php)|' .
+									'/wp-includes/(?:(?:css|images|js(?!/tinymce/wp-tinymce\.php)|theme-compat)/|[^/]+\.php)|' .
 									'/'. basename(WP_CONTENT_DIR) .'/uploads/',
 		'no_post_themes'	=> 0,
 		'force_ssl'			=> 0,
-		'disallow_edit'	=> 1,
+		'disallow_edit'	=> 0,
 		'disallow_mods'	=> 0,
 		'wl_admin'			=> 1,
 		// v1.0.4
@@ -900,6 +1015,7 @@ function nfw_default_conf() {
 		// v1.2.1 :
 		'fg_enable'			=>	1,
 		'fg_mtime'			=>	10,
+		'fg_exclude'		=>	'',
 		// v1.3.1 :
 		'response_headers'=>	'000000',
 	);
@@ -936,7 +1052,7 @@ function nfw_default_conf() {
 function nfw_default_rules() {
 
 	return $data = <<<'EOT'
-a:99:{i:1;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:24:"(?:\.{2}[\\/]{1,4}){2}\b";s:3:"why";s:19:"Directory traversal";s:5:"level";i:3;s:2:"on";i:1;}i:3;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:34:"[.\\/]/(?:proc/self/|etc/passwd)\b";s:3:"why";s:20:"Local file inclusion";s:5:"level";i:2;s:2:"on";i:1;}i:50;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:31:"^(?i:https?|ftp)://.+/[^&/]+\?$";s:3:"why";s:21:"Remote file inclusion";s:5:"level";i:3;s:2:"on";i:1;}i:51;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:49:"^(?i:https?)://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}";s:3:"why";s:30:"Remote file inclusion (URL IP)";s:5:"level";i:2;s:2:"on";i:1;}i:52;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:61:"\b(?i:include|require)(?i:_once)?\s*\([^)]*(?i:https?|ftp)://";s:3:"why";s:43:"Remote file inclusion (via require/include)";s:5:"level";i:3;s:2:"on";i:1;}i:53;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:33:"^(?i:ftp)://(?:.+?:.+?\@)?[^/]+/.";s:3:"why";s:27:"Remote file inclusion (FTP)";s:5:"level";i:2;s:2:"on";i:1;}i:100;a:5:{s:5:"where";s:56:"GET|POST|REQUEST_URI|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:85:"<\s*/?(?i:applet|div|embed|i?frame(?:set)?|meta|marquee|object|script|textarea)\b.*?>";s:3:"why";s:14:"XSS (HTML tag)";s:5:"level";i:2;s:2:"on";i:1;}i:101;a:5:{s:5:"where";s:39:"GET|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:67:"\W(?:background(-image)?|-moz-binding)\s*:[^}]*?\burl\s*\([^)]+?://";s:3:"why";s:27:"XSS (remote background URI)";s:5:"level";i:3;s:2:"on";i:1;}i:102;a:5:{s:5:"where";s:39:"GET|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:80:"(?i:<[^>]+?(?:data|href|src)\s*=\s*['\"]?(?:https?|data|php|(?:java|vb)script):)";s:3:"why";s:16:"XSS (remote URI)";s:5:"level";i:3;s:2:"on";i:1;}i:103;a:5:{s:5:"where";s:39:"GET|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:157:"\b(?i:on(?i:abort|blur|(?:dbl)?click|dragdrop|error|focus|key(?:up|down|press)|(?:un)?load|mouse(?:down|out|over|up)|move|res(?:et|ize)|select|submit))\b\s*=";s:3:"why";s:16:"XSS (HTML event)";s:5:"level";i:2;s:2:"on";i:1;}i:104;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:85:"[:=\]]\s*['\"]?(?:alert|confirm|eval|expression|prompt|String\.fromCharCode|url)\s*\(";s:3:"why";s:17:"XSS (JS function)";s:5:"level";i:3;s:2:"on";i:1;}i:105;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:56:"\bdocument\.(?:body|cookie|location|open|write(?:ln)?)\b";s:3:"why";s:21:"XSS (document object)";s:5:"level";i:2;s:2:"on";i:1;}i:106;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:30:"\blocation\.(?:href|replace)\b";s:3:"why";s:21:"XSS (location object)";s:5:"level";i:2;s:2:"on";i:1;}i:107;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:29:"\bwindow\.(?:open|location)\b";s:3:"why";s:19:"XSS (window object)";s:5:"level";i:2;s:2:"on";i:1;}i:108;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:33:"(?i:style)\s*=\s*['\"]?[^'\"]+/\*";s:3:"why";s:22:"XSS (obfuscated style)";s:5:"level";i:3;s:2:"on";i:1;}i:109;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:4:"^/?>";s:3:"why";s:31:"XSS (leading greater-than sign)";s:5:"level";i:2;s:2:"on";i:1;}i:110;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:18:"(?:%%\d\d%\d\d){5}";s:3:"why";s:19:"XSS (double nibble)";s:5:"level";i:2;s:2:"on";i:1;}i:111;a:5:{s:5:"where";s:56:"GET|POST|REQUEST_URI|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:48:"(\+|\%2B)A(Dw|ACIAPgA8)-.+?(\+|\%2B)AD4(APAAi)?-";s:3:"why";s:11:"XSS (UTF-7)";s:5:"level";i:2;s:2:"on";i:1;}i:150;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:59:"[\n\r]\s*\b(?:(?:reply-)?to|b?cc|content-[td]\w)\b\s*:.*?\@";s:3:"why";s:21:"Mail header injection";s:5:"level";i:2;s:2:"on";i:1;}i:153;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:56:"<!--#(?:config|echo|exec|flastmod|fsize|include)\b.+?-->";s:3:"why";s:21:"SSI command injection";s:5:"level";i:2;s:2:"on";i:1;}i:154;a:5:{s:5:"where";s:35:"COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:31:"(?s:<\?.+)|#!/(?:usr|bin)/.+?\s";s:3:"why";s:14:"Code Injection";s:5:"level";i:3;s:2:"on";i:1;}i:155;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:360:"(?s:<\?(?![Xx][Mm][Ll]).*?(?:\$_?(?:COOKIE|ENV|FILES|GLOBALS|(?:GE|POS|REQUES)T|SE(RVER|SSION))\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|curl_exec|eval|file(?:_get_contents)?|fsockopen|gzinflate|move_uploaded_file|passthru|preg_replace|phpinfo|stripslashes|strrev|system|(?:shell_)?exec)\s*\()|\x60.+?\x60)|#!/(?:usr|bin)/.+?\s|\W\$\{\s*['"]\w+['"]";s:3:"why";s:14:"Code Injection";s:5:"level";i:3;s:2:"on";i:1;}i:156;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:115:"\b(?i:eval)\s*\(\s*(?i:base64_decode|exec|file_get_contents|gzinflate|passthru|shell_exec|stripslashes|system)\s*\(";s:3:"why";s:17:"Code Injection #2";s:5:"level";i:2;s:2:"on";i:1;}i:157;a:5:{s:5:"where";s:8:"GET:fltr";s:4:"what";s:1:";";s:3:"why";s:25:"Code injection (phpThumb)";s:5:"level";i:3;s:2:"on";i:1;}i:158;a:5:{s:5:"where";s:17:"GET:phpThumbDebug";s:4:"what";s:1:".";s:3:"why";s:36:"phpThumb debug mode (potential SSRF)";s:5:"level";i:3;s:2:"on";i:1;}i:159;a:5:{s:5:"where";s:7:"GET:src";s:4:"what";s:2:"\$";s:3:"why";s:46:"TimThumb WebShot Remote Code Execution (0-day)";s:5:"level";i:3;s:2:"on";i:1;}i:160;a:5:{s:5:"where";s:83:"GET|HTTP_HOST|SERVER_PROTOCOL|HTTP_USER_AGENT|QUERY_STRING|HTTP_REFERER|HTTP_COOKIE";s:4:"what";s:16:"^\s*\(\s*\)\s*\{";s:3:"why";s:40:"Shellshock vulnerability (CVE-2014-6271)";s:5:"level";i:3;s:2:"on";i:1;}i:200;a:5:{s:5:"where";s:15:"GET|POST|COOKIE";s:4:"what";s:44:"^(?i:admin(?:istrator)?)['\"].*?(?:--|#|/\*)";s:3:"why";s:35:"SQL injection (admin login attempt)";s:5:"level";i:3;s:2:"on";i:1;}i:201;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:72:"\b(?i:[-\w]+@(?:[-a-z0-9]+\.)+[a-z]{2,8}'.{0,20}\band\b.{0,20}=[\s/*]*')";s:3:"why";s:34:"SQL injection (user login attempt)";s:5:"level";i:3;s:2:"on";i:1;}i:202;a:5:{s:5:"where";s:26:"GET:username|POST:username";s:4:"what";s:20:"[#'\"=(),<>/\\*\x60]";s:3:"why";s:24:"SQL injection (username)";s:5:"level";i:3;s:2:"on";i:1;}i:204;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:60:"\b(?i:and|or|having)\b.+?['"]?\b(\w+)\b['"]?\s*=\s*['"]?\1\b";s:3:"why";s:30:"SQL injection (equal operator)";s:5:"level";i:3;s:2:"on";i:1;}i:205;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:67:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bfrom\b.+?information_schema\b)";s:3:"why";s:34:"SQL injection (information_schema)";s:5:"level";i:3;s:2:"on";i:1;}i:206;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:53:"/\*\*/(?i:and|from|limit|or|select|union|where)/\*\*/";s:3:"why";s:35:"SQL injection (comment obfuscation)";s:5:"level";i:3;s:2:"on";i:1;}i:207;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:30:"^[-\d';].+\w.+(?:--|#|/\*)\s*$";s:3:"why";s:32:"SQL injection (trailing comment)";s:5:"level";i:3;s:2:"on";i:1;}i:208;a:5:{s:5:"where";s:35:"COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:162:"(?i:(?:\b(?:and|or|union)\b|;|').*?\b(?:alter|create|delete|drop|grant|information_schema|insert|load|rename|select|truncate|update)\b.+?\b(?:from|into|on|set)\b)";s:3:"why";s:13:"SQL injection";s:5:"level";i:1;s:2:"on";i:1;}i:209;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:227:"(?i:(?:\b(?:and|or|union)\b|;|').*?(?:\ball\b.+?)?\bselect\b.+?\b(?:and\b|from\b|limit\b|where\b|\@?\@?version\b|(?:user|benchmark|char|count|database|(?:group_)?concat(?:_ws)?|floor|md5|rand|substring|version)\s*\(|--|/\*|#$))";s:3:"why";s:22:"SQL injection (select)";s:5:"level";i:3;s:2:"on";i:1;}i:210;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:98:"(?i:(?:\b(?:and|or|union)\b|;|').*?(?:\ball\b.+?)?\binsert\b.+?\binto\b.*?\([^)]+\).+?values.*?\()";s:3:"why";s:22:"SQL injection (insert)";s:5:"level";i:3;s:2:"on";i:1;}i:211;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:60:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bupdate\b.+?\bset\b.+?=)";s:3:"why";s:22:"SQL injection (update)";s:5:"level";i:3;s:2:"on";i:1;}i:212;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:62:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bgrant\b.+?\bon\b.+?to\s+)";s:3:"why";s:21:"SQL injection (grant)";s:5:"level";i:3;s:2:"on";i:1;}i:213;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:59:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bdelete\b.+?\bfrom\b.+)";s:3:"why";s:22:"SQL injection (delete)";s:5:"level";i:3;s:2:"on";i:1;}i:214;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:130:"(?i:(?:\b(?:and|or|union)\b|;|').*?\b(alter|create|drop)\b.+?(?:DATABASE|FUNCTION|INDEX|PROCEDURE|SCHEMA|TABLE|TRIGGER|VIEW)\b.+?)";s:3:"why";s:33:"SQL injection (alter/create/drop)";s:5:"level";i:3;s:2:"on";i:1;}i:215;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:67:"(?i:(?:\b(?:and|or|union)\b|;|').*?\b(?:rename|truncate)\b.+?table)";s:3:"why";s:31:"SQL injection (rename/truncate)";s:5:"level";i:3;s:2:"on";i:1;}i:216;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:112:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bselect\b.+?\b(?:into\b.+?(?:(?:dump|out)file|\@['\"\x60]?\w+)|load_file))\b";s:3:"why";s:37:"SQL injection (select into/load_file)";s:5:"level";i:3;s:2:"on";i:1;}i:217;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:77:"(?i:(?:\b(?:and|or|union)\b|;|').*?load\b.+?\bdata\b.+?\binfile\b.+?\binto)\b";s:3:"why";s:20:"SQL injection (load)";s:5:"level";i:3;s:2:"on";i:1;}i:218;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:29:"\b(?i:waitfor\b\W*?\bdelay)\b";s:3:"why";s:26:"SQL injection (time-based)";s:5:"level";i:2;s:2:"on";i:1;}i:219;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:39:"(?i:\bbenchmark\s*\(\d+\s*,\s*md5\s*\()";s:3:"why";s:25:"SQL injection (benchmark)";s:5:"level";i:2;s:2:"on";i:1;}i:250;a:5:{s:5:"where";s:9:"HTTP_HOST";s:4:"what";s:20:"[^-a-zA-Z0-9._:\[\]]";s:3:"why";s:21:"Malformed Host header";s:5:"level";i:2;s:2:"on";i:1;}i:300;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:6:"^['\"]";s:3:"why";s:13:"Leading quote";s:5:"level";i:2;s:2:"on";i:1;}i:301;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:11:"^[\x09\x20]";s:3:"why";s:13:"Leading space";s:5:"level";i:1;s:2:"on";i:1;}i:302;a:5:{s:5:"where";s:22:"QUERY_STRING|PATH_INFO";s:4:"what";s:44:"\bHTTP_RAW_POST_DATA|HTTP_(?:POS|GE)T_VARS\b";s:3:"why";s:12:"PHP variable";s:5:"level";i:2;s:2:"on";i:1;}i:303;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:12:"phpinfo\.php";s:3:"why";s:29:"Attempt to access phpinfo.php";s:5:"level";i:1;s:2:"on";i:1;}i:304;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:30:"/scripts/(?:setup|signon)\.php";s:3:"why";s:26:"phpMyAdmin hacking attempt";s:5:"level";i:2;s:2:"on";i:1;}i:305;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:24:"\.ph(?:p[2-6]?|tml)\..+?";s:3:"why";s:23:"PHP handler obfuscation";s:5:"level";i:3;s:2:"on";i:1;}i:309;a:5:{s:5:"where";s:58:"QUERY_STRING|PATH_INFO|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:141:"\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\W\$\{\s*['"]\w+['"]";s:3:"why";s:24:"PHP predefined variables";s:5:"level";i:2;s:2:"on";i:1;}i:310;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:118:"(?i:(?:conf(?:ig(?:ur(?:e|ation)|\.inc|_global)?)?)|settings?(?:\.?inc)?|\b(?:db(?:connect)?|connect)(?:\.?inc)?)\.php";s:3:"why";s:30:"Access to a configuration file";s:5:"level";i:2;s:2:"on";i:1;}i:311;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:40:"/tiny_?mce/plugins/spellchecker/classes/";s:3:"why";s:23:"TinyMCE path disclosure";s:5:"level";i:2;s:2:"on";i:1;}i:312;a:5:{s:5:"where";s:20:"HTTP_X_FORWARDED_FOR";s:4:"what";s:24:"[^.0-9a-fA-F:\x20,unkow]";s:3:"why";s:29:"Non-compliant X_FORWARDED_FOR";s:5:"level";i:1;s:2:"on";i:1;}i:313;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:14:"^-[bcndfiswzT]";s:3:"why";s:31:"PHP-CGI exploit (CVE-2012-1823)";s:5:"level";i:3;s:2:"on";i:1;}i:314;a:5:{s:5:"where";s:12:"HTTP_REFERER";s:4:"what";s:58:"^http://(?:semalt|make-money-online|buttons-for-website)\.";s:3:"why";s:13:"Referrer spam";s:5:"level";i:1;s:2:"on";i:1;}i:350;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:186:"(?i:bypass|c99(?:madShell|ud)?|c100|cookie_(?:usage|setup)|diagnostics|dump|endix|gifimg|goog[l1]e.+[\da-f]{10}|imageth|imlog|r5[47]|safe0ver|sniper|(?:jpe?g|gif|png))\.ph(?:p[2-6]?|tml)";s:3:"why";s:14:"Shell/backdoor";s:5:"level";i:3;s:2:"on";i:1;}i:351;a:5:{s:5:"where";s:28:"GET:nixpasswd|POST:nixpasswd";s:4:"what";s:3:"^.?";s:3:"why";s:26:"Shell/backdoor (nixpasswd)";s:5:"level";i:3;s:2:"on";i:1;}i:352;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:16:"\bact=img&img=\w";s:3:"why";s:20:"Shell/backdoor (img)";s:5:"level";i:3;s:2:"on";i:1;}i:353;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:15:"\bc=img&name=\w";s:3:"why";s:21:"Shell/backdoor (name)";s:5:"level";i:3;s:2:"on";i:1;}i:354;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:36:"^image=(?:arrow|file|folder|smiley)$";s:3:"why";s:22:"Shell/backdoor (image)";s:5:"level";i:3;s:2:"on";i:1;}i:355;a:5:{s:5:"where";s:6:"COOKIE";s:4:"what";s:21:"\buname=.+?;\ssysctl=";s:3:"why";s:23:"Shell/backdoor (cookie)";s:5:"level";i:3;s:2:"on";i:1;}i:356;a:5:{s:5:"where";s:30:"POST:sql_passwd|GET:sql_passwd";s:4:"what";s:1:".";s:3:"why";s:27:"Shell/backdoor (sql_passwd)";s:5:"level";i:3;s:2:"on";i:1;}i:357;a:5:{s:5:"where";s:12:"POST:nowpath";s:4:"what";s:3:"^.?";s:3:"why";s:24:"Shell/backdoor (nowpath)";s:5:"level";i:3;s:2:"on";i:1;}i:358;a:5:{s:5:"where";s:18:"POST:view_writable";s:4:"what";s:3:"^.?";s:3:"why";s:30:"Shell/backdoor (view_writable)";s:5:"level";i:3;s:2:"on";i:1;}i:359;a:5:{s:5:"where";s:6:"COOKIE";s:4:"what";s:13:"\bphpspypass=";s:3:"why";s:23:"Shell/backdoor (phpspy)";s:5:"level";i:3;s:2:"on";i:1;}i:360;a:5:{s:5:"where";s:6:"POST:a";s:4:"what";s:90:"^(?:Bruteforce|Console|Files(?:Man|Tools)|Network|Php|SecInfo|SelfRemove|Sql|StringTools)$";s:3:"why";s:18:"Shell/backdoor (a)";s:5:"level";i:3;s:2:"on";i:1;}i:361;a:5:{s:5:"where";s:12:"POST:nst_cmd";s:4:"what";s:2:"^.";s:3:"why";s:24:"Shell/backdoor (nstview)";s:5:"level";i:3;s:2:"on";i:1;}i:362;a:5:{s:5:"where";s:8:"POST:cmd";s:4:"what";s:206:"^(?:c(?:h_|URL)|db_query|echo\s\\.*|(?:edit|download|save)_file|find(?:_text|\s.+)|ftp_(?:brute|file_(?:down|up))|mail_file|mk|mysql(?:b|_dump)|php_eval|ps\s.*|search_text|safe_dir|sym[1-2]|test[1-8]|zend)$";s:3:"why";s:20:"Shell/backdoor (cmd)";s:5:"level";i:2;s:2:"on";i:1;}i:363;a:5:{s:5:"where";s:5:"GET:p";s:4:"what";s:65:"^(?:chmod|cmd|edit|eval|delete|headers|md5|mysql|phpinfo|rename)$";s:3:"why";s:18:"Shell/backdoor (p)";s:5:"level";i:3;s:2:"on";i:1;}i:364;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:139:"^act=(?:bind|cmd|encoder|eval|feedback|ftpquickbrute|gofile|ls|mkdir|mkfile|processes|ps_aux|search|security|sql|tools|update|upload)&d=%2F";s:3:"why";s:20:"Shell/backdoor (act)";s:5:"level";i:3;s:2:"on";i:1;}i:2;a:5:{s:5:"where";s:62:"GET|POST|COOKIE|HTTP_USER_AGENT|REQUEST_URI|PHP_SELF|PATH_INFO";s:4:"what";s:8:"%00|\x00";s:3:"why";s:32:"ASCII character 0x00 (NULL byte)";s:5:"level";i:3;s:2:"on";i:1;}i:500;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:20:"[\x01-\x08\x0e-\x1f]";s:3:"why";s:46:"ASCII control characters (1 to 8 and 14 to 31)";s:5:"level";i:2;s:2:"on";i:1;}i:510;a:5:{s:5:"where";s:20:"GET|POST|REQUEST_URI";s:4:"what";s:11:"/nothingyet";s:3:"why";s:45:"DOCUMENT_ROOT server variable in HTTP request";s:5:"level";i:2;s:2:"on";i:1;}i:520;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:40:"\b(?i:php://[a-z].+?|\bdata:.*?;base64,)";s:3:"why";s:21:"PHP built-in wrappers";s:5:"level";i:3;s:2:"on";i:1;}i:531;a:5:{s:5:"where";s:15:"HTTP_USER_AGENT";s:4:"what";s:323:"(?i:acunetix|analyzer|AhrefsBot|backdoor|bandit|blackwidow|BOT for JCE|collect|core-project|crawler|dts agent|emailmagnet|ex(ploit|tract)|flood|grabber|harvest|httrack|havij|hunter|indy library|inspect|LoadTimeBot|Microsoft URL Control|Miami Style|mj12bot|morfeus|nessus|pmafind|scanner|siphon|spbot|sqlmap|survey|teleport)";s:3:"why";s:24:"Suspicious bots/scanners";s:5:"level";i:1;s:2:"on";i:1;}i:540;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:33:"^(?i:127\.0\.0\.1|localhost|::1)$";s:3:"why";s:32:"Localhost IP in GET/POST request";s:5:"level";i:2;s:2:"on";i:1;}i:1351;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:14:"wp-config\.php";s:3:"why";s:31:"Access to WP configuration file";s:5:"level";i:2;s:2:"on";i:1;}i:1352;a:5:{s:5:"where";s:24:"GET:ABSPATH|POST:ABSPATH";s:4:"what";s:2:"//";s:3:"why";s:42:"WordPress: Remote file inclusion (ABSPATH)";s:5:"level";i:3;s:2:"on";i:1;}i:1353;a:5:{s:5:"where";s:8:"POST:cs1";s:4:"what";s:2:"\D";s:3:"why";s:41:"WordPress: SQL injection (e-Commerce:cs1)";s:5:"level";i:3;s:2:"on";i:1;}i:1354;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:66:"\b(?:wp_(?:users|options)|nfw_(?:options|rules)|ninjawp_options)\b";s:3:"why";s:36:"WordPress: SQL injection (WP tables)";s:5:"level";i:2;s:2:"on";i:1;}i:1355;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:96:"/plugins/buddypress/bp-(?:blogs|xprofile/bp-xprofile-admin|themes/bp-default/members/index)\.php";s:3:"why";s:39:"WordPress: path disclosure (buddypress)";s:5:"level";i:2;s:2:"on";i:1;}i:1356;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:14:"ToolsPack\.php";s:3:"why";s:29:"WordPress: ToolsPack backdoor";s:5:"level";i:3;s:2:"on";i:1;}i:1357;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:31:"preview-shortcode-external\.php";s:3:"why";s:41:"WordPress: WooThemes WooFramework exploit";s:5:"level";i:3;s:2:"on";i:1;}i:1358;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:29:"/plugins/(?:index|hello)\.php";s:3:"why";s:46:"WordPress: unauthorised access to a PHP script";s:5:"level";i:2;s:2:"on";i:1;}i:1359;a:5:{s:5:"where";s:4:"POST";s:4:"what";s:48:"<!--(?:m(?:clude|func)|dynamic-cached-content)\b";s:3:"why";s:26:"WordPress: Dynamic content";s:5:"level";i:3;s:2:"on";i:1;}i:1360;a:5:{s:5:"where";s:16:"POST:acf_abspath";s:4:"what";s:1:".";s:3:"why";s:44:"WordPress: Advanced Custom Fields plugin RFI";s:5:"level";i:3;s:2:"on";i:1;}i:1361;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:78:"/wp-content/themes/(?:eCommerce|eShop|KidzStore|storefront)/upload/upload\.php";s:3:"why";s:31:"WordPress: Access to upload.php";s:5:"level";i:3;s:2:"on";i:1;}i:1362;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:85:"/wp-content/themes/OptimizePress/lib/admin/media-upload(?:-lncthumb|-sq_button)?\.php";s:3:"why";s:48:"WordPress: Access to OptimizePress upload script";s:5:"level";i:3;s:2:"on";i:1;}i:1363;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:15:"/uploadify\.php";s:3:"why";s:37:"WordPress: Access to Uploadify script";s:5:"level";i:3;s:2:"on";i:1;}i:1364;a:5:{s:5:"where";s:7:"GET:img";s:4:"what";s:6:"\.php$";s:3:"why";s:66:"WordPress: Revolution Slider vulnerability (local file disclosure)";s:5:"level";i:2;s:2:"on";i:1;}i:1365;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:20:"/code_generator\.php";s:3:"why";s:62:"WordPress: Gravity Forms vulnerability (arbitrary file upload)";s:5:"level";i:3;s:2:"on";i:1;}i:1366;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:22:"/wp-admin/install\.php";s:3:"why";s:40:"WordPress: Access to WP installer script";s:5:"level";i:2;s:2:"on";i:1;}i:1367;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:21:"/temp/update_extract/";s:3:"why";s:59:"WordPress: Revolution Slider potential shell upload exploit";s:5:"level";i:3;s:2:"on";i:1;}i:1368;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:14:"/dl-skin\.php$";s:3:"why";s:60:"WordPress: arbitrary file access vulnerability (dl-skin.php)";s:5:"level";i:3;s:2:"on";i:1;}i:1369;a:5:{s:5:"where";s:12:"POST:execute";s:4:"what";s:15:"[^wpdm_getlink]";s:3:"why";s:52:"WordPress: Download Manager remote command execution";s:5:"level";i:3;s:2:"on";i:1;}}
+a:112:{i:1;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:24:"(?:\.{2}[\\/]{1,4}){2}\b";s:3:"why";s:19:"Directory traversal";s:5:"level";i:3;s:2:"on";i:1;}i:3;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:34:"[.\\/]/(?:proc/self/|etc/passwd)\b";s:3:"why";s:20:"Local file inclusion";s:5:"level";i:2;s:2:"on";i:1;}i:50;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:31:"^(?i:https?|ftp)://.+/[^&/]+\?$";s:3:"why";s:21:"Remote file inclusion";s:5:"level";i:3;s:2:"on";i:1;}i:51;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:49:"^(?i:https?)://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}";s:3:"why";s:30:"Remote file inclusion (URL IP)";s:5:"level";i:2;s:2:"on";i:1;}i:52;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:61:"\b(?i:include|require)(?i:_once)?\s*\([^)]*(?i:https?|ftp)://";s:3:"why";s:43:"Remote file inclusion (via require/include)";s:5:"level";i:3;s:2:"on";i:1;}i:53;a:5:{s:5:"where";s:31:"GET|POST|COOKIE|HTTP_USER_AGENT";s:4:"what";s:33:"^(?i:ftp)://(?:.+?:.+?\@)?[^/]+/.";s:3:"why";s:27:"Remote file inclusion (FTP)";s:5:"level";i:2;s:2:"on";i:1;}i:100;a:5:{s:5:"where";s:56:"GET|POST|REQUEST_URI|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:85:"<\s*/?(?i:applet|div|embed|i?frame(?:set)?|meta|marquee|object|script|textarea)\b.*?>";s:3:"why";s:14:"XSS (HTML tag)";s:5:"level";i:2;s:2:"on";i:1;}i:101;a:5:{s:5:"where";s:39:"GET|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:67:"\W(?:background(-image)?|-moz-binding)\s*:[^}]*?\burl\s*\([^)]+?://";s:3:"why";s:27:"XSS (remote background URI)";s:5:"level";i:3;s:2:"on";i:1;}i:102;a:5:{s:5:"where";s:39:"GET|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:80:"(?i:<[^>]+?(?:data|href|src)\s*=\s*['\"]?(?:https?|data|php|(?:java|vb)script):)";s:3:"why";s:16:"XSS (remote URI)";s:5:"level";i:3;s:2:"on";i:1;}i:103;a:5:{s:5:"where";s:39:"GET|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:157:"\b(?i:on(?i:abort|blur|(?:dbl)?click|dragdrop|error|focus|key(?:up|down|press)|(?:un)?load|mouse(?:down|out|over|up)|move|res(?:et|ize)|select|submit))\b\s*=";s:3:"why";s:16:"XSS (HTML event)";s:5:"level";i:2;s:2:"on";i:1;}i:104;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:85:"[:=\]]\s*['\"]?(?:alert|confirm|eval|expression|prompt|String\.fromCharCode|url)\s*\(";s:3:"why";s:17:"XSS (JS function)";s:5:"level";i:3;s:2:"on";i:1;}i:105;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:56:"\bdocument\.(?:body|cookie|location|open|write(?:ln)?)\b";s:3:"why";s:21:"XSS (document object)";s:5:"level";i:2;s:2:"on";i:1;}i:106;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:30:"\blocation\.(?:href|replace)\b";s:3:"why";s:21:"XSS (location object)";s:5:"level";i:2;s:2:"on";i:1;}i:107;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:29:"\bwindow\.(?:open|location)\b";s:3:"why";s:19:"XSS (window object)";s:5:"level";i:2;s:2:"on";i:1;}i:108;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:33:"(?i:style)\s*=\s*['\"]?[^'\"]+/\*";s:3:"why";s:22:"XSS (obfuscated style)";s:5:"level";i:3;s:2:"on";i:1;}i:109;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:4:"^/?>";s:3:"why";s:31:"XSS (leading greater-than sign)";s:5:"level";i:2;s:2:"on";i:1;}i:110;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:18:"(?:%%\d\d%\d\d){5}";s:3:"why";s:19:"XSS (double nibble)";s:5:"level";i:2;s:2:"on";i:1;}i:111;a:5:{s:5:"where";s:56:"GET|POST|REQUEST_URI|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:48:"(\+|\%2B)A(Dw|ACIAPgA8)-.+?(\+|\%2B)AD4(APAAi)?-";s:3:"why";s:11:"XSS (UTF-7)";s:5:"level";i:2;s:2:"on";i:1;}i:150;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:59:"[\n\r]\s*\b(?:(?:reply-)?to|b?cc|content-[td]\w)\b\s*:.*?\@";s:3:"why";s:21:"Mail header injection";s:5:"level";i:2;s:2:"on";i:1;}i:153;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:56:"<!--#(?:config|echo|exec|flastmod|fsize|include)\b.+?-->";s:3:"why";s:21:"SSI command injection";s:5:"level";i:2;s:2:"on";i:1;}i:154;a:5:{s:5:"where";s:35:"COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:31:"(?s:<\?.+)|#!/(?:usr|bin)/.+?\s";s:3:"why";s:14:"Code injection";s:5:"level";i:3;s:2:"on";i:1;}i:155;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:360:"(?s:<\?(?![Xx][Mm][Ll]).*?(?:\$_?(?:COOKIE|ENV|FILES|GLOBALS|(?:GE|POS|REQUES)T|SE(RVER|SSION))\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|curl_exec|eval|file(?:_get_contents)?|fsockopen|gzinflate|move_uploaded_file|passthru|preg_replace|phpinfo|stripslashes|strrev|system|(?:shell_)?exec)\s*\()|\x60.+?\x60)|#!/(?:usr|bin)/.+?\s|\W\$\{\s*['"]\w+['"]";s:3:"why";s:14:"Code injection";s:5:"level";i:3;s:2:"on";i:1;}i:156;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:115:"\b(?i:eval)\s*\(\s*(?i:base64_decode|exec|file_get_contents|gzinflate|passthru|shell_exec|stripslashes|system)\s*\(";s:3:"why";s:17:"Code injection #2";s:5:"level";i:2;s:2:"on";i:1;}i:157;a:5:{s:5:"where";s:8:"GET:fltr";s:4:"what";s:1:";";s:3:"why";s:25:"Code injection (phpThumb)";s:5:"level";i:3;s:2:"on";i:1;}i:158;a:5:{s:5:"where";s:17:"GET:phpThumbDebug";s:4:"what";s:1:".";s:3:"why";s:36:"phpThumb debug mode (potential SSRF)";s:5:"level";i:3;s:2:"on";i:1;}i:159;a:5:{s:5:"where";s:7:"GET:src";s:4:"what";s:2:"\$";s:3:"why";s:46:"TimThumb WebShot Remote Code Execution (0-day)";s:5:"level";i:3;s:2:"on";i:1;}i:160;a:5:{s:5:"where";s:97:"GET|HTTP_HOST|SERVER_PROTOCOL|SERVER:HTTP_USER_AGENT|QUERY_STRING|SERVER:HTTP_REFERER|HTTP_COOKIE";s:4:"what";s:16:"^\s*\(\s*\)\s*\{";s:3:"why";s:40:"Shellshock vulnerability (CVE-2014-6271)";s:5:"level";i:3;s:2:"on";i:1;}i:161;a:5:{s:5:"where";s:19:"SERVER:HTTP_REFERER";s:4:"what";s:16:"\?a=\$stylevar\b";s:3:"why";s:37:"vBulletin vBSEO remote code injection";s:5:"level";i:3;s:2:"on";i:1;}i:200;a:5:{s:5:"where";s:15:"GET|POST|COOKIE";s:4:"what";s:44:"^(?i:admin(?:istrator)?)['\"].*?(?:--|#|/\*)";s:3:"why";s:35:"SQL injection (admin login attempt)";s:5:"level";i:3;s:2:"on";i:1;}i:201;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:72:"\b(?i:[-\w]+@(?:[-a-z0-9]+\.)+[a-z]{2,8}'.{0,20}\band\b.{0,20}=[\s/*]*')";s:3:"why";s:34:"SQL injection (user login attempt)";s:5:"level";i:3;s:2:"on";i:1;}i:202;a:5:{s:5:"where";s:26:"GET:username|POST:username";s:4:"what";s:20:"[#'\"=(),<>/\\*\x60]";s:3:"why";s:24:"SQL injection (username)";s:5:"level";i:3;s:2:"on";i:1;}i:204;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:60:"\b(?i:and|or|having)\b.+?['"]?\b(\w+)\b['"]?\s*=\s*['"]?\1\b";s:3:"why";s:30:"SQL injection (equal operator)";s:5:"level";i:3;s:2:"on";i:1;}i:205;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:67:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bfrom\b.+?information_schema\b)";s:3:"why";s:34:"SQL injection (information_schema)";s:5:"level";i:3;s:2:"on";i:1;}i:206;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:53:"/\*\*/(?i:and|from|limit|or|select|union|where)/\*\*/";s:3:"why";s:35:"SQL injection (comment obfuscation)";s:5:"level";i:3;s:2:"on";i:1;}i:207;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:30:"^[-\d';].+\w.+(?:--|#|/\*)\s*$";s:3:"why";s:32:"SQL injection (trailing comment)";s:5:"level";i:3;s:2:"on";i:1;}i:208;a:5:{s:5:"where";s:35:"COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:162:"(?i:(?:\b(?:and|or|union)\b|;|').*?\b(?:alter|create|delete|drop|grant|information_schema|insert|load|rename|select|truncate|update)\b.+?\b(?:from|into|on|set)\b)";s:3:"why";s:13:"SQL injection";s:5:"level";i:1;s:2:"on";i:1;}i:209;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:227:"(?i:(?:\b(?:and|or|union)\b|;|').*?(?:\ball\b.+?)?\bselect\b.+?\b(?:and\b|from\b|limit\b|where\b|\@?\@?version\b|(?:user|benchmark|char|count|database|(?:group_)?concat(?:_ws)?|floor|md5|rand|substring|version)\s*\(|--|/\*|#$))";s:3:"why";s:22:"SQL injection (select)";s:5:"level";i:3;s:2:"on";i:1;}i:210;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:98:"(?i:(?:\b(?:and|or|union)\b|;|').*?(?:\ball\b.+?)?\binsert\b.+?\binto\b.*?\([^)]+\).+?values.*?\()";s:3:"why";s:22:"SQL injection (insert)";s:5:"level";i:3;s:2:"on";i:1;}i:211;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:60:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bupdate\b.+?\bset\b.+?=)";s:3:"why";s:22:"SQL injection (update)";s:5:"level";i:3;s:2:"on";i:1;}i:212;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:62:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bgrant\b.+?\bon\b.+?to\s+)";s:3:"why";s:21:"SQL injection (grant)";s:5:"level";i:3;s:2:"on";i:1;}i:213;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:59:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bdelete\b.+?\bfrom\b.+)";s:3:"why";s:22:"SQL injection (delete)";s:5:"level";i:3;s:2:"on";i:1;}i:214;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:130:"(?i:(?:\b(?:and|or|union)\b|;|').*?\b(alter|create|drop)\b.+?(?:DATABASE|FUNCTION|INDEX|PROCEDURE|SCHEMA|TABLE|TRIGGER|VIEW)\b.+?)";s:3:"why";s:33:"SQL injection (alter/create/drop)";s:5:"level";i:3;s:2:"on";i:1;}i:215;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:67:"(?i:(?:\b(?:and|or|union)\b|;|').*?\b(?:rename|truncate)\b.+?table)";s:3:"why";s:31:"SQL injection (rename/truncate)";s:5:"level";i:3;s:2:"on";i:1;}i:216;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:112:"(?i:(?:\b(?:and|or|union)\b|;|').*?\bselect\b.+?\b(?:into\b.+?(?:(?:dump|out)file|\@['\"\x60]?\w+)|load_file))\b";s:3:"why";s:37:"SQL injection (select into/load_file)";s:5:"level";i:3;s:2:"on";i:1;}i:217;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:77:"(?i:(?:\b(?:and|or|union)\b|;|').*?load\b.+?\bdata\b.+?\binfile\b.+?\binto)\b";s:3:"why";s:20:"SQL injection (load)";s:5:"level";i:3;s:2:"on";i:1;}i:218;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:29:"\b(?i:waitfor\b\W*?\bdelay)\b";s:3:"why";s:26:"SQL injection (time-based)";s:5:"level";i:2;s:2:"on";i:1;}i:219;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:39:"(?i:\bbenchmark\s*\(\d+\s*,\s*md5\s*\()";s:3:"why";s:25:"SQL injection (benchmark)";s:5:"level";i:2;s:2:"on";i:1;}i:250;a:5:{s:5:"where";s:9:"HTTP_HOST";s:4:"what";s:20:"[^-a-zA-Z0-9._:\[\]]";s:3:"why";s:21:"Malformed Host header";s:5:"level";i:2;s:2:"on";i:1;}i:300;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:6:"^['\"]";s:3:"why";s:13:"Leading quote";s:5:"level";i:2;s:2:"on";i:1;}i:301;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:11:"^[\x09\x20]";s:3:"why";s:13:"Leading space";s:5:"level";i:1;s:2:"on";i:1;}i:302;a:5:{s:5:"where";s:22:"QUERY_STRING|PATH_INFO";s:4:"what";s:44:"\bHTTP_RAW_POST_DATA|HTTP_(?:POS|GE)T_VARS\b";s:3:"why";s:12:"PHP variable";s:5:"level";i:2;s:2:"on";i:1;}i:303;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:12:"phpinfo\.php";s:3:"why";s:29:"Attempt to access phpinfo.php";s:5:"level";i:1;s:2:"on";i:1;}i:304;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:30:"/scripts/(?:setup|signon)\.php";s:3:"why";s:26:"phpMyAdmin hacking attempt";s:5:"level";i:2;s:2:"on";i:1;}i:305;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:24:"\.ph(?:p[2-6]?|tml)\..+?";s:3:"why";s:23:"PHP handler obfuscation";s:5:"level";i:3;s:2:"on";i:1;}i:309;a:5:{s:5:"where";s:58:"QUERY_STRING|PATH_INFO|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:141:"\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\W\$\{\s*['"]\w+['"]";s:3:"why";s:24:"PHP predefined variables";s:5:"level";i:2;s:2:"on";i:1;}i:310;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:118:"(?i:(?:conf(?:ig(?:ur(?:e|ation)|\.inc|_global)?)?)|settings?(?:\.?inc)?|\b(?:db(?:connect)?|connect)(?:\.?inc)?)\.php";s:3:"why";s:30:"Access to a configuration file";s:5:"level";i:2;s:2:"on";i:1;}i:311;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:40:"/tiny_?mce/plugins/spellchecker/classes/";s:3:"why";s:23:"TinyMCE path disclosure";s:5:"level";i:2;s:2:"on";i:1;}i:312;a:5:{s:5:"where";s:20:"HTTP_X_FORWARDED_FOR";s:4:"what";s:24:"[^.0-9a-fA-F:\x20,unkow]";s:3:"why";s:29:"Non-compliant X_FORWARDED_FOR";s:5:"level";i:1;s:2:"on";i:1;}i:313;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:14:"^-[bcndfiswzT]";s:3:"why";s:31:"PHP-CGI exploit (CVE-2012-1823)";s:5:"level";i:3;s:2:"on";i:1;}i:314;a:5:{s:5:"where";s:19:"SERVER:HTTP_REFERER";s:4:"what";s:103:"^http://(?:7zap|bestbowling|buttons-for-website|chimiver|darodar|doska-vsem|make-money-online|semalt)\.";s:3:"why";s:13:"Referrer spam";s:5:"level";i:1;s:2:"on";i:1;}i:315;a:5:{s:5:"where";s:97:"GET|HTTP_HOST|SERVER_PROTOCOL|SERVER:HTTP_USER_AGENT|QUERY_STRING|SERVER:HTTP_REFERER|HTTP_COOKIE";s:4:"what";s:41:">\s*/dev/(?:tc|ud)p/[^/]{5,255}/\d{1,5}\b";s:3:"why";s:56:"/dev TCP/UDP device file access (possible reverse shell)";s:5:"level";i:3;s:2:"on";i:1;}i:350;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:186:"(?i:bypass|c99(?:madShell|ud)?|c100|cookie_(?:usage|setup)|diagnostics|dump|endix|gifimg|goog[l1]e.+[\da-f]{10}|imageth|imlog|r5[47]|safe0ver|sniper|(?:jpe?g|gif|png))\.ph(?:p[2-6]?|tml)";s:3:"why";s:14:"Shell/backdoor";s:5:"level";i:3;s:2:"on";i:1;}i:351;a:5:{s:5:"where";s:28:"GET:nixpasswd|POST:nixpasswd";s:4:"what";s:3:"^.?";s:3:"why";s:26:"Shell/backdoor (nixpasswd)";s:5:"level";i:3;s:2:"on";i:1;}i:352;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:16:"\bact=img&img=\w";s:3:"why";s:20:"Shell/backdoor (img)";s:5:"level";i:3;s:2:"on";i:1;}i:353;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:15:"\bc=img&name=\w";s:3:"why";s:21:"Shell/backdoor (name)";s:5:"level";i:3;s:2:"on";i:1;}i:354;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:36:"^image=(?:arrow|file|folder|smiley)$";s:3:"why";s:22:"Shell/backdoor (image)";s:5:"level";i:3;s:2:"on";i:1;}i:355;a:5:{s:5:"where";s:6:"COOKIE";s:4:"what";s:21:"\buname=.+?;\ssysctl=";s:3:"why";s:23:"Shell/backdoor (cookie)";s:5:"level";i:3;s:2:"on";i:1;}i:356;a:5:{s:5:"where";s:30:"POST:sql_passwd|GET:sql_passwd";s:4:"what";s:1:".";s:3:"why";s:27:"Shell/backdoor (sql_passwd)";s:5:"level";i:3;s:2:"on";i:1;}i:357;a:5:{s:5:"where";s:12:"POST:nowpath";s:4:"what";s:3:"^.?";s:3:"why";s:24:"Shell/backdoor (nowpath)";s:5:"level";i:3;s:2:"on";i:1;}i:358;a:5:{s:5:"where";s:18:"POST:view_writable";s:4:"what";s:3:"^.?";s:3:"why";s:30:"Shell/backdoor (view_writable)";s:5:"level";i:3;s:2:"on";i:1;}i:359;a:5:{s:5:"where";s:6:"COOKIE";s:4:"what";s:13:"\bphpspypass=";s:3:"why";s:23:"Shell/backdoor (phpspy)";s:5:"level";i:3;s:2:"on";i:1;}i:360;a:5:{s:5:"where";s:6:"POST:a";s:4:"what";s:90:"^(?:Bruteforce|Console|Files(?:Man|Tools)|Network|Php|SecInfo|SelfRemove|Sql|StringTools)$";s:3:"why";s:18:"Shell/backdoor (a)";s:5:"level";i:3;s:2:"on";i:1;}i:361;a:5:{s:5:"where";s:12:"POST:nst_cmd";s:4:"what";s:2:"^.";s:3:"why";s:24:"Shell/backdoor (nstview)";s:5:"level";i:3;s:2:"on";i:1;}i:362;a:5:{s:5:"where";s:8:"POST:cmd";s:4:"what";s:206:"^(?:c(?:h_|URL)|db_query|echo\s\\.*|(?:edit|download|save)_file|find(?:_text|\s.+)|ftp_(?:brute|file_(?:down|up))|mail_file|mk|mysql(?:b|_dump)|php_eval|ps\s.*|search_text|safe_dir|sym[1-2]|test[1-8]|zend)$";s:3:"why";s:20:"Shell/backdoor (cmd)";s:5:"level";i:2;s:2:"on";i:1;}i:363;a:5:{s:5:"where";s:5:"GET:p";s:4:"what";s:65:"^(?:chmod|cmd|edit|eval|delete|headers|md5|mysql|phpinfo|rename)$";s:3:"why";s:18:"Shell/backdoor (p)";s:5:"level";i:3;s:2:"on";i:1;}i:364;a:5:{s:5:"where";s:12:"QUERY_STRING";s:4:"what";s:139:"^act=(?:bind|cmd|encoder|eval|feedback|ftpquickbrute|gofile|ls|mkdir|mkfile|processes|ps_aux|search|security|sql|tools|update|upload)&d=%2F";s:3:"why";s:20:"Shell/backdoor (act)";s:5:"level";i:3;s:2:"on";i:1;}i:2;a:5:{s:5:"where";s:62:"GET|POST|COOKIE|HTTP_USER_AGENT|REQUEST_URI|PHP_SELF|PATH_INFO";s:4:"what";s:8:"%00|\x00";s:3:"why";s:32:"ASCII character 0x00 (NULL byte)";s:5:"level";i:3;s:2:"on";i:1;}i:500;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:20:"[\x01-\x08\x0e-\x1f]";s:3:"why";s:46:"ASCII control characters (1 to 8 and 14 to 31)";s:5:"level";i:2;s:2:"on";i:1;}i:510;a:5:{s:5:"where";s:20:"GET|POST|REQUEST_URI";s:4:"what";s:11:"/nothingyet";s:3:"why";s:45:"DOCUMENT_ROOT server variable in HTTP request";s:5:"level";i:2;s:2:"on";i:1;}i:520;a:5:{s:5:"where";s:44:"GET|POST|COOKIE|HTTP_USER_AGENT|HTTP_REFERER";s:4:"what";s:40:"\b(?i:php://[a-z].+?|\bdata:.*?;base64,)";s:3:"why";s:21:"PHP built-in wrappers";s:5:"level";i:3;s:2:"on";i:1;}i:531;a:5:{s:5:"where";s:15:"HTTP_USER_AGENT";s:4:"what";s:337:"(?i:acunetix|analyzer|AhrefsBot|backdoor|bandit|blackwidow|BOT for JCE|collect|core-project|crawler|dts agent|emailmagnet|ex(ploit|tract)|flood|grabber|harvest|httrack|havij|hunter|indy library|inspect|LoadTimeBot|Microsoft URL Control|Miami Style|mj12bot|morfeus|nessus|pmafind|scanner|siphon|spbot|sqlmap|survey|teleport|updown_tester)";s:3:"why";s:24:"Suspicious bots/scanners";s:5:"level";i:1;s:2:"on";i:1;}i:540;a:5:{s:5:"where";s:8:"GET|POST";s:4:"what";s:33:"^(?i:127\.0\.0\.1|localhost|::1)$";s:3:"why";s:32:"Localhost IP in GET/POST request";s:5:"level";i:2;s:2:"on";i:1;}i:1351;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:14:"wp-config\.php";s:3:"why";s:31:"Access to WP configuration file";s:5:"level";i:2;s:2:"on";i:1;}i:1352;a:5:{s:5:"where";s:24:"GET:ABSPATH|POST:ABSPATH";s:4:"what";s:2:"//";s:3:"why";s:42:"WordPress: Remote file inclusion (ABSPATH)";s:5:"level";i:3;s:2:"on";i:1;}i:1353;a:5:{s:5:"where";s:8:"POST:cs1";s:4:"what";s:2:"\D";s:3:"why";s:41:"WordPress: SQL injection (e-Commerce:cs1)";s:5:"level";i:3;s:2:"on";i:1;}i:1354;a:5:{s:5:"where";s:3:"GET";s:4:"what";s:66:"\b(?:wp_(?:users|options)|nfw_(?:options|rules)|ninjawp_options)\b";s:3:"why";s:36:"WordPress: SQL injection (WP tables)";s:5:"level";i:2;s:2:"on";i:1;}i:1355;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:96:"/plugins/buddypress/bp-(?:blogs|xprofile/bp-xprofile-admin|themes/bp-default/members/index)\.php";s:3:"why";s:39:"WordPress: path disclosure (buddypress)";s:5:"level";i:2;s:2:"on";i:1;}i:1356;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:14:"ToolsPack\.php";s:3:"why";s:29:"WordPress: ToolsPack backdoor";s:5:"level";i:3;s:2:"on";i:1;}i:1357;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:31:"preview-shortcode-external\.php";s:3:"why";s:41:"WordPress: WooThemes WooFramework exploit";s:5:"level";i:3;s:2:"on";i:1;}i:1358;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:29:"/plugins/(?:index|hello)\.php";s:3:"why";s:46:"WordPress: unauthorised access to a PHP script";s:5:"level";i:2;s:2:"on";i:1;}i:1359;a:5:{s:5:"where";s:4:"POST";s:4:"what";s:48:"<!--(?:m(?:clude|func)|dynamic-cached-content)\b";s:3:"why";s:26:"WordPress: Dynamic content";s:5:"level";i:3;s:2:"on";i:1;}i:1360;a:5:{s:5:"where";s:16:"POST:acf_abspath";s:4:"what";s:1:".";s:3:"why";s:44:"WordPress: Advanced Custom Fields plugin RFI";s:5:"level";i:3;s:2:"on";i:1;}i:1361;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:78:"/wp-content/themes/(?:eCommerce|eShop|KidzStore|storefront)/upload/upload\.php";s:3:"why";s:31:"WordPress: Access to upload.php";s:5:"level";i:3;s:2:"on";i:1;}i:1362;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:85:"/wp-content/themes/OptimizePress/lib/admin/media-upload(?:-lncthumb|-sq_button)?\.php";s:3:"why";s:48:"WordPress: Access to OptimizePress upload script";s:5:"level";i:3;s:2:"on";i:1;}i:1363;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:15:"/uploadify\.php";s:3:"why";s:37:"WordPress: Access to Uploadify script";s:5:"level";i:3;s:2:"on";i:1;}i:1364;a:5:{s:5:"where";s:7:"GET:img";s:4:"what";s:6:"\.php$";s:3:"why";s:66:"WordPress: Revolution Slider vulnerability (local file disclosure)";s:5:"level";i:2;s:2:"on";i:1;}i:1365;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:20:"/code_generator\.php";s:3:"why";s:62:"WordPress: Gravity Forms vulnerability (arbitrary file upload)";s:5:"level";i:3;s:2:"on";i:1;}i:1366;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:22:"/wp-admin/install\.php";s:3:"why";s:40:"WordPress: Access to WP installer script";s:5:"level";i:2;s:2:"on";i:1;}i:1367;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:21:"/temp/update_extract/";s:3:"why";s:59:"WordPress: Revolution Slider potential shell upload exploit";s:5:"level";i:3;s:2:"on";i:1;}i:1368;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:14:"/dl-skin\.php$";s:3:"why";s:60:"WordPress: arbitrary file access vulnerability (dl-skin.php)";s:5:"level";i:3;s:2:"on";i:1;}i:1369;a:5:{s:5:"where";s:12:"POST:execute";s:4:"what";s:15:"[^degiklmnptw_]";s:3:"why";s:52:"WordPress: Download Manager remote command execution";s:5:"level";i:3;s:2:"on";i:1;}i:1370;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:23:"/RedSteel/download.php$";s:3:"why";s:63:"WordPress: arbitrary file access vulnerability (RedSteel theme)";s:5:"level";i:3;s:2:"on";i:1;}i:1371;a:5:{s:5:"where";s:8:"GET:page";s:4:"what";s:22:"fancybox-for-wordpress";s:3:"why";s:32:"WordPress: Fancybox 0day attempt";s:5:"level";i:3;s:2:"on";i:1;}i:1372;a:5:{s:5:"where";s:8:"GET:task";s:4:"what";s:17:"wpdm_upload_files";s:3:"why";s:63:"WordPress: Download Manager unauthenticated file upload attempt";s:5:"level";i:3;s:2:"on";i:1;}i:1373;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:37:"/modules/export/templates/export\.php";s:3:"why";s:58:"WordPress: WP Ultimate CSV Importer information disclosure";s:5:"level";i:3;s:2:"on";i:1;}i:1374;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:25:"/wp-symposium/server/php/";s:3:"why";s:36:"WordPress: WP Symposium shell upload";s:5:"level";i:3;s:2:"on";i:1;}i:1375;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:36:"/filedownload/download.php/index.php";s:3:"why";s:44:"WordPress: Filedownload plugin vulnerability";s:5:"level";i:3;s:2:"on";i:1;}i:1376;a:5:{s:5:"where";s:11:"SCRIPT_NAME";s:4:"what";s:23:"/admin/upload-file\.php";s:3:"why";s:54:"WordPress: Holding Pattern theme arbitrary file upload";s:5:"level";i:3;s:2:"on";i:1;}i:1377;a:5:{s:5:"where";s:26:"REQUEST:users_can_register";s:4:"what";s:2:"^.";s:3:"why";s:48:"WordPress: possible privilege escalation attempt";s:5:"level";i:3;s:2:"on";i:1;}i:1378;a:5:{s:5:"where";s:20:"REQUEST:default_role";s:4:"what";s:2:"^.";s:3:"why";s:59:"WordPress: possible privilege escalation escalation attempt";s:5:"level";i:3;s:2:"on";i:1;}i:1379;a:5:{s:5:"where";s:19:"REQUEST:admin_email";s:4:"what";s:2:"^.";s:3:"why";s:59:"WordPress: possible privilege escalation escalation attempt";s:5:"level";i:3;s:2:"on";i:1;}i:1380;a:5:{s:5:"where";s:8:"GET:page";s:4:"what";s:17:"wpseo_bulk-editor";s:3:"why";s:37:"WordPress: SEO by Yoast SQL injection";s:5:"level";i:3;s:2:"on";i:1;}}
 EOT;
 
 }
