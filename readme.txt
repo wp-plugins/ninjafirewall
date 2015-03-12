@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypa
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.1.1
-Stable tag: 1.3.9
+Stable tag: 1.3.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -181,6 +181,9 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 
 == Changelog ==
+
+= 1.3.10 =
+* Updated security rules to block several new vulnerabilities (incl. WordPress SEO by Yoast).
 
 = 1.3.9 =
 * Fixed PHP error (blank screen after last update) for sites running PHP 5.3. NOTE: if you are still using PHP 5.3 consider upgrading your PHP version because it is no longer supported since Aug 2014 and using older versions may expose you to security vulnerabilities and bugs that have been fixed in more recent versions of PHP. In addition, you won't be able to use some features of NinjaFirewall that require at least PHP 5.4.
