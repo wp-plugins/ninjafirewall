@@ -3,12 +3,9 @@
  +---------------------------------------------------------------------+
  | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet                                                      |
- | <wordpress@nintechnet.com>                                          |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | http://nintechnet.com/                                              |
- +---------------------------------------------------------------------+
- | REVISION: 2015-01-03 01:01:56                                       |
+ | REVISION: 2015-03-13 23:22:27                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -38,14 +35,14 @@ function help_nfsubmain() {	// i18n
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'main01',
-		'title'     => __('Overview', 'ninjafirewall'),
-		'content'   => '<br />' . __('This is the Overview page; it shows information about the firewall status. We recommend you keep an eye on it because, in case of problems, all possible errors and warnings will be displayed here.', 'ninjafirewall') . '<br />&nbsp;'
+		'title'     => __('Overview', NFI18N),
+		'content'   => '<br />' . __('This is the Overview page; it shows information about the firewall status. We recommend you keep an eye on it because, in case of problems, all possible errors and warnings will be displayed here.', NFI18N) . '<br />&nbsp;'
 	) );
 	get_current_screen()->set_help_sidebar(
-		'<p><strong>' . __( 'For more information:', 'ninjafirewall' ) . '</strong></p>' .
-		'<p><a href="http://ninjafirewall.com/wordpress/help.php" target="_blank">'. __('Installation, help &amp; troubleshooting' , 'ninjafirewall' ) . '</a></p>' .
-		'<p><a href="http://wordpress.org/support/plugin/ninjafirewall/" target="_blank">' . __( 'Support Forum' , 'ninjafirewall' ) . '</a></p>' .
-		'<p>'. __('Updates via Twitter', 'ninjafirewall') . '<br /><a href="https://twitter.com/nintechnet"><img border="0" src="' . plugins_url( '/images/twitter_ntn.png', __FILE__ ) . '" width="116" height="28" target="_blank"></a></p>'
+		'<p><strong>' . __( 'For more information:', NFI18N ) . '</strong></p>' .
+		'<p><a href="http://ninjafirewall.com/wordpress/help.php" target="_blank">'. __('Installation, help &amp; troubleshooting' , NFI18N ) . '</a></p>' .
+		'<p><a href="http://wordpress.org/support/plugin/ninjafirewall/" target="_blank">' . __( 'Support Forum' , NFI18N ) . '</a></p>' .
+		'<p>'. __('Updates via Twitter', NFI18N) . '<br /><a href="https://twitter.com/nintechnet"><img border="0" src="' . plugins_url( '/images/twitter_ntn.png', __FILE__ ) . '" width="116" height="28" target="_blank"></a></p>'
 	);
 
 }
@@ -93,7 +90,9 @@ function help_nfsubopt() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt04',
 		'title'     => 'Export/import configuration',
-		'content'   => '<br />This options lets you export you current configuration or import it from another NinjaFirewall (WP edition) installation. The imported file must match your current version otherwise it will be rejected. Note that importing will override all firewall rules and options.'
+		'content'   => '<br />This options lets you export you current configuration or import it from another NinjaFirewall (WP edition) installation. The imported file must match your current version otherwise it will be rejected. Note that importing will override all firewall rules and options.' .
+		'<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">' .
+		__('"File Check" configuration will not be exported/imported.', NFI18N) . '</span></p>'
 	) );
 }
 /* ------------------------------------------------------------------ */
@@ -180,7 +179,8 @@ function help_nfsubpolicies() {
 			Since v3.1.3, WordPress sets this value to <code>SAMEORIGIN</code> for the administrator and the login page only.</li>
 		<li>Set <code>X-XSS-Protection</code> to enable browser\'s built-in XSS filter (IE, Chrome and Safari):<span class="description"> this header allows compatible browsers to identify and block XSS attack by preventing the malicious script from executing. NinjaFirewall will set its value to <code>1; mode=block</code>.</span></li>
 		<li>Force <code>HttpOnly</code> flag on all cookies to mitigate XSS attacks:<span class="description"> adding this flag to cookies helps to mitigate the risk of cross-site scripting by preventing them from being accessed through client-side script. NinjaFirewall can hook all cookies sent by your blog, its plugins or any other PHP script, add the <code>HttpOnly</code> flag if it is missing, and re-inject those cookies back into your server HTTP response headers right before they are sent to your visitors. Note that WordPress sets that flag on the logged in user cookies only.</span></li>
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">If you have cookies that need to be accessed from JavaScript, you should keep that option disabled.</span></p>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">If your PHP scripts send cookies that need to be accessed from JavaScript, you should keep that option disabled.</span></p>
+		<li>Set <code>Strict-Transport-Security</code> (HSTS) to enforce secure connections to the server:<span class="description"> this policy enforces secure HTTPS connections to the server. Web browsers will not allow the user to access the web application over insecure HTTP protocol. It helps to defend against cookie hijacking and Man-in-the-middle attacks. Most recent browsers support HSTS headers.</span></li>
 
 		<br />
 
@@ -230,11 +230,12 @@ function help_nfsubfileguard() {
 	// Web Filter :
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'fileguard01',
-		'title'     => 'File Guard',
-		'content'   => '<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
-		If a hacker uploaded a shell script to your site or injected a backdoor into an already existing file (theme, plugin etc), as soon as he would try to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time). Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
+		'title'     => __('File Guard', NFI18N),
+		'content'   => __('<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
+		If a hacker uploaded a shell script to your site (or injected a backdoor into an already existing file) and tried to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time). Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
 		<p>Modifications detected by NinjaFirewall include <code>mtime</code> (saved or updated content of a file) and <code>ctime</code> (permissions, ownership etc).</p>
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</span></p>'
+		<p>If you do not want to monitor a folder, you can exclude its full path or a part of it (e.g., <code>/var/www/public_html/cache/</code> or <code>/cache/</code> etc). NinjaFirewall will compare this value to the <code>$_SERVER["SCRIPT_FILENAME"]</code> server variable and, if it matches, will ignore it.</p>', NFI18N) .
+		'<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;' . __('<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</span></p>', NFI18N)
 	) );
 }
 /* ------------------------------------------------------------------ */
@@ -243,8 +244,8 @@ function help_nfsubnetwork() {	// i18n
 	// Network (multisite version only) :
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'network01',
-		'title'     => __('Network', 'ninjafirewall'),
-		'content'   => __('<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.', 'ninjafirewall')
+		'title'     => __('Network', NFI18N),
+		'content'   => __('<br />Even if NinjaFirewall administration menu is only available to the Super Admin (from the main site), you can still display its status to all sites in the network by adding a small NinjaFirewall icon to their admin bar. It will be visible only to the administrators of those sites.<br />It is recommended to enable this feature as it is the only way to know whether the sites in your network are protected and if NinjaFirewall installation was successful.<br />Note that when it is disabled, the icon still remains visible to you, the Super Admin.', NFI18N)
 	) );
 }
 /* ------------------------------------------------------------------ */
@@ -254,7 +255,7 @@ function help_nfsubfilecheck() {	// i18n
 	// File check menu help :
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'filecheck01',
-		'title'     => __('File Check', 'ninjafirewall'),
+		'title'     => __('File Check', NFI18N),
 		'content'   => __('<p>File Check lets you perform file integrity monitoring upon request or on a specific interval.
 		<br />
 		You need to create a snapshot of all your files and then, at a later time, you can scan your system to compare it with the previous snapshot. Any modification will be immediately detected: file content, file permissions, file ownership, timestamp (<code>ctime</code> and <code>mtime</code>) as well as file creation and deletion.
@@ -263,20 +264,20 @@ function help_nfsubfilecheck() {	// i18n
 		<li>Exclude the following files/folders: you can enter a directory or a file name (e.g., <code>/foo/bar/</code>), or a part of it (e.g., <code>foo</code>). Or you can exclude a file extension (e.g., <code>.css</code>).
 		<br />
 		Multiple values must be comma-separated (e.g., <code>/foo/bar/,.css,.png</code>).</li>
-		<li>Do not follow symbolic links: by default, NinjaFirewall will not follow symbolic links.</li>', 'ninjafirewall')
+		<li>Do not follow symbolic links: by default, NinjaFirewall will not follow symbolic links.</li>', NFI18N)
 	) );
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'filecheck02',
-		'title'     => __('Scheduled scans', 'ninjafirewall'),
+		'title'     => __('Scheduled scans', NFI18N),
 		'content'   => __('<p>NinjaFirewall can scan your system on a specific interval (hourly, twicedaily or daily).
 		<br />
-		It can either send you a scan report only if changes are detected, or always send one after each scan.<br />Reports will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
+		It can either send you a scan report only if changes are detected, or always send you one after each scan.<br />Reports will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
 
 
 		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Scheduled scans rely on <a href="http://codex.wordpress.org/Category:WP-Cron_Functions">WordPress pseudo cron</a> which works only if your site gets sufficient traffic.</span></p>
 
-		', 'ninjafirewall')
+		', NFI18N)
 	) );
 
 }
@@ -289,8 +290,8 @@ function help_nfsubevent() {
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
-		'title'     => __('Event Notifications', 'ninjafirewall'),
-		'content'   => '<br />' . __('NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login and modification of any administrator account in the database. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.', 'ninjafirewall')
+		'title'     => __('Event Notifications', NFI18N),
+		'content'   => '<br />' . __('NinjaFirewall can alert you by email on specific events triggered within your blog. They include installations, updates, activations etc, as well as users login and modification of any administrator account in the database. Some of those alerts are enabled by default and it is highly recommended to keep them enabled. It is not unusual for a hacker, after breaking into your WordPress admin console, to install or just to upload a backdoored plugin or theme in order to take full control of your website.', NFI18N)
 	) );
 }
 /* ------------------------------------------------------------------ */
@@ -351,7 +352,7 @@ function help_nfsublogin() {
 		Sample loglines:
 		<br />
 		<textarea class="small-text code" style="width:100%;height:80px;" wrap="off">Aug 31 01:40:35 www ninjafirewall[6191]: Possible brute-force attack from 172.16.0.1 on mysite.com (wp-login.php). Blocking access for 5mn.'. "\n" . 'Aug 31 01:45:28 www ninjafirewall[6192]: Possible brute-force attack from fe80::6e88:14ff:fe3e:86f0 on blog.domain.com (XML-RPC API). Blocking access for 25mn.</textarea>
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Be careful if you are behind a load balancer, reverse-proxy or CDN because NinjaFirewall will always record the <code>REMOTE_ADDR</code> IP. If you have an application parsing the AUTH log in order to ban IPs (e.g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward the correct IP (or use the <code><a href="http://ninjafirewall.com/wordpress/htninja/">.htninja</a></code> file), otherwise you will likely block legitimate users.</span></p>
+		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Be careful if you are behind a load balancer, reverse-proxy or CDN because the Login Protection feature will always record the <code>REMOTE_ADDR</code> IP. If you have an application parsing the AUTH log in order to ban IPs (e.g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward the correct IP (or use the <code><a href="http://ninjafirewall.com/wordpress/htninja/">.htninja</a></code> file), otherwise you will likely block legitimate users.</span></p>
 		</div>'
 	) );
 
@@ -371,9 +372,46 @@ function help_nfsublog() {
 }
 /* ------------------------------------------------------------------ */
 
+function help_nfsublivelog() {
+
+	// Firewall Live Log menu help :
+
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'log01',
+		'title'     => __('Live Log', NFI18N),
+		'content'   => '<p>' .
+			__('Live Log lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Note that requests sent to static elements like JS/CSS files and images are not managed by NinjaFirewall.', NFI18N) .
+			'</p>
+			<p>' .
+			__('You can enable/disable the monitoring process, change the refresh rate, clear the screen, enable automatic vertical scrolling, change the log format and select which traffic you want to view (HTTP/HTTPS).', NFI18N) .
+			'</p><p>' .
+			__('Live Log does not make use of any WordPress core file (e.g., <code>admin-ajax.php</code>). It communicates directly with the firewall without loading WordPress bootstrap. Consequently, it is fast, light and it should not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).', NFI18N) .
+			'</p><p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">' .
+			__('If you are using the optional <code>.htninja</code> configuration file to whitelist your IP, the Live Log feature will not work.', NFI18N) .
+		'</span>'
+	) );
+	get_current_screen()->add_help_tab( array(
+		'id'        => 'log02',
+		'title'     => __('Log Format', NFI18N),
+		'content'   => '<p>'. __('You can easily customize the log format. Possible values are:', NFI18N) .'</p>' .
+			'<li>'. __('<code>%time</code>: the server date, time and timezone.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%name</code>: authenticated user (HTTP basic auth), if any.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%client</code>: the client REMOTE_ADDR. If you are behind a load balancer or CDN, this will be its IP.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%method</code>: HTTP method (i.e., GET, POST).', NFI18N) . '</li>' .
+			'<li>'. __('<code>%uri</code>: the URI which was given in order to access the page (REQUEST_URI).', NFI18N) . '</li>' .
+			'<li>'. __('<code>%referrer</code>: the referrer (HTTP_REFERER), if any.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%ua</code>: the user-agent (HTTP_USER_AGENT), if any.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%forward</code>: HTTP_X_FORWARDED_FOR, if any. If you are behind a load balancer or CDN, this will likely be the visitor true IP.', NFI18N) . '</li>' .
+			'<li>'. __('<code>%host</code>: the requested host (HTTP_HOST), if any.', NFI18N) . '</li>' .
+			__('Additionally, you can include any of the following characters: <code>\'</code>, <code>"</code>, <code>%</code>, <code>[</code>, <code>]</code>, <code>space</code> and lowercase letters <code>a-z</code>.', NFI18N)
+	) );
+}
+
+/* ------------------------------------------------------------------ */
+
 function help_nfsubedit() {
 
-	// Firewall log menu help :
+	// Firewall Rules Editor menu help :
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
