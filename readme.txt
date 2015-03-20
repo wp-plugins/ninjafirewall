@@ -1,10 +1,9 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet, bruandet
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=paypal%40ninjafirewall%2ecom&lc=US&item_name=Donation %20to%20NinjaFirewall%20WP%20Edition%20Plugin&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.1.1
-Stable tag: 1.3.10
+Stable tag: 1.3.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,31 +17,31 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 
 = Web Application Firewall =
 
-* Full standalone web application firewall; works before WordPress is loaded
-* Multi-site support
-* IPv6 compatible
-* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injections, brute-force scanners, shell scripts, backdoors and many other threats
-* Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO)
-* Sanitises variables names and values
-* Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder)
-* Real-time detection (`File Guard`)
-* File integrity monitoring to scan your website hourly/twicedaily/daily (`File Check`)
-* `Live Log` to watch your website traffic in real time
-* Monitors the database and sends an alert if an administrator account is created, modified or deleted
-* Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts(`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`)
-* Sets the `HttpOnly` flag on all cookies
-* Blocks username enumeration scanning attempts through the author archives and the login page
-* Blocks/allows uploads, sanitises uploaded file names
-* Blocks suspicious bots and scanners
-* Hides PHP error and notice messages
-* Blocks direct access to PHP scripts located inside specific directories
-* Protects WordPress XML-RPC API
-* Whitelist option for WordPress administrator(s), localhost and private IP address spaces
-* Configurable HTTP return code and message
-* Rules editor to enable/disable built-in security rules
-* Activity log and statistics
-* Debugging mode
-* Possibility to [prepend your own PHP code](http://ninjafirewall.com/wordpress/htninja/ "") to the firewall
+* Full standalone web application firewall; works before WordPress is loaded.
+* Multi-site support.
+* IPv6 compatible.
+* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injections, brute-force scanners, shell scripts, backdoors and many other threats.
+* Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO).
+* Sanitises variables names and values.
+* Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder).
+* Real-time detection (`File Guard`).
+* File integrity monitoring to scan your website hourly/twicedaily/daily (`File Check`).
+* `Live Log` to watch your website traffic in real time.
+* Monitors the database and sends an alert if an administrator account is created, modified or deleted.
+* Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`).
+* Sets the `HttpOnly` flag on all cookies.
+* Blocks username enumeration scanning attempts through the author archives and the login page.
+* Blocks/allows uploads, sanitises uploaded file names.
+* Blocks suspicious bots and scanners.
+* Hides PHP error and notice messages.
+* Blocks direct access to PHP scripts located inside specific directories.
+* Protects WordPress XML-RPC API.
+* Whitelist option for WordPress administrator(s), localhost and private IP address spaces.
+* Configurable HTTP return code and message.
+* Rules editor to enable/disable built-in security rules.
+* Activity log and statistics.
+* Debugging mode.
+* Possibility to [prepend your own PHP code](http://ninjafirewall.com/wordpress/htninja/ "") to the firewall.
 
 = Brute-Force Attack Protection =
 
@@ -62,11 +61,11 @@ NinjaFirewall can alert you by email on specific events triggered within your bl
 
 Monitored events:
 
-* Administrator login
-* Modification of any administrator account in the database
-* Plugins upload, installation, (de)activation, update, deletion
-* Themes upload, installation, activation, deletion
-* WordPress update
+* Administrator login.
+* Modification of any administrator account in the database.
+* Plugins upload, installation, (de)activation, update, deletion.
+* Themes upload, installation, activation, deletion.
+* WordPress update.
 
 = Low Footprint Firewall =
 
@@ -182,8 +181,17 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
+= 1.3.11 =
+* The firewall can now use some very specific rules to block an action from the logged in administrator even if he/she is whitelisted. Such rules will only be used to protect against CSRF and maliciously crafted links specifically targeting the administrator.
+* The firewall engine can now chain two different security rules in order to provide a better and more accurate filtering mechanism.
+* Updated security rules.
+* Session handling was slightly modified for sites running PHP 5.4+.
+* NinjaFirewall will display a warning in the "Overview" page if it detects that a buggy plugin may have destroyed the current PHP session.
+* Added a new option to "Live Log" that allows you to select which traffic you want to view (HTTP and/or HTTPS).
+* Minor fixes and improvements.
+
 = 1.3.10 =
-* Updated security rules to block several new vulnerabilities (incl. WordPress SEO by Yoast).
+* Updated security rules to block several new vulnerabilities (e.g., WordPress SEO by Yoast).
 
 = 1.3.9 =
 * Fixed PHP error (blank screen after last update) for sites running PHP 5.3. NOTE: if you are still using PHP 5.3 consider upgrading your PHP version because it is no longer supported since Aug 2014 and using older versions may expose you to security vulnerabilities and bugs that have been fixed in more recent versions of PHP. In addition, you won't be able to use some features of NinjaFirewall that require at least PHP 5.4.

@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-03-03 23:02:59                                       |
+// | REVISION: 2015-03-15 19:08:22                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -143,7 +143,7 @@ if ( empty($nfw_['nfw_options']['enabled']) ) {
 // Response headers hook :
 if (! empty($nfw_['nfw_options']['response_headers']) && function_exists('header_register_callback')) {
 	define('NFW_RESHEADERS', $nfw_['nfw_options']['response_headers']);
-	@header_register_callback('nfw_response_headers');
+	header_register_callback('nfw_response_headers');
 }
 
 // Force SSL for admin and logins ?
@@ -240,18 +240,9 @@ if ( $nfw_['a_msg'] ) {
 	define('NFW_ALERT', $nfw_['a_msg']);
 }
 
-if (! session_id() ) {
-	// Prepare session :
-	@ini_set('session.cookie_httponly', 1);
-	@ini_set('session.use_only_cookies', 1);
-	if ($_SERVER['SERVER_PORT'] == 443) {
-		@ini_set('session.cookie_secure', 1);
-	}
-	session_start();
-}
+nfw_check_session();
 // Do not scan/filter WordPress admin (if logged in) ?
 if (! empty($_SESSION['nfw_goodguy']) ) {
-	$nfw_['mysqli']->close();
 
 	// Look for Live Log AJAX request...
 	if (! empty($_SESSION['nfw_livelog']) &&  isset($_POST['livecls']) && isset($_POST['lines'])) {
@@ -288,13 +279,43 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 			// Something went wrong :
 			header('HTTP/1.0 503 Service Unavailable');
 		}
+		$nfw_['mysqli']->close();
 		exit;
 	}
 	// ...or go ahead :
+
+	// Check for specific rules that should apply to everyone, including whitelisted admin(s) :
+	if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['table_prefix'] . "options` WHERE `option_name` = 'nfw_rules'")) {
+		define( 'NFW_STATUS', 7 );
+		$nfw_['mysqli']->close();
+		unset($nfw_);
+		return;
+	}
+	if (! $nfw_['rules'] = @$nfw_['result']->fetch_object() ) {
+		define( 'NFW_STATUS', 8 );
+		$nfw_['mysqli']->close();
+		unset($nfw_);
+		return;
+	}
+	// Fetch those rules only :
+	$nfw_['nfw_rules'] = unserialize($nfw_['rules']->option_value);
+	if (isset($nfw_['nfw_rules']['999']) ) {
+		$nfw_['adm_rules'] = array();
+		foreach ($nfw_['nfw_rules']['999'] as $key => $value) {
+			if ($key == 'on') { continue; }
+			$nfw_['adm_rules'][$key] = $nfw_['nfw_rules'][$key];
+		}
+		// Parse them :
+		if (! empty($nfw_['adm_rules'])) {
+			nfw_check_request( $nfw_['adm_rules'], $nfw_['nfw_options'] );
+		}
+	}
+	$nfw_['mysqli']->close();
 	define( 'NFW_STATUS', 20 );
 	unset($nfw_);
 	return;
 }
+define('NFW_SWL', 1);
 
 // Live Log : record the request if needed
 if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
@@ -314,36 +335,42 @@ if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
 			}
 		}
 	} else {
-		if ( empty($_SERVER['PHP_AUTH_USER']) ) { $PHP_AUTH_USER = '-'; }
-		else { $PHP_AUTH_USER = $_SERVER['PHP_AUTH_USER']; }
-		if ( empty($_SERVER['HTTP_REFERER']) ) { $HTTP_REFERER = '-'; }
-		else { $HTTP_REFERER = $_SERVER['HTTP_REFERER']; }
-		if ( empty($_SERVER['HTTP_USER_AGENT']) ) {	$HTTP_USER_AGENT = '-'; }
-		else { $HTTP_USER_AGENT = $_SERVER['HTTP_USER_AGENT']; }
-		if ( empty($_SERVER['HTTP_X_FORWARDED_FOR']) ) { $HTTP_X_FORWARDED_FOR = '-'; }
-		else { $HTTP_X_FORWARDED_FOR = $_SERVER['HTTP_X_FORWARDED_FOR']; }
-		if ( empty($_SERVER['HTTP_HOST']) ) { $HTTP_HOST = '-'; }
-		else { $HTTP_HOST = $_SERVER['HTTP_HOST']; }
+		// Check if we are supposed to log the request (http/https) :
+		if ( empty($nfw_['nfw_options']['liveport']) ||
+			($nfw_['nfw_options']['liveport'] == 1 && $_SERVER['SERVER_PORT'] != 443) ||
+			($nfw_['nfw_options']['liveport'] == 2 && $_SERVER['SERVER_PORT'] == 443) ) {
 
-		if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
-			$nfw_['nfw_options']['tzstring'] = 'UTC';
-		}
-		date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+			if ( empty($_SERVER['PHP_AUTH_USER']) ) { $PHP_AUTH_USER = '-'; }
+			else { $PHP_AUTH_USER = $_SERVER['PHP_AUTH_USER']; }
+			if ( empty($_SERVER['HTTP_REFERER']) ) { $HTTP_REFERER = '-'; }
+			else { $HTTP_REFERER = $_SERVER['HTTP_REFERER']; }
+			if ( empty($_SERVER['HTTP_USER_AGENT']) ) {	$HTTP_USER_AGENT = '-'; }
+			else { $HTTP_USER_AGENT = $_SERVER['HTTP_USER_AGENT']; }
+			if ( empty($_SERVER['HTTP_X_FORWARDED_FOR']) ) { $HTTP_X_FORWARDED_FOR = '-'; }
+			else { $HTTP_X_FORWARDED_FOR = $_SERVER['HTTP_X_FORWARDED_FOR']; }
+			if ( empty($_SERVER['HTTP_HOST']) ) { $HTTP_HOST = '-'; }
+			else { $HTTP_HOST = $_SERVER['HTTP_HOST']; }
 
-		// Log the request :
-		if (! empty($nfw_['nfw_options']['liveformat']) ) {
-			// User-defined format :
-			$nfw_['tmp'] = str_replace(
-				array( '%time', '%name', '%client', '%method', '%uri', '%referrer', '%ua', '%forward', '%host' ),
-				array( date('d/M/y:H:i:s O', time()), $PHP_AUTH_USER, $_SERVER["REMOTE_ADDR"], $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $HTTP_REFERER, $HTTP_USER_AGENT, $HTTP_X_FORWARDED_FOR, $HTTP_HOST ), $nfw_['nfw_options']['liveformat']	);
-			file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php', htmlspecialchars($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND);
-		} else {
-			// Default format :
-			file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
-			'['. date('d/M/y:H:i:s O', time()) .'] '.	htmlspecialchars(
-			$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
-			$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
-			$HTTP_X_FORWARDED_FOR .'" "'. $HTTP_HOST, ENT_NOQUOTES) ."\"\n", FILE_APPEND);
+			if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
+				$nfw_['nfw_options']['tzstring'] = 'UTC';
+			}
+			date_default_timezone_set($nfw_['nfw_options']['tzstring']);
+
+			// Log the request :
+			if (! empty($nfw_['nfw_options']['liveformat']) ) {
+				// User-defined format :
+				$nfw_['tmp'] = str_replace(
+					array( '%time', '%name', '%client', '%method', '%uri', '%referrer', '%ua', '%forward', '%host' ),
+					array( date('d/M/y:H:i:s O', time()), $PHP_AUTH_USER, $_SERVER["REMOTE_ADDR"], $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $HTTP_REFERER, $HTTP_USER_AGENT, $HTTP_X_FORWARDED_FOR, $HTTP_HOST ), $nfw_['nfw_options']['liveformat']	);
+				file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php', htmlspecialchars($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND);
+			} else {
+				// Default format :
+				file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
+				'['. date('d/M/y:H:i:s O', time()) .'] '.	htmlspecialchars(
+				$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
+				$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
+				$HTTP_X_FORWARDED_FOR .'" "'. $HTTP_HOST, ENT_NOQUOTES) ."\"\n", FILE_APPEND);
+			}
 		}
 	}
 }
@@ -506,6 +533,25 @@ return;
 
 // =====================================================================
 
+function nfw_check_session() {
+
+	if (version_compare(PHP_VERSION, '5.4', '<') ) {
+		if (session_id() ) return;
+	} else {
+		if (session_status() === PHP_SESSION_ACTIVE) return;
+	}
+
+	// Prepare session :
+	@ini_set('session.cookie_httponly', 1);
+	@ini_set('session.use_only_cookies', 1);
+	if ($_SERVER['SERVER_PORT'] == 443) {
+		@ini_set('session.cookie_secure', 1);
+	}
+	session_start();
+}
+
+// =====================================================================
+
 function nfw_check_upload() {
 
 	if ( defined('NFW_STATUS') ) { return; }
@@ -594,8 +640,8 @@ function nfw_check_request( $nfw_rules, $nfw_options ) {
 		$wherelist = explode('|', $rules_values['where']);
 		foreach ($wherelist as $where) {
 
-			// Global GET/POST/COOKIE/REQUEST requests :
-			if ( (($where == 'POST') && (! empty($nfw_options['post_scan']))) || (($where == 'GET') && (! empty($nfw_options['get_scan']))) || (($where == 'COOKIE') && (! empty($nfw_options['cookies_scan']))) || ($where == 'REQUEST') ) {
+			// Global GET/POST/COOKIE requests :
+			if ( ($where == 'POST' && ! empty($nfw_options['post_scan'])) || ($where == 'GET' && ! empty($nfw_options['get_scan'])) || ($where == 'COOKIE' && ! empty($nfw_options['cookies_scan'])) ) {
 				foreach ($GLOBALS['_' . $where] as $reqkey => $reqvalue) {
 					// Look for an array() :
 					if ( is_array($reqvalue) ) {
@@ -603,13 +649,17 @@ function nfw_check_request( $nfw_rules, $nfw_options ) {
 						$reqvalue = $res;
 						$rules_values['what'] = '(?m:'. $rules_values['what'] .')';
 					} else {
-						if ( (! empty($nfw_options['post_b64'])) && ($where == 'POST') && ($reqvalue) && (! isset( $b64_post[$reqkey])) ) {
+						if (! empty($nfw_options['post_b64']) && $where == 'POST' && $reqvalue && ! isset($b64_post[$reqkey]) ) {
 							$b64_post[$reqkey] = 1;
 							nfw_check_b64($reqkey, $reqvalue);
 						}
 					}
 					if (! $reqvalue) { continue; }
 					if ( preg_match('`'. $rules_values['what'] .'`', $reqvalue) ) {
+						// Extra rule :
+						if (! empty($rules_values['extra'])) {
+							if ( empty($GLOBALS['_' . $rules_values['extra'][1]] [$rules_values['extra'][2]]) || ! preg_match('`'. $rules_values['extra'][3] .'`', $GLOBALS['_' . $rules_values['extra'][1]] [$rules_values['extra'][2]]) ) { continue;	}
+						}
 						nfw_log($rules_values['why'], $where .':' . $reqkey . ' = ' . $reqvalue, $rules_values['level'], $rules_id);
 						nfw_block();
                }
@@ -617,10 +667,24 @@ function nfw_check_request( $nfw_rules, $nfw_options ) {
 				continue;
 			}
 
-			// Specific POST:xx, GET:xx, COOKIE:xxx requests :
+			// HTTP_USER_AGENT & HTTP_REFERER variables :
+			if ( isset($_SERVER[$where]) ) {
+				if ( ($where == 'HTTP_USER_AGENT' && empty($nfw_options['ua_scan'])) || ($where == 'HTTP_REFERER' && empty($nfw_options['referer_scan'])) ) { continue; }
+				if ( preg_match('`'. $rules_values['what'] .'`', $_SERVER[$where]) ) {
+					// Extra rule :
+					if (! empty($rules_values['extra'])) {
+						if ( empty($GLOBALS['_' . $rules_values['extra'][1]] [$rules_values['extra'][2]]) || ! preg_match('`'. $rules_values['extra'][3] .'`', $GLOBALS['_' . $rules_values['extra'][1]] [$rules_values['extra'][2]]) ) { continue;	}
+					}
+					nfw_log($rules_values['why'], $where. ' = ' .$_SERVER[$where], $rules_values['level'], $rules_id);
+					nfw_block();
+            }
+				continue;
+			}
+
+			// Specific POST:xx, GET:xx, COOKIE:xxx, SERVER:xxx requests etc :
 			$sub_value = explode(':', $where);
-			if ( (($sub_value[0] == 'POST') && ( empty($nfw_options['post_scan']))) || (($sub_value[0] == 'GET' ) && ( empty($nfw_options['get_scan']))) || (($sub_value[0] == 'COOKIE' ) && ( empty($nfw_options['cookies_scan']))) ) { continue; }
-			if ( (! empty($sub_value[1]) ) && ( @isset($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) ) {
+			if ( ($sub_value[0] == 'POST' && empty($nfw_options['post_scan'])) || ($sub_value[0] == 'GET' && empty($nfw_options['get_scan'])) || ($sub_value[0] == 'COOKIE' && empty($nfw_options['cookies_scan'])) ) { continue; }
+			if (! empty($sub_value[1]) && @isset($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) {
 				if ( is_array($GLOBALS['_' . $sub_value[0]] [$sub_value[1]]) ) {
 					$res = nfw_flatten( "\n", $GLOBALS['_' . $sub_value[0]] [$sub_value[1]] );
 					$GLOBALS['_' . $sub_value[0]] [$sub_value[1]] = $res;
@@ -628,19 +692,13 @@ function nfw_check_request( $nfw_rules, $nfw_options ) {
 				}
 				if (! $GLOBALS['_' . $sub_value[0]][$sub_value[1]] ) { continue; }
 				if ( preg_match('`'. $rules_values['what'] .'`', $GLOBALS['_' . $sub_value[0]][$sub_value[1]]) ) {
+					// Extra rule :
+					if (! empty($rules_values['extra'])) {
+						if ( empty($GLOBALS['_' . $rules_values['extra'][1]] [$rules_values['extra'][2]]) || ! preg_match('`'. $rules_values['extra'][3] .'`', $GLOBALS['_' . $rules_values['extra'][1]] [$rules_values['extra'][2]]) ) { continue;	}
+					}
 					nfw_log($rules_values['why'], $sub_value[0]. ':' .$sub_value[1]. ' = ' .$GLOBALS['_' . $sub_value[0]][$sub_value[1]], $rules_values['level'], $rules_id);
 					nfw_block();
 				}
-				continue;
-			}
-
-			// Other requests & server variables (HTTP_REFERER, etc) :
-			if ( isset($_SERVER[$where]) ) {
-				if ( ( ($where == 'HTTP_USER_AGENT') && (empty($nfw_options['ua_scan'])) ) || ( ($where == 'HTTP_REFERER') && (empty($nfw_options['referer_scan'])) ) ) { continue; }
-				if ( preg_match('`'. $rules_values['what'] .'`', $_SERVER[$where]) ) {
-					nfw_log($rules_values['why'], $where. ' = ' .$_SERVER[$where], $rules_values['level'], $rules_id);
-					nfw_block();
-            }
 			}
 		}
 	}
@@ -829,7 +887,7 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	$string = str_split($logdata);
 	foreach ( $string as $char ) {
 		// Allow only ASCII printable characters :
-		if ( ( ord($char) < 32 ) || ( ord($char) > 126 ) ) {
+		if ( ord($char) < 32 || ord($char) > 126 ) {
 			$res .= '%' . bin2hex($char);
 		} else {
 			$res .= $char;
@@ -976,9 +1034,7 @@ function nfw_check_auth($auth_name, $auth_pass, $auth_msg) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
-	if (! session_id() ) {
-		@ini_set('session.use_only_cookies', 1);
-		session_start(); }
+	nfw_check_session();
 	// Good guy already authenticated ?
 	if (! empty($_SESSION['nfw_bfd']) ) {
 		return;
