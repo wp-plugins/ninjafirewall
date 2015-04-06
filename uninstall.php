@@ -3,12 +3,9 @@
  +---------------------------------------------------------------------+
  | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet                                                      |
- | <wordpress@nintechnet.com>                                          |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | http://nintechnet.com/                                              |
- +---------------------------------------------------------------------+
- | REVISION: 2014-12-12 14:38:11                                       |
+ | REVISION: 2015-03-20 17:14:05                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -95,6 +92,9 @@ function nfw_uninstall() {
 	// Remove any scheduled cron job :
 	if ( wp_next_scheduled('nfscanevent') ) {
 		wp_clear_scheduled_hook('nfscanevent');
+	}
+	if ( wp_next_scheduled('nfsecupdates') ) {
+		wp_clear_scheduled_hook('nfsecupdates');
 	}
 
 	// Delete DB rows :
