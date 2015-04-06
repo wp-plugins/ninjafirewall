@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-03-15 19:08:22                                       |
+// | REVISION: 2015-04-01 18:31:40                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -130,7 +130,12 @@ if (! $nfw_['options'] = @$nfw_['result']->fetch_object() ) {
 }
 $nfw_['result']->close();
 
-$nfw_['nfw_options'] = unserialize($nfw_['options']->option_value);
+if (! $nfw_['nfw_options'] = @unserialize($nfw_['options']->option_value) ) {
+	$nfw_['mysqli']->close();
+	define( 'NFW_STATUS', 11 );      // WP ONLY !!!!
+	unset($nfw_);
+	return;
+}
 
 // Are we supposed to do anything ?
 if ( empty($nfw_['nfw_options']['enabled']) ) {
@@ -223,6 +228,13 @@ if ( strpos($_SERVER['SCRIPT_NAME'], '/plugins.php' ) !== FALSE ) {
 			$nfw_['a_msg'] = '2:1:' . @$_FILES['themezip']['name'];
 		}
 	}
+// plugin updates via admin-ajax.php (since WP 4.2):
+} elseif ( strpos($_SERVER['SCRIPT_NAME'], '/admin-ajax.php' ) !== FALSE ) {
+	if ( isset( $_REQUEST['action']) && $_REQUEST['action'] == 'update-plugin' ) {
+		if (! empty($_REQUEST['plugin']) ) {
+			$nfw_['a_msg'] = '1:4:' . @$_REQUEST['plugin'];
+		}
+	}
 // update-core.php
 } elseif ( strpos($_SERVER['SCRIPT_NAME'], '/update-core.php' ) !== FALSE ) {
 	if ( isset( $_GET['action'] )  ) {
@@ -298,7 +310,13 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 		return;
 	}
 	// Fetch those rules only :
-	$nfw_['nfw_rules'] = unserialize($nfw_['rules']->option_value);
+	if (! $nfw_['nfw_rules'] = @unserialize($nfw_['rules']->option_value) ) {
+		$nfw_['mysqli']->close();
+		define( 'NFW_STATUS', 12 );
+		unset($nfw_);
+		return;
+	}
+
 	if (isset($nfw_['nfw_rules']['999']) ) {
 		$nfw_['adm_rules'] = array();
 		foreach ($nfw_['nfw_rules']['999'] as $key => $value) {
@@ -493,8 +511,16 @@ if (! $nfw_['rules'] = @$nfw_['result']->fetch_object() ) {
 }
 $nfw_['result']->close();
 
+// This will be returned to the admin only if (s)he is not whitelisted obviously :
+if (! $nfw_['nfw_rules'] = @unserialize($nfw_['rules']->option_value) ) {
+	$nfw_['mysqli']->close();
+	define( 'NFW_STATUS', 12 );      // WP ONLY !!!!
+	unset($nfw_);
+	return;
+}
+
 // Parse all requests and server variables :
-nfw_check_request( unserialize($nfw_['rules']->option_value), $nfw_['nfw_options'] );
+nfw_check_request( $nfw_['nfw_rules'], $nfw_['nfw_options'] );
 
 // Sanitise requests/variables if needed :
 if (! empty($nfw_['nfw_options']['get_sanitise']) && ! empty($_GET) ){

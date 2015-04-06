@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-13 16:44:27                                       |
+ | REVISION: 2015-03-20 17:49:15                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -141,7 +141,7 @@ echo '
 				<textarea name="nfw_options[blocked_msg]" class="small-text code" cols="60" rows="5">';
 
 if (! empty( $nfw_options['blocked_msg']) ) {
-	echo base64_decode($nfw_options['blocked_msg']);
+	echo htmlentities(base64_decode($nfw_options['blocked_msg']));
 } else {
 	echo NFW_DEFAULT_MSG;
 }
@@ -191,8 +191,44 @@ function nf_sub_options_save() {
 
 	if ( empty( $_POST['nfw_options']['enabled']) ) {
 		$nfw_options['enabled'] = 0;
+
+		// Disable cron jobs:
+		if ( wp_next_scheduled('nfscanevent') ) {
+			wp_clear_scheduled_hook('nfscanevent');
+		}
+		if ( wp_next_scheduled('nfsecupdates') ) {
+			wp_clear_scheduled_hook('nfsecupdates');
+		}
 	} else {
 		$nfw_options['enabled'] = 1;
+
+		// Re-enable cron jobs, if needed :
+		if (! empty($nfw_options['sched_scan']) ) {
+			if ($nfw_options['sched_scan'] == 1) {
+				$schedtype = 'hourly';
+			} elseif ($nfw_options['sched_scan'] == 2) {
+				$schedtype = 'twicedaily';
+			} else {
+				$schedtype = 'daily';
+			}
+			if ( wp_next_scheduled('nfscanevent') ) {
+				wp_clear_scheduled_hook('nfscanevent');
+			}
+			wp_schedule_event( time() + 3600, $schedtype, 'nfscanevent');
+		}
+		if (! empty($nfw_options['enable_updates']) ) {
+			if ($nfw_options['sched_updates'] == 1) {
+				$schedtype = 'hourly';
+			} elseif ($nfw_options['sched_updates'] == 2) {
+				$schedtype = 'twicedaily';
+			} else {
+				$schedtype = 'daily';
+			}
+			if ( wp_next_scheduled('nfsecupdates') ) {
+				wp_clear_scheduled_hook('nfsecupdates');
+			}
+			wp_schedule_event( time() + 90, $schedtype, 'nfsecupdates');
+		}
 	}
 
 	if ( (isset( $_POST['nfw_options']['ret_code'])) &&

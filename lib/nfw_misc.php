@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-02-23 15:41:40                                       |
+ | REVISION: 2015-04-01 19:00:28                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -66,10 +66,13 @@ function nfw_admin_notice(){
 	}
 
 	$nfw_options = get_option('nfw_options');
-	if ( empty($nfw_options['ret_code']) ) {
-		// we will assume that NinjaFirewall it is not installed yet :
+	// If we cannot find options and if the firewall did not return
+	// a #11 status code (corrupted DB/tables)...
+	if ( empty($nfw_options['ret_code']) && NF_DISABLED != 11 ) {
+		// ...we will assume that NinjaFirewall it is not installed yet :
 		return;
 	}
+
 	if (! empty($GLOBALS['err_fw'][NF_DISABLED]) ) {
 		$msg = $GLOBALS['err_fw'][NF_DISABLED];
 	} else {

@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.3.11
+Version: 1.4
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -17,11 +17,11 @@ Text Domain: ninjafirewall
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-19 14:06:05                                       |
+ | REVISION: 2015-04-01 18:53:07                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.3.11' );
-define( 'NFW_RULES_VERSION',  '20150320.2' );
+define( 'NFW_ENGINE_VERSION', '1.4' );
+define( 'NFW_RULES_VERSION',  '20150404.2' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -65,12 +65,14 @@ $err_fw = array(
 	2	=>	__('Cannot read WordPress configuration file'),
 	3	=>	__('Cannot retrieve WordPress database credentials'),
 	4	=>	__('Cannot connect to WordPress database'),
-	5	=>	__('Cannot retrieve user options from database (#1)'),
-	6	=>	__('Cannot retrieve user options from database (#2)'),
-	7	=>	__('Cannot retrieve user rules from database (#1)'),
-	8	=>	__('Cannot retrieve user rules from database (#2)'),
+	5	=>	__('Cannot retrieve user options from database (#2)'),
+	6	=>	__('Cannot retrieve user options from database (#3)'),
+	7	=>	__('Cannot retrieve user rules from database (#2)'),
+	8	=>	__('Cannot retrieve user rules from database (#3)'),
 	9	=>	__('The firewall has been disabled from the <a href="admin.php?page=nfsubopt">administration console</a>'),
 	10	=> __('Unable to communicate with the firewall. Please check your PHP INI settings'),
+	11	=>	__('Cannot retrieve user options from database (#1)'),
+	12	=>	__('Cannot retrieve user rules from database (#1)'),
 );
 /* ------------------------------------------------------------------ */
 
@@ -125,7 +127,7 @@ function nfw_activate() {
 		$nfw_options['enabled'] = 1;
 		update_option( 'nfw_options', $nfw_options);
 
-		// Re-enable scheduled scan (if any) :
+		// Re-enable scheduled scan, if needed :
 		if (! empty($nfw_options['sched_scan']) ) {
 			if ($nfw_options['sched_scan'] == 1) {
 				$schedtype = 'hourly';
@@ -139,6 +141,21 @@ function nfw_activate() {
 			}
 			wp_schedule_event( time() + 3600, $schedtype, 'nfscanevent');
 		}
+		// Re-enable auto updates, if needed :
+		if (! empty($nfw_options['enable_updates']) ) {
+			if ($nfw_options['sched_updates'] == 1) {
+				$schedtype = 'hourly';
+			} elseif ($nfw_options['sched_updates'] == 2) {
+				$schedtype = 'twicedaily';
+			} else {
+				$schedtype = 'daily';
+			}
+			if ( wp_next_scheduled('nfsecupdates') ) {
+				wp_clear_scheduled_hook('nfsecupdates');
+			}
+			wp_schedule_event( time() + 90, $schedtype, 'nfsecupdates');
+		}
+
 
 		// ...and whitelist the admin if needed :
 		if (! empty( $nfw_options['wl_admin']) ) {
@@ -161,6 +178,10 @@ function nfw_deactivate() {
 	// Clear scheduled scan (if any) :
 	if ( wp_next_scheduled('nfscanevent') ) {
 		wp_clear_scheduled_hook('nfscanevent');
+	}
+	// and clear auto updates (if any) :
+	if ( wp_next_scheduled('nfsecupdates') ) {
+		wp_clear_scheduled_hook('nfsecupdates');
 	}
 
 	update_option( 'nfw_options', $nfw_options);
@@ -276,8 +297,7 @@ function nfw_upgrade() {	//i18n
 	}
 
 	// update engine version number if needed :
-	if (! empty($nfw_options['engine_version']) && $nfw_options['engine_version'] != NFW_ENGINE_VERSION ) {
-
+	if (! empty($nfw_options['engine_version']) && version_compare($nfw_options['engine_version'], NFW_ENGINE_VERSION, '<') ) {
 		// v1.0.4 update -------------------------------------------------
 		if ( empty( $nfw_options['alert_email']) ) {
 			$nfw_options['a_0']  = 1; $nfw_options['a_11'] = 1;
@@ -428,7 +448,7 @@ function nfw_upgrade() {	//i18n
 	}
 
 	// do we need to update rules as well ?
-	if (! empty($nfw_options['rules_version']) && $nfw_options['rules_version'] < NFW_RULES_VERSION ) {
+	if (! empty($nfw_options['rules_version']) && version_compare($nfw_options['rules_version'], NFW_RULES_VERSION, '<') ) {
 		// fetch new set of rules :
 		$_REQUEST['nfw_act'] = 'x';
 		require_once( plugin_dir_path(__FILE__) . 'install.php' );
@@ -784,6 +804,11 @@ function ninjafirewall_admin_menu() {
 		'nfsubedit', 'nf_sub_edit' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubedit' );
 
+	// Updates menu :
+	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Updates', 'Updates', 'manage_options',
+		'nfsubupdates', 'nf_sub_updates' );
+	add_action( 'load-' . $menu_hook, 'help_nfsubupdates' );
+
 	// WP+ menu :
 	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: WP+ Edition', 'WP+ Edition', 'manage_options',
 		'nfsubwplus', 'nf_sub_wplus' );
@@ -952,7 +977,7 @@ function nf_menu_main() {
 		<tr>
 			<th scope="row">Version</th>
 			<td width="20" align="left">&nbsp;</td>
-			<td><?php echo NFW_ENGINE_VERSION . ' (' . preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', NFW_RULES_VERSION) . ')' ?></td>
+			<td><?php echo NFW_ENGINE_VERSION . ' (' . preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', $nfw_options['rules_version']) . ')' ?></td>
 		</tr>
 	<?php
 	// Check if the admin is whitelisted, and warn if it is not :
@@ -3313,6 +3338,23 @@ function nf_sub_edit() {
 	</table>
 </div>';
 
+}
+
+/* ------------------------------------------------------------------ */
+
+function nf_sub_updates() {
+
+	// Updates
+
+	require( plugin_dir_path(__FILE__) . 'lib/nf_sub_updates.php');
+
+}
+
+add_action('nfsecupdates', 'nfupdatesdo');
+
+function nfupdatesdo() {
+	define('NFUPDATESDO', 1);
+	nf_sub_updates();
 }
 
 /* ------------------------------------------------------------------ */

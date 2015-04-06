@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-13 15:38:06                                       |
+ | REVISION: 2015-03-21 21:03:50                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -153,7 +153,7 @@ if (! file_exists($nfmon_snapshot) ) {
 
 			<tr>
 				<th scope="row"><?php _e('Exclude the following files/folders') ?></th>
-				<td align="left"><input class="regular-text" type="text" name="snapexclude" value="<?php echo htmlspecialchars($nfw_options['snapexclude']); ?>" placeholder="<?php _e('e.g.,') ?> /wp-content/nfwlog/" maxlength="255"><br /><span class="description"><?php _e('Full or partial case-sensitive string(s). Multiple values must be comma-separated.') ?> (<code>,</code>)</span></td>
+				<td align="left"><input class="regular-text" type="text" name="snapexclude" value="<?php echo htmlspecialchars($nfw_options['snapexclude']); ?>" placeholder="<?php _e('e.g.,') ?> /wp-content/nfwlog/" maxlength="255"><br /><span class="description"><?php _e('Full or partial case-sensitive string(s). Multiple values must be comma-separated') ?> (<code>,</code>).</span></td>
 			</tr>
 
 			<tr>

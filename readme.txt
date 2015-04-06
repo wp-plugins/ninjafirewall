@@ -2,7 +2,7 @@
 Contributors: nintechnet, bruandet
 Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
-Tested up to: 4.1.1
+Tested up to: 4.2
 Stable tag: 1.3.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -27,6 +27,7 @@ It will hook, scan, sanitise or reject any HTTP / HTTPS request sent to a PHP sc
 * Real-time detection (`File Guard`).
 * File integrity monitoring to scan your website hourly/twicedaily/daily (`File Check`).
 * `Live Log` to watch your website traffic in real time.
+* Automatically update security rules to protect against the latest WordPress vulnerabilities.
 * Monitors the database and sends an alert if an administrator account is created, modified or deleted.
 * Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`).
 * Sets the `HttpOnly` flag on all cookies.
@@ -110,7 +111,7 @@ Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall
 = Requirements =
 
 * WordPress 3.3+
-* PHP 5.3+ or [HHVM 3.4+](http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/ "")
+* PHP 5.3+ (5.4 or higher recommended) or [HHVM 3.4+](http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/ "")
 * Apache / Nginx / LiteSpeed
 * Unix-like OS (Linux, BSD) only
 
@@ -180,6 +181,11 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 
 == Changelog ==
+
+= 1.4 =
+* Added a new feature: "Updates". It can automatically update NinjaFirewall's built-in security rules in order to keep your blog protected against the latest WordPress vulnerabilities, without having to update the whole plugin. For more info, please see [NinjaFirewall WP/WP+ introduces automatic updates for security rules](http://blog.nintechnet.com/ninjafirewall-wpwp-introduces-automatic-updates-for-security-rules/ "").
+* Updated security rules.
+* Minor fixes and improvements.
 
 = 1.3.11 =
 * The firewall can now use some very specific rules to block an action from the logged in administrator even if he/she is whitelisted. Such rules will only be used to protect against CSRF and maliciously crafted links specifically targeting the administrator.
