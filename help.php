@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-04 00:04:05                                       |
+ | REVISION: 2015-04-09 19:07:01                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -383,7 +383,7 @@ function help_nfsublivelog() {
 			__('Live Log lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Note that requests sent to static elements like JS/CSS files and images are not managed by NinjaFirewall.') .
 			'</p>
 			<p>' .
-			__('You can enable/disable the monitoring process, change the refresh rate, clear the screen, enable automatic vertical scrolling, change the log format and select which traffic you want to view (HTTP/HTTPS).') .
+			__('You can enable/disable the monitoring process, change the refresh rate, clear the screen, enable automatic vertical scrolling, change the log format, select which traffic you want to view (HTTP/HTTPS) and the timezone as well.') .
 			'</p><p>' .
 			__('Live Log does not make use of any WordPress core file (e.g., <code>admin-ajax.php</code>). It communicates directly with the firewall without loading WordPress bootstrap. Consequently, it is fast, light and it should not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).') .
 			'</p><p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">' .
@@ -403,7 +403,7 @@ function help_nfsublivelog() {
 			'<li>'. __('<code>%ua</code>: the user-agent (HTTP_USER_AGENT), if any.') . '</li>' .
 			'<li>'. __('<code>%forward</code>: HTTP_X_FORWARDED_FOR, if any. If you are behind a load balancer or CDN, this will likely be the visitor true IP.') . '</li>' .
 			'<li>'. __('<code>%host</code>: the requested host (HTTP_HOST), if any.') . '</li>' .
-			__('Additionally, you can include any of the following characters: <code>\'</code>, <code>"</code>, <code>%</code>, <code>[</code>, <code>]</code>, <code>space</code> and lowercase letters <code>a-z</code>.')
+			__('Additionally, you can include any of the following characters: <code>"</code>, <code>%</code>, <code>[</code>, <code>]</code>, <code>space</code> and lowercase letters <code>a-z</code>.')
 	) );
 }
 

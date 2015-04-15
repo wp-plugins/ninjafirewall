@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-13 15:18:09                                       |
+ | REVISION: 2015-04-11 19:16:00                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -21,7 +21,8 @@
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
-if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+// Block immediately if user is not allowed :
+nf_not_allowed( 'block', __LINE__ );
 
 $nfw_options = get_option( 'nfw_options' );
 
@@ -141,7 +142,13 @@ if (! is_multisite() ) {
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
 			<th scope="row"><?php _e('Alerts should be sent to') ?></th>
 			<td align="left">
-			<input class="regular-text" type="text" name="nfw_options[alert_email]" size="45" maxlength="250" value="<?php echo empty( $nfw_options['alert_email']) ? get_option('admin_email') : $nfw_options['alert_email'] ?>">
+			<input class="regular-text" type="text" name="nfw_options[alert_email]" size="45" maxlength="250" value="<?php
+			if ( empty( $nfw_options['alert_email'])) {
+				echo htmlspecialchars( get_option('admin_email') );
+			} else {
+				echo htmlspecialchars( $nfw_options['alert_email'] );
+			}
+			?>">
 			<input type="hidden" name="nfw_options[alert_sa_only]" value="2">
 			</td>
 		</tr>
@@ -159,9 +166,9 @@ if (! is_multisite() ) {
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
 			<th scope="row"><?php _e('Alerts should be sent to') ?></th>
 			<td align="left">
-			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php checked( $nfw_options['alert_sa_only'], 1 ) ?>>&nbsp;<?php _e('Only to me, the Super Admin') ?> (<?php echo get_option('admin_email'); ?>)</label></p>
+			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php checked( $nfw_options['alert_sa_only'], 1 ) ?>>&nbsp;<?php _e('Only to me, the Super Admin') ?> (<?php echo htmlspecialchars(get_option('admin_email')); ?>)</label></p>
 			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="2"<?php checked( $nfw_options['alert_sa_only'], 2) ?>>&nbsp;<?php _e('To the administrator of the site where originated the alert (default)') ?></label></p>
-			<input type="hidden" name="nfw_options[alert_email]" value="<?php echo get_option('admin_email'); ?>">
+			<input type="hidden" name="nfw_options[alert_email]" value="<?php echo htmlspecialchars(get_option('admin_email')); ?>">
 			</td>
 		</tr>
 	</table>
@@ -184,7 +191,8 @@ function nf_sub_event_save() {
 
 	// Save Event Notifications :
 
-	if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+	// Block immediately if user is not allowed :
+	nf_not_allowed( 'block', __LINE__ );
 
 	if (! current_user_can( 'manage_options' ) ) {
 		wp_die( 'You do not have sufficient permissions to access this page.',

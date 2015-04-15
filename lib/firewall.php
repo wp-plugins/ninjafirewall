@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-04-01 18:31:40                                       |
+// | REVISION: 2015-04-10 17:13:14                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -132,7 +132,7 @@ $nfw_['result']->close();
 
 if (! $nfw_['nfw_options'] = @unserialize($nfw_['options']->option_value) ) {
 	$nfw_['mysqli']->close();
-	define( 'NFW_STATUS', 11 );      // WP ONLY !!!!
+	define( 'NFW_STATUS', 11 );
 	unset($nfw_);
 	return;
 }
@@ -252,6 +252,19 @@ if ( $nfw_['a_msg'] ) {
 	define('NFW_ALERT', $nfw_['a_msg']);
 }
 
+// Ensure with have a proper and single IP (a user may wrongly use
+// the .htninja file and redirect HTTP_X_FORWARDED_FOR to REMOTE_ADDR):
+if (strpos($_SERVER['REMOTE_ADDR'], ',') !== false) {
+	$nfw_['match'] = array_map('trim', @explode(',', $_SERVER['REMOTE_ADDR']));
+	foreach($nfw_['match'] as $nfw_['m']) {
+		if ( filter_var($nfw_['m'], FILTER_VALIDATE_IP) )  {
+			// Fix it, so that WP and other plugins can use it:
+			$_SERVER['REMOTE_ADDR'] = $nfw_['m'];
+			break;
+		}
+	}
+}
+
 nfw_check_session();
 // Do not scan/filter WordPress admin (if logged in) ?
 if (! empty($_SESSION['nfw_goodguy']) ) {
@@ -369,10 +382,15 @@ if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
 			if ( empty($_SERVER['HTTP_HOST']) ) { $HTTP_HOST = '-'; }
 			else { $HTTP_HOST = $_SERVER['HTTP_HOST']; }
 
-			if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
-				$nfw_['nfw_options']['tzstring'] = 'UTC';
+			// Set the timezone :
+			if (! empty($nfw_['nfw_options']['livetz']) ) {
+				@date_default_timezone_set($nfw_['nfw_options']['livetz']);
+			} else {
+				if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
+					$nfw_['nfw_options']['tzstring'] = 'UTC';
+				}
+				@date_default_timezone_set($nfw_['nfw_options']['tzstring']);
 			}
-			date_default_timezone_set($nfw_['nfw_options']['tzstring']);
 
 			// Log the request :
 			if (! empty($nfw_['nfw_options']['liveformat']) ) {
@@ -380,14 +398,14 @@ if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
 				$nfw_['tmp'] = str_replace(
 					array( '%time', '%name', '%client', '%method', '%uri', '%referrer', '%ua', '%forward', '%host' ),
 					array( date('d/M/y:H:i:s O', time()), $PHP_AUTH_USER, $_SERVER["REMOTE_ADDR"], $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $HTTP_REFERER, $HTTP_USER_AGENT, $HTTP_X_FORWARDED_FOR, $HTTP_HOST ), $nfw_['nfw_options']['liveformat']	);
-				file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php', htmlspecialchars($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND);
+				file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php', htmlentities($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND | LOCK_EX);
 			} else {
 				// Default format :
 				file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
-				'['. date('d/M/y:H:i:s O', time()) .'] '.	htmlspecialchars(
+				'['. @date('d/M/y:H:i:s O', time()) .'] '.	htmlentities(
 				$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
 				$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
-				$HTTP_X_FORWARDED_FOR .'" "'. $HTTP_HOST, ENT_NOQUOTES) ."\"\n", FILE_APPEND);
+				$HTTP_X_FORWARDED_FOR .'" "'. $HTTP_HOST, ENT_NOQUOTES) ."\"\n", FILE_APPEND | LOCK_EX);
 			}
 		}
 	}
@@ -514,7 +532,7 @@ $nfw_['result']->close();
 // This will be returned to the admin only if (s)he is not whitelisted obviously :
 if (! $nfw_['nfw_rules'] = @unserialize($nfw_['rules']->option_value) ) {
 	$nfw_['mysqli']->close();
-	define( 'NFW_STATUS', 12 );      // WP ONLY !!!!
+	define( 'NFW_STATUS', 12 );
 	unset($nfw_);
 	return;
 }
@@ -666,8 +684,8 @@ function nfw_check_request( $nfw_rules, $nfw_options ) {
 		$wherelist = explode('|', $rules_values['where']);
 		foreach ($wherelist as $where) {
 
-			// Global GET/POST/COOKIE requests :
-			if ( ($where == 'POST' && ! empty($nfw_options['post_scan'])) || ($where == 'GET' && ! empty($nfw_options['get_scan'])) || ($where == 'COOKIE' && ! empty($nfw_options['cookies_scan'])) ) {
+			// Global GET/POST/COOKIE/SERVER requests :
+			if ( ($where == 'POST' && ! empty($nfw_options['post_scan'])) || ($where == 'GET' && ! empty($nfw_options['get_scan'])) || ($where == 'COOKIE' && ! empty($nfw_options['cookies_scan'])) || $where == 'SERVER' ) {
 				foreach ($GLOBALS['_' . $where] as $reqkey => $reqvalue) {
 					// Look for an array() :
 					if ( is_array($reqvalue) ) {
@@ -943,22 +961,17 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	@file_put_contents( $stat_file, $nfw_stat_arr[0] . ':' . $nfw_stat_arr[1] . ':' .
 		$nfw_stat_arr[2] . ':' . $nfw_stat_arr[3] . ':' . $nfw_stat_arr[4] . ':' .
 		$nfw_stat_arr[5] . ':' . $nfw_stat_arr[6] . ':' . $nfw_stat_arr[7] . ':' .
-		$nfw_stat_arr[8] . ':' . $nfw_stat_arr[9] );
+		$nfw_stat_arr[8] . ':' . $nfw_stat_arr[9], LOCK_EX );
 
-	if (! $fh = fopen($log_file, 'a') ) {
-		return;
-	}
 
-   fwrite( $fh,
-      '[' . time() . '] ' . '[' . round( (microtime(true) - $nfw_['fw_starttime']), 5) . '] ' .
+	@file_put_contents( $log_file,
+		'[' . time() . '] ' . '[' . round( (microtime(true) - $nfw_['fw_starttime']), 5) . '] ' .
       '[' . $_SERVER['SERVER_NAME'] . '] ' . '[#' . $nfw_['num_incident'] . '] ' .
       '[' . $ruleid . '] ' .
       '[' . $loglevel . '] ' . '[' . $_SERVER['REMOTE_ADDR'] . '] ' .
       '[' . $http_ret_code . '] ' . '[' . $_SERVER['REQUEST_METHOD'] . '] ' .
       '[' . $_SERVER['SCRIPT_NAME'] . '] ' . '[' . $loginfo . '] ' .
-      '[' . $res . ']' . "\n"
-   );
-   fclose($fh);
+      '[' . $res . ']' . "\n", FILE_APPEND | LOCK_EX );
 }
 
 // =====================================================================
@@ -1051,7 +1064,7 @@ function nfw_bfd($where) {
 	}
 
 	// Let it go, but record the request :
-	file_put_contents($bf_conf_dir . '/bf_' . $where . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND );
+	file_put_contents($bf_conf_dir . '/bf_' . $where . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND | LOCK_EX);
 
 }
 // =====================================================================
@@ -1166,7 +1179,9 @@ function nfw_response_headers() {
 	}
 
 	// We don't send HSTS headers over HTTP :
-	if ($_SERVER['SERVER_PORT'] != 443) {
+	if ( $_SERVER['SERVER_PORT'] != 443 &&
+	(! isset( $_SERVER['HTTP_X_FORWARDED_PROTO']) ||
+	$_SERVER['HTTP_X_FORWARDED_PROTO'] != 'https') ) {
 		return;
 	}
 	if ($NFW_RESHEADERS[4] == 0) {

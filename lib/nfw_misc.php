@@ -40,11 +40,11 @@ function nfw_admin_notice(){
 	if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
 		@mkdir( WP_CONTENT_DIR . '/nfwlog', 0755);
 		@touch( WP_CONTENT_DIR . '/nfwlog/index.html' );
-		@file_put_contents(WP_CONTENT_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all");
+		@file_put_contents(WP_CONTENT_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
 		if (! file_exists(WP_CONTENT_DIR . '/nfwlog/cache') ) {
 			@mkdir( WP_CONTENT_DIR . '/nfwlog/cache', 0755);
 			@touch( WP_CONTENT_DIR . '/nfwlog/cache/index.html' );
-			@file_put_contents(WP_CONTENT_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all");
+			@file_put_contents(WP_CONTENT_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
 		}
 	}
 	if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
@@ -164,7 +164,7 @@ function nf_check_dbdata() {
 	if (! file_exists($nfdbhash) ) {
 		// We don't have any hash yet, let's create one and quit
 		// (md5 is faster than sha1 or crc32 with long strings) :
-		@file_put_contents( $nfdbhash, md5( serialize( $adm_users) ) );
+		@file_put_contents( $nfdbhash, md5( serialize( $adm_users) ), LOCK_EX );
 		return;
 	}
 
@@ -181,7 +181,7 @@ function nf_check_dbdata() {
 		}
 
 		// Save the new hash :
-		$tmp = file_put_contents( $nfdbhash, md5( serialize( $adm_users) ) );
+		$tmp = file_put_contents( $nfdbhash, md5( serialize( $adm_users) ), LOCK_EX );
 		if ( $tmp === FALSE ) {
 			return;
 		}
@@ -198,8 +198,12 @@ function nf_check_dbdata() {
 
 		$subject = __('[NinjaFirewall] Alert: Database changes detected', 'ninjafirewall');
 		$message = __('NinjaFirewall has detected that one or more administrator accounts were modified in the database:', 'ninjafirewall') . "\n\n";
-		$message.= __('- Blog : ', 'ninjafirewall') . site_url() . "\n";
-		$message.= __('- Date : ', 'ninjafirewall') . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
+		if ( is_multisite() ) {
+			$message.= __('Blog : ', 'ninjafirewall') . network_home_url('/') . "\n";
+		} else {
+			$message.= __('Blog : ', 'ninjafirewall') . home_url('/') . "\n";
+		}
+		$message.= __('Date : ', 'ninjafirewall') . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
 		$message.= sprintf(__('Total administrators : %s', 'ninjafirewall'), count($adm_users) ) . "\n\n";
 		foreach( $adm_users as $obj => $adm ) {
 			$message.= 'Admin ID : ' . $adm->ID . "\n";

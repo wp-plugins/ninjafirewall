@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-21 21:03:50                                       |
+ | REVISION: 2015-04-10 16:31:24                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -49,7 +49,8 @@ if (defined('NFSCANDO') ) {
 	return;
 }
 
-if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+// Block immediately if user is not allowed :
+nf_not_allowed( 'block', __LINE__ );
 
 // Check if we have a snapshot or not:
 if (! file_exists($nfmon_snapshot) ) {
@@ -144,16 +145,16 @@ if (! file_exists($nfmon_snapshot) ) {
 				<th scope="row"><?php _e('Create a snapshot of all files stored in that directory') ?></th>
 				<td align="left"><input class="regular-text" type="text" name="snapdir" value="<?php
 				if (! empty($nfw_options['snapdir']) ) {
-					echo $nfw_options['snapdir'];
+					echo htmlspecialchars($nfw_options['snapdir']);
 				} else {
-					echo ABSPATH;
+					echo htmlspecialchars(ABSPATH);
 				}
 				?>" required /></td>
 			</tr>
 
 			<tr>
 				<th scope="row"><?php _e('Exclude the following files/folders') ?></th>
-				<td align="left"><input class="regular-text" type="text" name="snapexclude" value="<?php echo htmlspecialchars($nfw_options['snapexclude']); ?>" placeholder="<?php _e('e.g.,') ?> /wp-content/nfwlog/" maxlength="255"><br /><span class="description"><?php _e('Full or partial case-sensitive string(s). Multiple values must be comma-separated') ?> (<code>,</code>).</span></td>
+				<td align="left"><input class="regular-text" type="text" name="snapexclude" value="<?php echo htmlentities($nfw_options['snapexclude']); ?>" placeholder="<?php _e('e.g.,') ?> /wp-content/nfwlog/" maxlength="255"><br /><span class="description"><?php _e('Full or partial case-sensitive string(s). Multiple values must be comma-separated') ?> (<code>,</code>).</span></td>
 			</tr>
 
 			<tr>
@@ -483,7 +484,15 @@ if (file_exists($nfmon_diff) ) {
 	?>
 	<h3><?php _e('Options') ?></h3>
 	<form method="post">
-		<?php wp_nonce_field('filecheck_save', 'nfwnonce', 0); ?>
+		<?php
+		wp_nonce_field('filecheck_save', 'nfwnonce', 0);
+		// If WP cron is disabled, we simply warn the user :
+		if ( defined('DISABLE_WP_CRON') ) {
+		?>
+			<p><img src="<?php echo plugins_url() ?>/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description"><?php printf( __('It seems that %s is enabled. Ensure you have another way to run WP-Cron, otherwise NinjaFirewall scheduled scans will not work.'), '<code>DISABLE_WP_CRON</code>' ) ?></span></p>
+		<?php
+		}
+		?>
 		<table class="form-table">
 			<tr>
 				<th scope="row"><?php _e('Enable scheduled scans') ?></th>
@@ -799,10 +808,14 @@ function nf_scan_email($nfmon_diff, $log_dir) {
 		}
 		fclose($fh);
 		$data .= "\n== EOF\n";
-		file_put_contents($log_dir . 'nf_filecheck.txt', $data);
+		file_put_contents($log_dir . 'nf_filecheck.txt', $data, LOCK_EX);
 		$subject = __('[NinjaFirewall] Alert: File Check detection');
 		$msg = __('NinjaFirewall detected that changes were made to your files.') . "\n\n";
-		$msg .=__('Domain: ') . site_url() . "\n";
+		if ( is_multisite() ) {
+			$msg .=__('Blog: ') . network_home_url('/') . "\n";
+		} else {
+			$msg .=__('Blog: ') . home_url('/') . "\n";
+		}
 		$msg .= sprintf( __('Date: %s'), date_i18n('M d, Y @ H:i:s O') )."\n\n";
 		$msg .= __('See attached file for details.' ) . "\n\n" .
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
@@ -816,7 +829,11 @@ function nf_scan_email($nfmon_diff, $log_dir) {
 		// User asked to always receive a report after a scheduled scan :
 		$subject = __('[NinjaFirewall] File Check report');
 		$msg = __('NinjaFirewall did not detect changes in your files.') . "\n\n";
-		$msg .=__('Domain: ') . site_url() . "\n";
+		if ( is_multisite() ) {
+			$msg .=__('Blog: ') . network_home_url('/') . "\n";
+		} else {
+			$msg .=__('Blog: ') . home_url('/') . "\n";
+		}
 		$msg .= sprintf( __('Date: %s'), date_i18n('M d, Y @ H:i:s O') ) . "\n\n" .
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
 			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";

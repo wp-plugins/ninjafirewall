@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-03 16:42:05                                       |
+ | REVISION: 2015-04-10 16:25:52                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -34,25 +34,13 @@ if (defined('NFUPDATESDO') ) {
 	return;
 }
 
-if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+// Block immediately if user is not allowed :
+nf_not_allowed( 'block', __LINE__ );
 
 echo '<div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
 	<h2>' . __('Updates') . '</h2>
 	<br />';
-
-// If WP cron is disabled, we stop here :
-if ( defined('DISABLE_WP_CRON') ) {
-	echo '<div class="error settings-error"><p>' . __('WordPress cron is disabled (<code>DISABLE_WP_CRON</code>). Please enable it, otherwise NinjaFirewall updates will not work.') . '</p></div>';
-	// Clear any cronjob :
-	if ( wp_next_scheduled('nfsecupdates') ) {
-		wp_clear_scheduled_hook('nfsecupdates');
-	}
-	// Disable that option :
-	$nfw_options = get_option('nfw_options');
-	$nfw_options['enable_updates'] = 0;
-	update_option('nfw_options', $nfw_options);
-}
 
 //Saved options ?
 if (! empty($_POST['nfw_act']) ) {
@@ -79,9 +67,10 @@ if ( empty($nfw_options['sched_updates']) || ! preg_match('/^[2-3]$/', $nfw_opti
 } else {
 	$sched_updates = $nfw_options['sched_updates'];
 }
-if ( empty($nfw_options['notify_updates']) ) {
+if ( empty($nfw_options['notify_updates']) && isset($nfw_options['notify_updates']) ) {
 	$notify_updates = 0;
 } else {
+	// Defaut if not set yet:
 	$notify_updates = 1;
 }
 ?>
@@ -111,7 +100,14 @@ function toogle_table(off) {
 		</tr>
 	</table>
 
-	<br />
+	<?php
+	// If WP cron is disabled, we simply warn the user :
+	if ( defined('DISABLE_WP_CRON') ) {
+	?>
+		<p><img src="<?php echo plugins_url() ?>/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description"><?php printf( __('It seems that %s is enabled. Ensure you have another way to run WP-Cron, otherwise NinjaFirewall automatic updates will not work.'), '<code>DISABLE_WP_CRON</code>' ) ?></span></p>
+	<?php
+	}
+	?>
 
 	<table class="form-table" id="upd_table"<?php echo $enable_updates == 1 ? '' : ' style="display:none"' ?>>
 		<tr>
@@ -425,7 +421,7 @@ function nf_sub_updates_log($update_log, $msg) {
 			@unlink($update_log);
 		}
 	}
-	@file_put_contents($update_log, date_i18n('[d/M/y:H:i:s O]') . " $msg\n", FILE_APPEND);
+	@file_put_contents($update_log, date_i18n('[d/M/y:H:i:s O]') . " $msg\n", FILE_APPEND | LOCK_EX);
 
 }
 
@@ -445,7 +441,11 @@ function nf_sub_updates_notification($new_rules_version) {
 
 	$subject = __('[NinjaFirewall] Security rules update');
 	$msg = __('NinjaFirewall security rules have been updated:') . "\n\n";
-	$msg .=__('Domain: ') . site_url() . "\n";
+	if ( is_multisite() ) {
+		$msg .=__('Blog: ') . network_home_url('/') . "\n";
+	} else {
+		$msg .=__('Blog: ') . home_url('/') . "\n";
+	}
 	$msg .=__('Rules version: ') . preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', $new_rules_version) . "\n";
 	$msg .= sprintf( __('Date: %s'), date_i18n('M d, Y @ H:i:s O') ) . "\n\n" .
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .

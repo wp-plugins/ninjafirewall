@@ -13,7 +13,7 @@ A true Web Application Firewall.
 
 NinjaFirewall (WP edition) is a true Web Application Firewall. Although it can be installed and configured just like a plugin, it is a stand-alone firewall that sits in front of WordPress.
 
-It allows any blog administrator to benefit from very advanced and powerful security features that usually aren't available at the WordPress level, but only in security applications such as the Apache [ModSecurity](http://www.modsecurity.org/ "") module or the PHP [Suhosin](http://suhosin.org/ "") extension.
+It allows any blog administrator to benefit from very advanced and powerful security features that usually aren't available at the WordPress/plugin level, but only in security applications such as the Apache [ModSecurity](http://www.modsecurity.org/ "") module or the PHP [Suhosin](http://suhosin.org/ "") extension.
 
 NinjaFirewall can hook, scan, sanitise or reject any HTTP/HTTPS request sent to a PHP script before it reaches WordPress or any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers shell scripts and backdoors will be filtered by NinjaFirewall.
 
@@ -22,7 +22,7 @@ NinjaFirewall can hook, scan, sanitise or reject any HTTP/HTTPS request sent to 
 * Full standalone web application firewall; works before WordPress is loaded.
 * Multi-site support.
 * IPv6 compatible.
-* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injections, brute-force scanners, shell scripts, backdoors and many other threats.
+* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injection, brute-force scanners, shell scripts, backdoors and many other threats.
 * Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO).
 * Sanitises variables names and values.
 * Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder).
@@ -183,6 +183,16 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 
 == Changelog ==
+
+= 1.4.1-RC.1 =
+* The Live Log "Refresh Rate" and "Autoscrolling" options will be remembered when changed.
+* "Live Log" has a new option to select the timezone to use.
+* The firewall will always ensure that `REMOTE_ADDR` contains only one IP or will remove any extra IP.
+* NinjaFirewall will only warn but not block if `DISABLE_WP_CRON` is defined (applies to "File Check" and "Updates").
+* [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
+* NinjaFirewall will allow the user to set the Strict-Transport-Security (HSTS) header if `HTTP_X_FORWARDED_PROTO` is set to 'https' (Firewall Policies > HTTP response headers).
+* Notification emails will either use the `home_url()` or `site_url()` function depending on the type of notification.
+* Minor fixes and improvements.
 
 = 1.4 =
 * Added a new feature: "Updates". It can automatically update NinjaFirewall's built-in security rules in order to keep your blog protected against the latest WordPress vulnerabilities, without having to update the whole plugin. For more info, please see [NinjaFirewall WP/WP+ introduces automatic updates for security rules](http://blog.nintechnet.com/ninjafirewall-wpwp-introduces-automatic-updates-for-security-rules/ "").

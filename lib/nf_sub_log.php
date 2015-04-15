@@ -21,7 +21,8 @@
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
-if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+// Block immediately if user is not allowed :
+nf_not_allowed( 'block', __LINE__ );
 
 $nfw_options = get_option( 'nfw_options' );
 
@@ -132,7 +133,7 @@ $logline = '';
 while (! feof( $fh ) ) {
 	$line = fgets( $fh );
 	if ( $skip <= 0 ) {
-		if ( preg_match( '/^\[(\d{10})\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(#\d{7})\]\s+\[(\d+)\]\s+\[(\d)\]\s+\[([\d.:a-fA-F]+?)\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+)\]$/', $line, $match ) ) {
+		if ( preg_match( '/^\[(\d{10})\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(#\d{7})\]\s+\[(\d+)\]\s+\[(\d)\]\s+\[([\d.:a-fA-F, ]+?)\]\s+\[.+?\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+?)\]\s+\[(.+)\]$/', $line, $match ) ) {
 			if ( empty( $match[4]) ) { $match[4] = '-'; }
 			$res = date( 'd/M/y H:i:s', $match[1] ) . '  ' . $match[3] . '  ' . str_pad( $levels[$match[5]], 8 , ' ', STR_PAD_RIGHT) .'  ' .
 			str_pad( $match[4], 4 , ' ', STR_PAD_LEFT) . '  ' . str_pad( $match[6], 15, ' ', STR_PAD_RIGHT) . '  ' .

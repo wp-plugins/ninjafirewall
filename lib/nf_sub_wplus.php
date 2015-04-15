@@ -21,7 +21,8 @@
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
-if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+// Block immediately if user is not allowed :
+nf_not_allowed( 'block', __LINE__ );
 
 ?>
 <div class="wrap">
