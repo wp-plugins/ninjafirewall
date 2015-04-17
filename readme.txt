@@ -184,9 +184,10 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.1-RC.1 =
+= 1.4.1-RC.2 =
+* File Guard email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.
 * The Live Log "Refresh Rate" and "Autoscrolling" options will be remembered when changed.
-* "Live Log" has a new option to select the timezone to use.
+* "Live Log" has a new option to select the timezone to display.
 * The firewall will always ensure that `REMOTE_ADDR` contains only one IP or will remove any extra IP.
 * NinjaFirewall will only warn but not block if `DISABLE_WP_CRON` is defined (applies to "File Check" and "Updates").
 * [WP+ edition] Updated IPv4/IPv6 GeoIP databases.

@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+
+ +---------------------------------------------------------------------+ sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -29,15 +29,27 @@ if ( empty( $_REQUEST['nfw_act'] ) ) {
 	nfw_welcome();
 
 } elseif ( $_REQUEST['nfw_act'] == 'logdir' ) {
+	if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'logdir') ) {
+		wp_nonce_ays('logdir');
+	}
 	nfw_logdir();
 
 } elseif ( $_REQUEST['nfw_act'] == 'presave' ) {
+	if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'presave') ) {
+		wp_nonce_ays('presave');
+	}
 	nfw_presave(0);
 
 } elseif ( $_REQUEST['nfw_act'] == 'integration' ) {
+	if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'integration') ) {
+		wp_nonce_ays('integration');
+	}
 	nfw_integration('');
 
 } elseif ( $_REQUEST['nfw_act'] == 'postsave' ) {
+	if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'postsave') ) {
+		wp_nonce_ays('postsave');
+	}
 	nfw_postsave();
 
 }
@@ -104,6 +116,7 @@ function nfw_welcome() {
 	<form method="post">
 		<p><input class="button-primary" type="submit" name="Save" value="Enough chitchat, let's go ! &#187;" /></p>
 		<input type="hidden" name="nfw_act" value="logdir" />
+		<?php wp_nonce_field('logdir', 'nfwnonce', 0); ?>
 	</form>
 </div>
 <?php
@@ -117,7 +130,7 @@ function nfw_logdir() {
 	// We need to create our log & cache folder in the wp-content
 	// directory or return an error right away if we cannot :
 	if (! is_writable(WP_CONTENT_DIR) ) {
-		$err = sprintf( __('NinjaFirewall cannot create its <code>nfwlog/</code>log and cache folder; please make sure that the <code>%s</code> directory is writable', 'ninjafirewall'), WP_CONTENT_DIR );
+		$err = sprintf( __('NinjaFirewall cannot create its <code>nfwlog/</code>log and cache folder; please make sure that the <code>%s</code> directory is writable', 'ninjafirewall'), htmlspecialchars(WP_CONTENT_DIR) );
 	} else {
 		if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
 			mkdir( WP_CONTENT_DIR . '/nfwlog', 0755);
@@ -171,7 +184,7 @@ DENY;
 	<br />
 	<form method="post">
 		<p><input class="button-primary" type="submit" name="Save" value="' . __('Try again', 'ninjafirewall') . ' &#187;" /></p>
-		<input type="hidden" name="nfw_act" value="logdir" />
+		<input type="hidden" name="nfw_act" value="logdir" />' .  wp_nonce_field('logdir', 'nfwnonce', 0) . '
 	</form>
 </div>';
 
@@ -199,14 +212,14 @@ function nfw_chk_docroot($err) {
 	}
 	echo '
 	<form method="post">
-	<p>Your WordPress directory (<code>' . ABSPATH . '</code>) is different from your website document root (<code>' . getenv('DOCUMENT_ROOT') . '/</code>). Because it is possible to install WordPress into a subdirectory, but have the blog exist in the site root, NinjaFirewall needs to know its exact location.</p>
+	<p>Your WordPress directory (<code>' . ABSPATH . '</code>) is different from your website document root (<code>' . htmlspecialchars( getenv('DOCUMENT_ROOT')) . '/</code>). Because it is possible to install WordPress into a subdirectory, but have the blog exist in the site root, NinjaFirewall needs to know its exact location.</p>
 	<p>Please edit the path below only if you have manually modified your WordPress root directory as described in the <a href="http://codex.wordpress.org/Giving_WordPress_Its_Own_Directory" target="_blank">Giving WordPress Its Own Directory</a> article.</p>
 	<p><strong style="color:red">Most users should not change this value.</strong></p>
 	<p>Path to WordPress root directory: <input class="regular-text code" type="text" name="abspath" value="' . ABSPATH . '"></p>
 	<br />
 	<br />
 		<input class="button-primary" type="submit" name="Save" value="Next Step &#187;" />
-		<input type="hidden" name="nfw_act" value="presave" />
+		<input type="hidden" name="nfw_act" value="presave" />' . wp_nonce_field('presave', 'nfwnonce', 0) . '
 	</form>
 </div>';
 
@@ -219,7 +232,7 @@ function nfw_presave($err) {
 		nfw_chk_docroot( __('please enter the full path to WordPress folder.', 'ninjafirewall') );
 		return;
 	}
-	$abspath = rtrim( $_POST['abspath'], '/' );
+	$abspath = htmlspecialchars( rtrim( $_POST['abspath'], '/' ) );
 	if (! file_exists( $abspath . '/index.php' ) ) {
 		nfw_chk_docroot( 'cannot find <code>' . $abspath . '/index.php</code> ! Please correct the full path to WordPress root directory.' );
 		return;
@@ -398,6 +411,7 @@ function nfw_presave($err) {
 	<input type="submit" class="button-primary" name="next" value="Next Step &#187;">
 	<input type="hidden" name="nfw_act" value="integration">
 	<input type="hidden" name="abspath" value="<?php echo $_SESSION['abspath'] ?>">
+	<?php wp_nonce_field('integration', 'nfwnonce', 0); ?>
 	</form>
 </div>
 <?php
@@ -685,7 +699,7 @@ function nfw_integration($err) {
 	<input type="submit" class="button-primary" name="next" value="Next Step &#187;">
 	<input type="hidden" name="nfw_act" value="postsave">
 	<input type="hidden" name="nfw_firstrun" value="1" />
-
+	<?php wp_nonce_field('postsave', 'nfwnonce', 0); ?>
 	</form>
 </div>
 
@@ -860,6 +874,7 @@ NFW_INTEGRATION:
 		<input type="hidden" name="nfw_act" value="postsave" />
 		<input type="hidden" name="nfw_firstrun" value="1" />
 		<input type="hidden" name="makechange" value="usr" />
+		<?php wp_nonce_field('postsave', 'nfwnonce', 0); ?>
 	</form>
 </div>
 <?php
@@ -898,7 +913,7 @@ function nfw_firewalltest() {
 					<input type="submit" class="button-secondary" value="Test Again" />
 					<input type="hidden" name="nfw_act" value="postsave" />
 					<input type="hidden" name="makechange" value="usr" />
-					<input type="hidden" name="nfw_firstrun" value="1" />
+					<input type="hidden" name="nfw_firstrun" value="1" />'. wp_nonce_field('postsave', 'nfwnonce', 0) .'
 				</form><br />';
 			}
 			if ($_SESSION['http_server'] == 2) {
@@ -918,7 +933,7 @@ function nfw_firewalltest() {
 		<p><input type="submit" class="button-primary" value="&#171; Go Back" /></p>
 		<input type="hidden" name="abspath" value="' . $_SESSION['abspath'] . '" />
 		<input type="hidden" name="nfw_act" value="presave" />
-		<input type="hidden" name="nfw_firstrun" value="1" />
+		<input type="hidden" name="nfw_firstrun" value="1" />'. wp_nonce_field('presave', 'nfwnonce', 0) .'
 		</form>
 		</ol>
 		<h3>Need help ? Check our blog: <a href="http://blog.nintechnet.com/troubleshoot-ninjafirewall-installation-problems/" target="_blank">Troubleshoot NinjaFirewall installation problems</a>.</h3>

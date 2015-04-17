@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-04-10 17:13:14                                       |
+// | REVISION: 2015-04-17 13:47:20                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -116,7 +116,7 @@ if ($nfw_['mysqli']->connect_error) {
 }
 
 // Fetch our user options table:
-if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['table_prefix'] . "options` WHERE `option_name` = 'nfw_options'")) {
+if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['mysqli']->real_escape_string($nfw_['table_prefix']) . "options` WHERE `option_name` = 'nfw_options'")) {
 	define( 'NFW_STATUS', 5 );
 	$nfw_['mysqli']->close();
 	unset($nfw_);
@@ -252,8 +252,9 @@ if ( $nfw_['a_msg'] ) {
 	define('NFW_ALERT', $nfw_['a_msg']);
 }
 
-// Ensure with have a proper and single IP (a user may wrongly use
-// the .htninja file and redirect HTTP_X_FORWARDED_FOR to REMOTE_ADDR):
+// Ensure we have a proper and single IP (a user may use the .htninja file
+// to redirect HTTP_X_FORWARDED_FOR, which may contain more than one IP,
+// to REMOTE_ADDR):
 if (strpos($_SERVER['REMOTE_ADDR'], ',') !== false) {
 	$nfw_['match'] = array_map('trim', @explode(',', $_SERVER['REMOTE_ADDR']));
 	foreach($nfw_['match'] as $nfw_['m']) {
@@ -310,7 +311,7 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 	// ...or go ahead :
 
 	// Check for specific rules that should apply to everyone, including whitelisted admin(s) :
-	if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['table_prefix'] . "options` WHERE `option_name` = 'nfw_rules'")) {
+	if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['mysqli']->real_escape_string($nfw_['table_prefix']) . "options` WHERE `option_name` = 'nfw_rules'")) {
 		define( 'NFW_STATUS', 7 );
 		$nfw_['mysqli']->close();
 		unset($nfw_);
@@ -464,9 +465,9 @@ if (! empty($nfw_['nfw_options']['fg_enable']) ) {
 						$nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago:' . "\n\n".
 						'SERVER_NAME    : ' . $_SERVER['SERVER_NAME'] . "\n" .
 						'SCRIPT_FILENAME: ' . $_SERVER['SCRIPT_FILENAME'] . "\n" .
+						'Last changed on: ' . date('F j, Y @ H:i:s', $nfw_['nfw_options']['fg_stat']['ctime'] ) . ' (UTC '. date('O') . ")\n" .
 						'REQUEST_URI    : ' . $_SERVER['REQUEST_URI'] . "\n" .
-						'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
-						'Date           : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n" .
+						'REMOTE_ADDR    : ' . $_SERVER['REMOTE_ADDR'] . "\n\n" .
 						'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
 						'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 					mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
@@ -514,7 +515,7 @@ if ( (! empty($nfw_['nfw_options']['wp_dir'])) && (preg_match( '`' . $nfw_['nfw_
 nfw_check_upload();
 
 // Fetch our rules table :
-if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['table_prefix'] . "options` WHERE `option_name` = 'nfw_rules'")) {
+if (! $nfw_['result'] = @$nfw_['mysqli']->query('SELECT * FROM `' . $nfw_['mysqli']->real_escape_string($nfw_['table_prefix']) . "options` WHERE `option_name` = 'nfw_rules'")) {
 	define( 'NFW_STATUS', 7 );
 	$nfw_['mysqli']->close();
 	unset($nfw_);
@@ -963,9 +964,14 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 		$nfw_stat_arr[5] . ':' . $nfw_stat_arr[6] . ':' . $nfw_stat_arr[7] . ':' .
 		$nfw_stat_arr[8] . ':' . $nfw_stat_arr[9], LOCK_EX );
 
+	if (! file_exists($log_file) ) {
+		$tmp = '<?php exit; ?>' . "\n";
+	} else {
+		$tmp = '';
+	}
 
 	@file_put_contents( $log_file,
-		'[' . time() . '] ' . '[' . round( (microtime(true) - $nfw_['fw_starttime']), 5) . '] ' .
+		$tmp . '[' . time() . '] ' . '[' . round( (microtime(true) - $nfw_['fw_starttime']), 5) . '] ' .
       '[' . $_SERVER['SERVER_NAME'] . '] ' . '[#' . $nfw_['num_incident'] . '] ' .
       '[' . $ruleid . '] ' .
       '[' . $loglevel . '] ' . '[' . $_SERVER['REMOTE_ADDR'] . '] ' .
@@ -1140,7 +1146,7 @@ function nfw_response_headers() {
 
 	if ($NFW_RESHEADERS[0] == 1) {
 		// Parse all response headers :
-		foreach (headers_list() as $header) {
+		foreach (@headers_list() as $header) {
 			// Ignore it if it is not a cookie :
 			if (strpos($header, 'Set-Cookie:') === false) { continue; }
 			// Does it have the HttpOnly flag on ?
@@ -1156,7 +1162,7 @@ function nfw_response_headers() {
 		// Shall we rewrite cookies ?
 		if (! empty($rewrite) ) {
 			// Remove all original cookies first:
-			header_remove('Set-Cookie');
+			@header_remove('Set-Cookie');
 			foreach($rewrite as $cookie) {
 				// Inject ours instead :
 				header($cookie, false);

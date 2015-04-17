@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+
+ +---------------------------------------------------------------------+ sa
 */
 
 
@@ -186,7 +186,7 @@ function help_nfsubpolicies() {
 
 		<strong>IP</strong>
 		<li>Block localhost IP in <code>GET/POST</code> requests:<span class="description"> this option will block any <code>GET</code> or <code>POST</code> request containing the localhost IP (127.0.0.1). It can be useful to block SQL dumpers and various hacker\'s shell scripts.</span></li>
-		<li>Block HTTP requests with an IP in the <code>HTTP_HOST</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . $_SERVER['SERVER_ADDR'] . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
+		<li>Block HTTP requests with an IP in the <code>HTTP_HOST</code> header:<span class="description"> this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. http://' . htmlspecialchars($_SERVER['SERVER_ADDR']) . '/index.php), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.</span></li>
 		<li>Scan traffic coming from localhost and private IP address spaces:<span class="description"> this option will allow the firewall to scan traffic from all non-routable private IPs (IPv4 and IPv6) as well as the localhost IP. We recommend to keep it enabled if you have a private network (2 or more servers interconnected).</span></li>
 
 		<br />

@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-20 17:49:15                                       |
+ | REVISION: 2015-04-16 21:41:18                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -29,7 +29,7 @@ $nfw_options = get_option( 'nfw_options' );
 echo '
 <script>
 function preview_msg() {
-	var t1 = document.option_form.elements[\'nfw_options[blocked_msg]\'].value.replace(\'%%REM_ADDRESS%%\',\'' . $_SERVER['REMOTE_ADDR'] . '\');
+	var t1 = document.option_form.elements[\'nfw_options[blocked_msg]\'].value.replace(\'%%REM_ADDRESS%%\',\'' . htmlspecialchars($_SERVER['REMOTE_ADDR']) . '\');
 	var t2 = t1.replace(\'%%NUM_INCIDENT%%\',\'1234567\');
 	var t3 = t2.replace(\'%%NINJA_LOGO%%\',\'<img src="' . plugins_url() . '/ninjafirewall/images/ninjafirewall_75.png" width="75" height="75" title="NinjaFirewall">\');
 	document.getElementById(\'out_msg\').innerHTML = t3;

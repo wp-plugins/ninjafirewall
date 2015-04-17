@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-10 16:25:52                                       |
+ | REVISION: 2015-04-16 21:59:04                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -140,7 +140,7 @@ function toogle_table(off) {
 			<th scope="row"><?php _e('Notification') ?></th>
 			<td align="left">
 				<p><label><input type="checkbox" name="notify_updates" value="1"<?php checked($notify_updates, 1) ?> /><?php _e('Send me a report by email when security rules have been updated.') ?></label></p>
-				<span class="description">Reports will be sent to the contact email address defined in the Event Notifications menu.</span>
+				<span class="description"><?php _e('Reports will be sent to the contact email address defined in the Event Notifications menu.') ?></span>
 			</td>
 		</tr>
 	</table>
@@ -154,7 +154,7 @@ function toogle_table(off) {
 		if ( file_exists($update_log) ) {
 			$log_data = file_get_contents($update_log);
 		} else {
-			$log_data = 'The updates log is currently empty.';
+			$log_data = __('The updates log is currently empty.');
 		}
 	?>
 	<br />
@@ -350,14 +350,14 @@ function nf_sub_updates_getversion($update_url, $rules_version, $update_log) {
 		} else {
 			nf_sub_updates_log(
 				$update_log,
-				sprintf( __('Error: Server returned a %s HTTP error code (#1).'), $res['response']['code'])
+				sprintf( __('Error: Server returned a %s HTTP error code (#1).'), htmlspecialchars($res['response']['code']))
 			);
 		}
 	// Connection error :
 	} else {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unable to connect to WordPress server') . " ({$result->get_error_message()})"
+			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$result->get_error_message()})")
 		);
 	}
 	return 0;
@@ -384,7 +384,7 @@ function nf_sub_updates_download($update_url, $update_log, $new_rules_version) {
 			if ( $new_rules_version != $data[1]) {
 				nf_sub_updates_log(
 					$update_log,
-					sprintf( __('Error: The new rules versions do not match (%s != %s).'), $new_rules_version, $data[1])
+					sprintf( __('Error: The new rules versions do not match (%s != %s).'), $new_rules_version, htmlspecialchars($data[1]) )
 				);
 				return 0;
 			}
@@ -395,14 +395,14 @@ function nf_sub_updates_download($update_url, $update_log, $new_rules_version) {
 		} else {
 			nf_sub_updates_log(
 				$update_log,
-				sprintf( __('Error: Server returned a %s HTTP error code (#2).'), $res['response']['code'])
+				sprintf( __('Error: Server returned a %s HTTP error code (#2).'), htmlspecialchars($res['response']['code']))
 			);
 		}
 	// Connection error :
 	} else {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unable to connect to WordPress server') . " ({$result->get_error_message()})"
+			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$result->get_error_message()})")
 		);
 	}
 	return 0;

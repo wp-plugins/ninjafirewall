@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -362,7 +362,7 @@ if (file_exists($nfmon_diff) ) {
 					echo __('New files: ') . count($new_file). '<br />';
 					echo '<select name="sometext" multiple="multiple" style="width:100%;height:150px" onClick="file_info(this.value, 1);">';
 					foreach($new_file as $k => $v) {
-						echo '<option value="' . $v . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
+						echo '<option value="' . htmlspecialchars($v) . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
 					}
 					echo'</select>
 					<p style="text-align:center"><span class="description">' . $more_info . '</span></p>
@@ -410,7 +410,7 @@ if (file_exists($nfmon_diff) ) {
 				<td>' . __('Modified files: ') . count($mod_file). '<br />' .
 					'<select name="sometext" multiple="multiple" style="width:100%;height:150px" onClick="file_info(this.value, 2);">';
 					foreach($mod_file as $k => $v) {
-						echo '<option value="' . $v . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
+						echo '<option value="' . htmlspecialchars($v) . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
 					}
 					echo'</select>
 					<p style="text-align:center"><span class="description">' . $more_info . '</span></p>

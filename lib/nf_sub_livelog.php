@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -178,7 +178,7 @@ function change_int(intv) {
 	liveint = intv;
 	document.getElementById("loading").innerHTML = "<?php _e('Sleeping') ?> " + liveint/1000 + " <?php _e('seconds') ?>...";
 	myinterval = setInterval(live_fetch, liveint);
-	// Add cookie so that we remember theuser choice for 365 days:
+	// Add cookie so that we remember the user choice for 365 days:
 	create_cookie('nfwintval', intv);
 }
 function cls() {
@@ -195,7 +195,7 @@ function is_scroll() {
 	} else {
 		scroll = 0;
 	}
-	// Add cookie so that we remember theuser choice for 365 days:
+	// Add cookie so that we remember the user choice for 365 days:
 	create_cookie('nfwscroll', scroll);
 }
 function create_cookie(name, value) {
@@ -217,7 +217,7 @@ if ( isset($_POST['lf']) ) {
 	if ($res) {
 		echo '<div class="error settings-error"><p><strong>' . $res . '</strong></p></div>';
 	} else {
-		echo '<div class="updated settings-error"><p><strong>Your changes have been saved.</strong></p></div>';
+		echo '<div class="updated settings-error"><p><strong>'. __('Your changes have been saved.') .'</strong></p></div>';
 	}
 }
 $nfw_options = get_option('nfw_options');

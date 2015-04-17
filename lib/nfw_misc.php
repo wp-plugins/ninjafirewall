@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-01 19:00:28                                       |
+ | REVISION: 2015-04-16 15:55:01                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -203,7 +203,7 @@ function nf_check_dbdata() {
 		} else {
 			$message.= __('Blog : ', 'ninjafirewall') . home_url('/') . "\n";
 		}
-		$message.= __('Date : ', 'ninjafirewall') . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
+		$message.= __('Date : ', 'ninjafirewall') . date_i18n('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
 		$message.= sprintf(__('Total administrators : %s', 'ninjafirewall'), count($adm_users) ) . "\n\n";
 		foreach( $adm_users as $obj => $adm ) {
 			$message.= 'Admin ID : ' . $adm->ID . "\n";

@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-11 19:16:00                                       |
+ | REVISION: 2015-04-16 19:37:07                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -193,11 +193,6 @@ function nf_sub_event_save() {
 
 	// Block immediately if user is not allowed :
 	nf_not_allowed( 'block', __LINE__ );
-
-	if (! current_user_can( 'manage_options' ) ) {
-		wp_die( 'You do not have sufficient permissions to access this page.',
-			'', array( 'response' => 403 ) );
-	}
 
 	$nfw_options = get_option( 'nfw_options' );
 

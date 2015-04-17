@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.4.1-RC1
+Version: 1.4.1-RC2
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -17,10 +17,10 @@ Text Domain: ninjafirewall
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-01 18:53:07                                       |
+ | REVISION: 2015-04-17 15:39:46                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.4.1-RC1' );
+define( 'NFW_ENGINE_VERSION', '1.4.1-RC2' );
 define( 'NFW_RULES_VERSION',  '20150415.1' );
  /*
  +---------------------------------------------------------------------+
@@ -83,6 +83,9 @@ require( plugin_dir_path(__FILE__) . 'lib/nfw_misc.php' );
 function nfw_activate() {
 
 	// Install/activate NinjaFirewall :
+
+	// Block immediately if user is not allowed :
+	nf_not_allowed( 'block', __LINE__ );
 
 	// We need at least WP 3.3 :
 	global $wp_version;
@@ -156,7 +159,6 @@ function nfw_activate() {
 			wp_schedule_event( time() + 90, $schedtype, 'nfsecupdates');
 		}
 
-
 		// ...and whitelist the admin if needed :
 		if (! empty( $nfw_options['wl_admin']) ) {
 			$_SESSION['nfw_goodguy'] = true;
@@ -169,6 +171,9 @@ register_activation_hook( __FILE__, 'nfw_activate' );
 /* ------------------------------------------------------------------ */
 
 function nfw_deactivate() {
+
+	// Block immediately if user is not allowed :
+	nf_not_allowed( 'block', __LINE__ );
 
 	// Disable the firewall (NinjaFirewall will keep running
 	// in the background but will not do anything) :
@@ -1008,7 +1013,7 @@ function nf_menu_main() {
 		<tr>
 			<th scope="row"><?php _e('Admin user') ?></th>
 			<td width="20" align="left">&nbsp;</td>
-			<td><code><?php echo htmlentities($current_user->user_login) ?></code> (<?php _e('you are whitelisted by the firewall') ?>)</td>
+			<td><code><?php echo htmlspecialchars($current_user->user_login) ?></code> (<?php _e('you are whitelisted by the firewall') ?>)</td>
 		</tr>
 	<?php
 	}
@@ -3211,8 +3216,14 @@ function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) { // i18n
 		$REMOTE_ADDR = $_SERVER['REMOTE_ADDR'];
 	}
 
+	if (! file_exists($log_file) ) {
+		$tmp = '<?php exit; ?>' . "\n";
+	} else {
+		$tmp = '';
+	}
+
 	@file_put_contents( $log_file,
-      '[' . time() . '] ' . '[0] ' .
+      $tmp . '[' . time() . '] ' . '[0] ' .
       '[' . $_SERVER['SERVER_NAME'] . '] ' . '[#' . $num_incident . '] ' .
       '[' . $ruleid . '] ' .
       '[' . $loglevel . '] ' . '[' . $REMOTE_ADDR . '] ' .
@@ -3252,7 +3263,7 @@ function nf_sub_edit() {
 		} elseif ($_POST['sel_e_r'] != 999) {
 			$nfw_rules[$_POST['sel_e_r']]['on'] = 0;
 			$is_update = 1;
-			echo '<div class="updated settings-error"><p><strong>Rule ID ' . $_POST['sel_e_r'] . ' has been disabled.</strong></p></div>';
+			echo '<div class="updated settings-error"><p><strong>Rule ID ' . htmlentities($_POST['sel_e_r']) . ' has been disabled.</strong></p></div>';
 		}
 	} else if ( isset($_POST['sel_d_r']) ) {
 		if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'editor_save') ) {
@@ -3267,7 +3278,7 @@ function nf_sub_edit() {
 		} elseif ($_POST['sel_d_r'] != 999) {
 			$nfw_rules[$_POST['sel_d_r']]['on'] = 1;
 			$is_update = 1;
-			echo '<div class="updated settings-error"><p><strong>Rule ID ' . $_POST['sel_d_r'] . ' has been enabled.</strong></p></div>';
+			echo '<div class="updated settings-error"><p><strong>Rule ID ' . htmlentities($_POST['sel_d_r']) . ' has been enabled.</strong></p></div>';
 		}
 	}
 	if ( $is_update ) {
@@ -3300,7 +3311,7 @@ function nf_sub_edit() {
 		if ( $key == 999 ) { continue; }
 		// grey-out those ones, they can be changed in the Firewall Policies section:
 		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) {
-			echo '<option value="0" disabled="disabled">Rule ID : ' . $key . ' Firewall policies</option>';
+			echo '<option value="0" disabled="disabled">Rule ID : ' . htmlspecialchars($key) . ' Firewall policies</option>';
 		} else {
 			if ( $key < 100 ) {
 				$desc = __(' (remote/local file inclusion)');
@@ -3317,7 +3328,7 @@ function nf_sub_edit() {
 			} elseif ( $key > 1299 ) {
 				$desc = __(' (WP vulnerabilities)');
 			}
-			echo '<option value="' . $key . '">Rule ID : ' . $key . $desc . '</option>';
+			echo '<option value="' . htmlspecialchars($key) . '">Rule ID : ' . htmlspecialchars($key) . $desc . '</option>';
 			$count++;
 		}
 	}
@@ -3333,7 +3344,7 @@ function nf_sub_edit() {
 		if ( $key == 999 ) { continue; }
 		// grey-out those ones, they can be changed in the Firewall Policies section:
 		if ( ( $key == 2 ) || ( $key > 499 ) && ( $key < 600 ) ) {
-			echo '<option value="0" disabled="disabled">Rule ID #' . $key . ' Firewall policies</option>';
+			echo '<option value="0" disabled="disabled">Rule ID #' . htmlspecialchars($key) . ' Firewall policies</option>';
 		} else {
 			if ( $key < 100 ) {
 				$desc = __(' (remote/local file inclusion)');
@@ -3350,7 +3361,7 @@ function nf_sub_edit() {
 			} elseif ( $key > 1299 ) {
 				$desc = __(' (WP vulnerabilities)');
 			}
-			echo '<option value="' . $key . '">Rule ID #' . $key . $desc . '</option>';
+			echo '<option value="' . htmlspecialchars($key) . '">Rule ID #' . htmlspecialchars($key) . $desc . '</option>';
 			$count++;
 		}
 	}
@@ -3483,14 +3494,14 @@ function show_table(table_id) {
 		<table id="12" style="display:none;" width="500">
 			<tr>
 				<td>
-					<textarea class="small-text code" cols="60" rows="8">' . $changelog . '</textarea>
+					<textarea class="small-text code" cols="60" rows="8">' . htmlspecialchars($changelog) . '</textarea>
 				</td>
 			</tr>
 		</table>
 
 		<table id="13" border="0" style="display:none;" width="500">
-			<tr valign="top"><td width="47%;" align="right">REMOTE_ADDR</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $_SERVER['REMOTE_ADDR'] . '</td></tr>
-			<tr valign="top"><td width="47%;" align="right">SERVER_ADDR</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $_SERVER['SERVER_ADDR'] . '</td></tr>';
+			<tr valign="top"><td width="47%;" align="right">REMOTE_ADDR</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . htmlspecialchars($_SERVER['REMOTE_ADDR']) . '</td></tr>
+			<tr valign="top"><td width="47%;" align="right">SERVER_ADDR</td><td width="3%">&nbsp;</td><td width="50%" align="left">' .htmlspecialchars($_SERVER['SERVER_ADDR']) . '</td></tr>';
 
 	if ( PHP_VERSION ) {
 		echo '<tr valign="top"><td width="47%;" align="right">PHP version</td><td width="3%">&nbsp;</td><td width="50%" align="left">'. PHP_VERSION . ' (';
@@ -3502,7 +3513,7 @@ function show_table(table_id) {
 		echo ')</td></tr>';
 	}
 	if ( $_SERVER['SERVER_SOFTWARE'] ) {
-		echo '<tr valign="top"><td width="47%;" align="right">HTTP server</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $_SERVER['SERVER_SOFTWARE'] . '</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">HTTP server</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . htmlspecialchars($_SERVER['SERVER_SOFTWARE']) . '</td></tr>';
 	}
 	if ( PHP_OS ) {
 		echo '<tr valign="top"><td width="47%;" align="right">Operating System</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_OS . '</td></tr>';
@@ -3533,7 +3544,7 @@ function show_table(table_id) {
 		if (! empty( $cpu[0] ) ) {
 			array_pop( $cpu );
 			echo '<tr valign="top"><td width="47%;" align="right">Processor(s)</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . count( $cpu ) . '</td></tr>';
-			echo '<tr valign="top"><td width="47%;" align="right">CPU model</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . str_replace ("model name\t:", '', $cpu[0]) . '</td></tr>';
+			echo '<tr valign="top"><td width="47%;" align="right">CPU model</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . str_replace ("model name\t:", '', htmlspecialchars($cpu[0])) . '</td></tr>';
 		}
 	}
 
@@ -3652,14 +3663,14 @@ function nfw_check_emailalert() {
 }
 /* ------------------------------------------------------------------ */
 
-function nfw_dashboard_widgets() {
+function nfw_dashboard_widgets() {	//i18n / sa
 
 	// Add dashboard widgets
 
 	// Return immediately if user is not allowed :
 	if (nf_not_allowed( 0, __LINE__ ) ) { return; }
 
-    wp_add_dashboard_widget( 'nfw_dashboard_welcome', 'NinjaFirewall Statistics', 'nfw_stats_widget' );
+    wp_add_dashboard_widget( 'nfw_dashboard_welcome', __('NinjaFirewall Statistics'), 'nfw_stats_widget' );
  }
 
 function nfw_stats_widget(){
@@ -3682,13 +3693,13 @@ function nfw_stats_widget(){
 	echo '
 	<table border="0" width="100%">
 		<tr>
-			<th width="50%" align="left">Blocked hacking attempts</th>
+			<th width="50%" align="left">' . __('Blocked hacking attempts') . '</th>
 			<td width="50%" align="left">' . $total . '</td>
 		</tr>
 		<tr>
-			<th width="50%" align="left">Hacking attempts severity</th>
+			<th width="50%" align="left">' . __('Hacking attempts severity') . '</th>
 			<td width="50%" align="left">
-				<i>Critical : ' . $critical . '%</i>
+				<i>' . __('Critical : ') . $critical . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -3696,7 +3707,7 @@ function nfw_stats_widget(){
 					</tr>
 				</table>
 				<br />
-				<i>High : ' . $high . '%</i>
+				<i>' . __('High : ') . $high . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -3704,7 +3715,7 @@ function nfw_stats_widget(){
 					</tr>
 				</table>
 				<br />
-				<i>Medium : ' . $medium . '%</i>
+				<i>' . __('Medium : ') . $medium . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -3714,13 +3725,13 @@ function nfw_stats_widget(){
 			</td>
 		</tr>
 		<tr>
-			<th width="50%" align="left">Uploaded files</th>
+			<th width="50%" align="left">' . __('Uploaded files') . '</th>
 			<td width="50%" align="left">' . $upload . '</td>
 		</tr>
 	</table>';
 	// Display the link to the log page only if the log is not empty :
 	if ( $total || $upload ) {
-		echo '<div align="right"><small><a href="admin.php?page=nfsublog">View firewall log</a></small></div>';
+		echo '<div align="right"><small><a href="admin.php?page=nfsublog">' . __('View firewall log') . '</a></small></div>';
 	}
 
 }

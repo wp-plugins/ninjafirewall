@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-20 17:14:05                                       |
+ | REVISION: 2015-04-16 22:11:29                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,12 +16,25 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+
+ +---------------------------------------------------------------------+ sa
 */
 
-if (! defined('WP_UNINSTALL_PLUGIN') ) { die('Forbidden'); }
+if (! defined('WP_UNINSTALL_PLUGIN') || ! WP_UNINSTALL_PLUGIN ||
+	dirname( WP_UNINSTALL_PLUGIN ) != dirname( plugin_basename( __FILE__ )) ) {
+	exit;
+}
 
-if (! session_id() ) { session_start(); }
+if (version_compare(PHP_VERSION, '5.4', '<') ) {
+	if (! session_id() ) {
+		session_start();
+		$_SESSION['nfw_st'] = 1;
+	}
+} else {
+	if (session_status() !== PHP_SESSION_ACTIVE) {
+		session_start();
+		$_SESSION['nfw_st'] = 2;
+	}
+}
 
 nfw_uninstall();
 
