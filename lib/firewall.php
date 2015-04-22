@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-04-17 13:47:20                                       |
+// | REVISION: 2015-04-22 18:48:31                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -826,6 +826,14 @@ function nfw_sanitise( $str, $how, $msg ) {
 			$str2 = str_replace(	array('\\', "'", "\x00", "\x1a", '`'),
 				array('\\\\', "\\'", 'X', 'X', '\\`'),	$str);
 		}
+		// Don't sanitised the string if we are running in Debugging Mode :
+		if (! empty($nfw_['nfw_options']['debug']) ) {
+			if ($str2 != $str) {
+				nfw_log('Sanitising user input', $msg . ': ' . $str, 7, 0);
+			}
+			return $str;
+		}
+		// Log and return the sanitised string :
 		if ($str2 != $str) {
 			nfw_log('Sanitising user input', $msg . ': ' . $str, 6, 0);
 		}

@@ -1,6 +1,6 @@
 === NinjaFirewall (WP edition) ===
 Contributors: nintechnet, bruandet
-Tags: attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, wp-login, XML-RPC, xmlrpc, XSS
+Tags: admin, attack, backdoor, botnet, brute force, brute force attack, brute force protection, denial, firewall, hack, hhvm, infection, injection, login, malware, nginx, nintechnet, ninja, phishing, prevention, protection, security, shellshock, soaksoak, trojan, user enumeration, virus, WAF, Web application firewall, widget, wp-login, XML-RPC, xmlrpc, XSS
 Requires at least: 3.3.0
 Tested up to: 4.2
 Stable tag: 1.4
@@ -184,15 +184,18 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.1-RC.2 =
-* File Guard email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.
-* The Live Log "Refresh Rate" and "Autoscrolling" options will be remembered when changed.
+= 1.4.1-RC.3 =
+* "File Guard" email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.
+* The "Refresh Rate" and "Autoscrolling" options from the "Live Log" menu will be remembered when changed.
 * "Live Log" has a new option to select the timezone to display.
 * The firewall will always ensure that `REMOTE_ADDR` contains only one IP or will remove any extra IP.
-* NinjaFirewall will only warn but not block if `DISABLE_WP_CRON` is defined (applies to "File Check" and "Updates").
-* [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
-* NinjaFirewall will allow the user to set the Strict-Transport-Security (HSTS) header if `HTTP_X_FORWARDED_PROTO` is set to 'https' (Firewall Policies > HTTP response headers).
+* NinjaFirewall will not block but only warn if `DISABLE_WP_CRON` is defined (applies to "File Check" and "Updates").
+* It is possible to set the Strict-Transport-Security (HSTS) header if the client has the `HTTP_X_FORWARDED_PROTO` set to 'https' (Firewall Policies > HTTP response headers).
 * Notification emails will either use the `home_url()` or `site_url()` function depending on the type of notification.
+* The firewall will no longer sanitise user input when running in "Debugging Mode", but will only write the event to its log.
+* [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
+* [WP+ edition] The antispam will not block any message if NinjaFirewall is running in "Debugging Mode".
+* Updated security rules.
 * Minor fixes and improvements.
 
 = 1.4 =

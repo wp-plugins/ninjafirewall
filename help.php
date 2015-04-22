@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-09 19:07:01                                       |
+ | REVISION: 2015-04-22 19:11:18                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -78,8 +78,9 @@ function help_nfsubopt() {
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt02',
-		'title'     => 'Debugging mode',
-		'content'   => '<br />In Debugging mode, NinjaFirewall will not block suspicious requests but will only log them (the <a href="?page=nfsublog">firewall log</a> will display <code>DEBUG_ON</code> in the LEVEL column) and sanitise them according to your <a href="?page=nfsubpolicies">Firewall Policies</a>.'
+		'title'     => __('Debugging mode'),
+		'content'   => '<br />In Debugging mode, NinjaFirewall will not block or sanitise suspicious requests but will only log them (the <a href="?page=nfsublog">firewall log</a> will display <code>DEBUG_ON</code> in the LEVEL column).
+		<p>We recommend to run it in Debugging Mode for at least 24 hours after installing it on a new site and then to keep an eye on the firewall log during that time. If you notice a false positive in the log, you can simply use NinjaFirewall\'s Rules Editor to disable the security rule that was wrongly triggered.</p>'
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt03',
