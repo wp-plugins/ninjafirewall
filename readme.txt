@@ -13,50 +13,64 @@ A true Web Application Firewall.
 
 NinjaFirewall (WP edition) is a true Web Application Firewall. Although it can be installed and configured just like a plugin, it is a stand-alone firewall that sits in front of WordPress.
 
-It allows any blog administrator to benefit from very advanced and powerful security features that usually aren't available at the WordPress/plugin level, but only in security applications such as the Apache [ModSecurity](http://www.modsecurity.org/ "") module or the PHP [Suhosin](http://suhosin.org/ "") extension.
+It allows any blog administrator to benefit from very advanced and powerful security features that usually aren't available at the WordPress level, but only in security applications such as the Apache [ModSecurity](http://www.modsecurity.org/ "") module or the PHP [Suhosin](http://suhosin.org/ "") extension.
 
-NinjaFirewall can hook, scan, sanitise or reject any HTTP/HTTPS request sent to a PHP script before it reaches WordPress or any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers shell scripts and backdoors will be filtered by NinjaFirewall.
+> NinjaFirewall requires at least PHP 5.3 (5.4 or higher recommended to enable all its features) and is only compatible with Unix-like OS (Linux, BSD). It is not compatible with Windows.
 
 = Web Application Firewall =
 
-* Full standalone web application firewall; works before WordPress is loaded.
-* Multi-site support.
-* IPv6 compatible.
-* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injection, brute-force scanners, shell scripts, backdoors and many other threats.
-* Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (HTTP_USER_AGENT, HTTP_REFERER, PHP_SELF, PATH_TRANSLATED, PATH_INFO).
+NinjaFirewall can hook, scan, sanitise or reject any HTTP/HTTPS request sent to a PHP script before it reaches WordPress or any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers shell scripts and backdoors will be filtered by NinjaFirewall.
+
+Some of its features are:
+
+* Full standalone web application firewall. Works before WordPress is loaded.
+* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injections, brute-force scanners, shell scripts, backdoors etc.
+* Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (`HTTP_USER_AGENT`, `HTTP_REFERER`, `PHP_SELF`, `PATH_TRANSLATED`, `PATH_INFO`).
 * Sanitises variables names and values.
-* Advanced filtering options (ASCII control characters, NULL byte, PHP built-in wrappers, base64 decoder).
-* Real-time detection (`File Guard`).
-* File integrity monitoring to scan your website hourly/twicedaily/daily (`File Check`).
-* `Live Log` to watch your website traffic in real time.
-* Automatically update security rules to protect against the latest WordPress vulnerabilities.
-* Monitors the database and sends an alert if an administrator account is created, modified or deleted.
+* Advanced filtering options to block ASCII control characters, NULL bytes and PHP built-in wrappers.
+* Decodes and scans base64-encoded POST requests to detect backdoors and code injection attempts.
 * Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`).
-* Sets the `HttpOnly` flag on all cookies.
+* Hooks cookies to set the `HttpOnly` flag.
 * Blocks username enumeration scanning attempts through the author archives and the login page.
 * Blocks/allows uploads, sanitises uploaded file names.
 * Blocks suspicious bots and scanners.
 * Hides PHP error and notice messages.
-* Blocks direct access to PHP scripts located inside specific directories.
+* Blocks direct access to PHP scripts located inside specific directories (e.g., `/wp-content/uploads/`).
 * Protects WordPress XML-RPC API.
 * Whitelist option for WordPress administrator(s), localhost and private IP address spaces.
 * Configurable HTTP return code and message.
 * Rules editor to enable/disable built-in security rules.
 * Activity log and statistics.
 * Debugging mode.
-* Possibility to [prepend your own PHP code](http://ninjafirewall.com/wordpress/htninja/ "") to the firewall.
+* And many more...
 
-= Brute-Force Attack Protection =
+= Fastest and most efficient brute-force attack protection for WordPress =
 
 By processing incoming HTTP requests before your blog and any of its plugins, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
 
-See our benchmark and stress-test:
+See our benchmarks and stress-tests:
 
 * [WordPress brute-force attack detection plugins comparison](http://blog.nintechnet.com/wordpress-brute-force-attack-detection-plugins-comparison/ "")
 
 * [WordPress brute-force attack protection in a production environment](http://blog.nintechnet.com/brute-force-attack-protection-in-a-production-environment/ "")
 
-The protection applies to the `wp-login.php` script and can also include the `xmlrpc.php` one; the incident can be written to the server `AUTH` log.
+* [Benchmarks with PHP 5.5.6 and Hip-Hop VM 3.4.2](http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/#benchmarks "")
+
+The protection applies to the `wp-login.php` script but can be extended to the `xmlrpc.php` one. The incident can also be written to the server `AUTH` log, which can be useful to the system administrator for monitoring purposes or banning IPs at the server level (e.g., Fail2ban).
+
+= File Guard: real-time detection =
+
+**File Guard** real-time detection is a totally unique feature provided by NinjaFirewall: it can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this. If a hacker uploaded a shell script to your site (or injected a backdoor into an already existing file) and tried to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you an alert with all details (script name, IP, request, date and time).
+
+= File Check: file integrity monitoring  =
+
+**File Check** lets you perform file integrity monitoring by scanning your website hourly, twicedaily or daily. Any modification made to a file will be detected: file content, file permissions, file ownership, timestamp as well as file creation and deletion.
+
+= Live Log: watch your website traffic in real time =
+
+**Live Log** lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. You can enable/disable the monitoring process, change the refresh rate, clear the screen, enable automatic vertical scrolling, change the log format, select which traffic you want to view (HTTP/HTTPS) and the timezone as well.
+
+Because it communicates directly with the firewall, i.e., without loading any WordPress core file, Live Log is fast, light and it will not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).
 
 = Events Notification =
 
@@ -69,6 +83,24 @@ Monitored events:
 * Plugins upload, installation, (de)activation, update, deletion.
 * Themes upload, installation, activation, deletion.
 * WordPress update.
+
+= Stay protected against the latest WordPress security vulnerabilities =
+
+To get the most efficient protection, NinjaFirewall can automatically update its security rules daily, twice daily or even hourly. Each time a new vulnerability is found in WordPress or one of its plugins/themes, a new set of security rules will be made available to protect your blog immediately.
+
+Because we respect our users privacy, security rules updates are downloaded from wordpress.org repo only. There is no connection to NinTechNet's servers (A.K.A "phoning home") during the update process.
+
+= IPv6 compatibility =
+
+IPv6 compatibility is a mandatory feature for a security plugin: if it supports only IPv4, **hackers can easily bypass the plugin by using an IPv6**. NinjaFirewall natively supports IPv4 and IPv6 protocols, for both public and private addresses.
+
+= Multi-site support =
+
+NinjaFirewall is multi-site compatible. It will protect all sites from your network and its configuration interface will be accessible only to the Super Admin from the network main site.
+
+= Possibility to prepend your own PHP code to the firewall =
+
+You can prepend your own PHP code to the firewall with the help of an [optional user configuration file](http://ninjafirewall.com/wordpress/htninja/). It will be processed **before WordPress and all its plugins are loaded**. This is a very powerful feature, and there is almost no limit to what you can do: add your own security rules, manipulated HTTP requests, variables etc.
 
 = Low Footprint Firewall =
 
@@ -88,7 +120,7 @@ If you need help, click on the *Help* menu tab located in the upper right corner
 
 [NinTechNet](http://nintechnet.com/ "NinTechNet") strictly follows the [WordPress Plugin Developer guidelines](http://wordpress.org/plugins/about/guidelines/ ""): our software, [NinjaFirewall (WP edition)](http://ninjafirewall.com/wordpress/ "NinjaFirewall"), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home".
 It does not require a registration process or an activation key to be installed or used.
-Because **we do not collect any user data**, we do not even know that you are using (and hopefully enjoying!) our product.
+Because **we do not collect any user data**, we do not even know that you are using (and hopefully enjoying !) our product.
 
 = Need more security ? =
 
@@ -105,7 +137,6 @@ Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall
 * Response body filter to scan the output of the HTML page right before it is sent to your visitors browser.
 * Better File uploads management.
 * Better logs management.
-* Full IPv6 compatibility.
 
 [Learn more](http://ninjafirewall.com/wordpress/nfwplus.php "") about the WP+ edition unique features. [Compare](http://ninjafirewall.com/wordpress/overview.php "") the WP and WP+ editions.
 
@@ -115,7 +146,7 @@ Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall
 * WordPress 3.3+
 * PHP 5.3+ (5.4 or higher recommended) or [HHVM 3.4+](http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/ "")
 * Apache / Nginx / LiteSpeed
-* Unix-like OS (Linux, BSD) only
+* Unix-like OS (Linux, BSD) only. NinjaFirewall is **NOT** compatible with Windows.
 
 == Frequently Asked Questions ==
 
