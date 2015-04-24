@@ -28,9 +28,9 @@ Some of its features are:
 * Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (`HTTP_USER_AGENT`, `HTTP_REFERER`, `PHP_SELF`, `PATH_TRANSLATED`, `PATH_INFO`).
 * Sanitises variables names and values.
 * Advanced filtering options to block ASCII control characters, NULL bytes and PHP built-in wrappers.
-* Decodes and scans base64-encoded POST requests to detect backdoors and code injection attempts.
+* Decodes and scans Base64-encoded POST requests to detect backdoors and code injection attempts.
 * Hooks and secures HTTP reponse headers to prevent XSS, phishing and clickjacking attempts (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`).
-* Hooks cookies to set the `HttpOnly` flag.
+* Hooks and modifies cookies to set the `HttpOnly` flag.
 * Blocks username enumeration scanning attempts through the author archives and the login page.
 * Blocks/allows uploads, sanitises uploaded file names.
 * Blocks suspicious bots and scanners.
@@ -58,15 +58,15 @@ See our benchmarks and stress-tests:
 
 The protection applies to the `wp-login.php` script but can be extended to the `xmlrpc.php` one. The incident can also be written to the server `AUTH` log, which can be useful to the system administrator for monitoring purposes or banning IPs at the server level (e.g., Fail2ban).
 
-= File Guard: real-time detection =
+= Real-time detection =
 
 **File Guard** real-time detection is a totally unique feature provided by NinjaFirewall: it can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this. If a hacker uploaded a shell script to your site (or injected a backdoor into an already existing file) and tried to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you an alert with all details (script name, IP, request, date and time).
 
-= File Check: file integrity monitoring  =
+= File integrity monitoring  =
 
 **File Check** lets you perform file integrity monitoring by scanning your website hourly, twicedaily or daily. Any modification made to a file will be detected: file content, file permissions, file ownership, timestamp as well as file creation and deletion.
 
-= Live Log: watch your website traffic in real time =
+= Watch your website traffic in real time =
 
 **Live Log** lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. You can enable/disable the monitoring process, change the refresh rate, clear the screen, enable automatic vertical scrolling, change the log format, select which traffic you want to view (HTTP/HTTPS) and the timezone as well.
 
@@ -215,7 +215,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.1-RC.3 =
+= 1.4.1-RC.4 =
 * "File Guard" email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.
 * The "Refresh Rate" and "Autoscrolling" options from the "Live Log" menu will be remembered when changed.
 * "Live Log" has a new option to select the timezone to display.
@@ -434,7 +434,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 = 1.1.0 =
 * Added multi-site network support.
-* Added an option to decode and scan base64 encoded values in POST requests (Firewall Policies page).
+* Added an option to decode and scan Base64 encoded values in POST requests (Firewall Policies page).
 
 = 1.0.4 =
 * Added an `E-mail Alerts` configuration page to send alerts on specific events (users login, themes/plugins installation, activation, deletion etc).

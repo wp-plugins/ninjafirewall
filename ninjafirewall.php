@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.4.1-RC3
+Version: 1.4.1-RC4
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -17,11 +17,11 @@ Text Domain: ninjafirewall
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-17 15:39:46                                       |
+ | REVISION: 2015-04-24 00:23:52                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.4.1-RC3' );
-define( 'NFW_RULES_VERSION',  '20150422.1' );
+define( 'NFW_ENGINE_VERSION', '1.4.1-RC4' );
+define( 'NFW_RULES_VERSION',  '20150424.1' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -995,7 +995,7 @@ function nf_menu_main() {
 		<tr>
 			<th scope="row">Version</th>
 			<td width="20" align="left">&nbsp;</td>
-			<td><?php echo NFW_ENGINE_VERSION . ' (' . preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', $nfw_options['rules_version']) . ')' ?></td>
+			<td><?php echo NFW_ENGINE_VERSION . ' (security rules: ' . preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', $nfw_options['rules_version']) . ')' ?></td>
 		</tr>
 	<?php
 	// Check if the admin is whitelisted, and warn if it is not :
