@@ -1,10 +1,9 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WP  edition)                                         |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
- |                                                                     |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
  | REVISION: 2014-10-08 00:37:55                                       |
  +---------------------------------------------------------------------+
@@ -17,12 +16,13 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
-if (nf_not_allowed( 1, __LINE__ ) ) { exit; }
+// Block immediately if user is not allowed :
+nf_not_allowed( 'block', __LINE__ );
 
 echo '
 <div class="wrap">

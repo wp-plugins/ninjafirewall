@@ -3,12 +3,9 @@
  +---------------------------------------------------------------------+
  | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet                                                      |
- | <wordpress@nintechnet.com>                                          |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | http://nintechnet.com/                                              |
- +---------------------------------------------------------------------+
- | REVISION: 2014-12-12 14:38:11                                       |
+ | REVISION: 2015-04-16 22:11:29                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -19,12 +16,25 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+
+ +---------------------------------------------------------------------+ sa
 */
 
-if (! defined('WP_UNINSTALL_PLUGIN') ) { die('Forbidden'); }
+if (! defined('WP_UNINSTALL_PLUGIN') || ! WP_UNINSTALL_PLUGIN ||
+	dirname( WP_UNINSTALL_PLUGIN ) != dirname( plugin_basename( __FILE__ )) ) {
+	exit;
+}
 
-if (! session_id() ) { session_start(); }
+if (version_compare(PHP_VERSION, '5.4', '<') ) {
+	if (! session_id() ) {
+		session_start();
+		$_SESSION['nfw_st'] = 1;
+	}
+} else {
+	if (session_status() !== PHP_SESSION_ACTIVE) {
+		session_start();
+		$_SESSION['nfw_st'] = 2;
+	}
+}
 
 nfw_uninstall();
 
@@ -62,7 +72,7 @@ function nfw_uninstall() {
 		$data = file_get_contents( $htaccess_file );
 		// Find / delete instructions :
 		$data = preg_replace( '/\s?'. HTACCESS_BEGIN .'.+?'. HTACCESS_END .'[^\r\n]*\s?/s' , "\n", $data);
-		file_put_contents( $htaccess_file,  $data );
+		file_put_contents( $htaccess_file,  $data, LOCK_EX );
 	}
 
 	// Clean up PHP INI file :
@@ -89,12 +99,15 @@ function nfw_uninstall() {
 	foreach( $phpini as $ini ) {
 		$data = file_get_contents( $ini );
 		$data = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $data);
-		file_put_contents( $ini,  $data );
+		file_put_contents( $ini, $data, LOCK_EX );
 	}
 
 	// Remove any scheduled cron job :
 	if ( wp_next_scheduled('nfscanevent') ) {
 		wp_clear_scheduled_hook('nfscanevent');
+	}
+	if ( wp_next_scheduled('nfsecupdates') ) {
+		wp_clear_scheduled_hook('nfsecupdates');
 	}
 
 	// Delete DB rows :
