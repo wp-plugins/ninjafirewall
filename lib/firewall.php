@@ -755,6 +755,8 @@ function nfw_flatten( $glue, $pieces ) {
 
 	if ( defined('NFW_STATUS') ) { return; }
 
+	$ret = array();
+
    foreach ($pieces as $r_pieces) {
       if ( is_array($r_pieces)) {
          $ret[] = nfw_flatten($glue, $r_pieces);
