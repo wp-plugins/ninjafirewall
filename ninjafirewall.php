@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.4.1-RC4
+Version: 1.4.1
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -17,11 +17,11 @@ Text Domain: ninjafirewall
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-24 00:23:52                                       |
+ | REVISION: 2015-04-26 11:34:19                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.4.1-RC4' );
-define( 'NFW_RULES_VERSION',  '20150424.1' );
+define( 'NFW_ENGINE_VERSION', '1.4.1' );
+define( 'NFW_RULES_VERSION',  '20150426.1' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -3633,19 +3633,19 @@ function nfw_check_emailalert() {
 			$alert_array[$a_1][0] .= 's';
 			$alert_array[$a_1]['label'] .= 's';
 		}
-		$subject = '[NinjaFirewall] Alert: ' . $alert_array[$a_1][0] . ' ' . $alert_array[$a_1][$a_2];
+		$subject = __('[NinjaFirewall] Alert: ') . $alert_array[$a_1][0] . ' ' . $alert_array[$a_1][$a_2];
 		if ( is_multisite() ) {
-			$url = '- URL  : ' . network_site_url() . "\n";
+			$url = __('- Blog : ') . network_home_url('/') . "\n\n";
 		} else {
-			$url = '- URL  : ' . site_url() . "\n";
+			$url = __('- Blog : ') . home_url('/') . "\n\n";
 		}
-		$message = 'NinjaFirewall has detected the following activity on your account:' . "\n\n".
+		$message = __('NinjaFirewall has detected the following activity on your account:') . "\n\n".
 			'- ' . $alert_array[$a_1][0] . ' ' . $alert_array[$a_1][$a_2] . "\n" .
 			'- ' . $alert_array[$a_1]['label'] . ' : ' . $a_3 . "\n\n" .
-			'- User : ' . $current_user->user_login . ' (' . $current_user->roles[0] . ")\n" .
-			'- IP   : ' . $_SERVER['REMOTE_ADDR'] . "\n" .
+			__('- User : ') . $current_user->user_login . ' (' . $current_user->roles[0] . ")\n" .
+			__('- IP   : ') . $_SERVER['REMOTE_ADDR'] . "\n" .
+			__('- Date : ') . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n" .
 			$url .
-			'- Date : ' . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n" .
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
 			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 		wp_mail( $recipient, $subject, $message );

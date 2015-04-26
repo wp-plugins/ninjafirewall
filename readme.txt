@@ -215,7 +215,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.1-RC.4 =
+= 1.4.1 =
 * "File Guard" email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.
 * The "Refresh Rate" and "Autoscrolling" options from the "Live Log" menu will be remembered when changed.
 * "Live Log" has a new option to select the timezone to display.
