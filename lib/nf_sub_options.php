@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-16 21:41:18                                       |
+ | REVISION: 2015-05-03 23:19:46                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -200,6 +200,11 @@ function nf_sub_options_save() {
 		if ( wp_next_scheduled('nfsecupdates') ) {
 			wp_clear_scheduled_hook('nfsecupdates');
 		}
+		// Disable brute-force protection :
+		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
+			rename(NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php', NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php');
+		}
+
 	} else {
 		$nfw_options['enabled'] = 1;
 
@@ -229,6 +234,10 @@ function nf_sub_options_save() {
 				wp_clear_scheduled_hook('nfsecupdates');
 			}
 			wp_schedule_event( time() + 90, $schedtype, 'nfsecupdates');
+		}
+		// Reenable brute-force protection :
+		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php' ) ) {
+			rename(NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php', NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php');
 		}
 	}
 
@@ -306,8 +315,16 @@ function nf_sub_options_import() {
 		wp_clear_scheduled_hook('nfscanevent');
 	}
 
+	// Check compatibility before importing HSTS headers configration
+	// or unset the option :
+	if (! function_exists('header_register_callback') || ! function_exists('headers_list') || ! function_exists('header_remove') ) {
+		if ( isset($nfw_options['response_headers']) ) {
+			unset($nfw_options['response_headers']);
+		}
+	}
+
 	// If brute force protection is enabled, we need to create a new config file :
-	$nfwbfd_log = WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php';
+	$nfwbfd_log = NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php';
 	if (! empty($bf_conf) ) {
 		$fh = fopen($nfwbfd_log, 'w');
 		fwrite($fh, $bf_conf);

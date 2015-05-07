@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-22 19:11:18                                       |
+ | REVISION: 2015-05-01 00:48:41                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -73,8 +73,7 @@ function help_nfsubopt() {
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt01',
 		'title'     => 'Firewall protection',
-		'content'   => '<br />This option allows you to disable NinjaFirewall. It has basically the same effect as deactivating it from the <a href="' . admin_url() . 'plugins.php" style="text-decoration:underline;">Plugins menu</a> page.<br />Your site will remain unprotected until you enable it again.
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the <a href="?page=nfsubloginprot">Login Protection</a> too.</span></p>'
+		'content'   => '<br />This option allows you to disable NinjaFirewall. It has basically the same effect as deactivating it from the <a href="' . admin_url() . 'plugins.php" style="text-decoration:underline;">Plugins menu</a> page.<br />Your site will remain unprotected until you enable it again.'
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt02',
@@ -306,11 +305,10 @@ function help_nfsublogin() {
 		'title'     => 'Login protection',
 		'content'   => '
 		<div style="height:250px;">
-		<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">Disabling NinjaFirewall does not disable the brute-force protection&nbsp;! If you want to completely disable NinjaFirewall, you <strong>must</strong> disable the login protection from this page too.</span></p>
 
 		<p>By processing incoming HTTP requests <strong>before your blog and any of its plugins</strong>, NinjaFirewall is the only plugin for WordPress able to protect it against very large brute-force attacks, including distributed attacks coming from several thousands of different IPs.
 		<br />
-		The protection applies to the <code>wp-login.php</code> script and can also include the <code>xmlrpc.php</code> one.</p>
+		The protection applies to the <code>wp-login.php</code> script but can be extended to the <code>xmlrpc.php</code> one.</p>
 
 		<p>You can select to enable the protection only if an attack is detected or to keep it always activated:</p>
 

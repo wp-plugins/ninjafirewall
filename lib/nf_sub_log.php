@@ -26,7 +26,7 @@ nf_not_allowed( 'block', __LINE__ );
 
 $nfw_options = get_option( 'nfw_options' );
 
-$log_dir = WP_CONTENT_DIR . '/nfwlog/';
+$log_dir = NFW_LOG_DIR . '/nfwlog/';
 
 // Find all available logs :
 $avail_logs = array();

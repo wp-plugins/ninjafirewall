@@ -38,9 +38,8 @@ $fast = 1000;
 $xtr = @$_GET['xtr'];
 if ( empty($xtr) || ! preg_match('/^firewall_\d{4}-\d{2}\.php$/D', $xtr) ) {
 	$xtr = 'firewall_' . date('Y-m') . '.php';
-	$fw_log = WP_CONTENT_DIR . '/nfwlog/' . $xtr;
 }
-$fw_log = WP_CONTENT_DIR . '/nfwlog/' . $xtr;
+$fw_log = NFW_LOG_DIR . '/nfwlog/' . $xtr;
 
 if (! file_exists($fw_log) ) {
 	goto NO_STATS_FILE;
@@ -166,11 +165,11 @@ function summary_stats_combo( $xtr ) {
 
 	// Find all available logs :
 	$avail_logs = array();
-	if ( is_dir( WP_CONTENT_DIR . '/nfwlog/' ) ) {
-		if ( $dh = opendir( WP_CONTENT_DIR . '/nfwlog/' ) ) {
+	if ( is_dir( NFW_LOG_DIR . '/nfwlog/' ) ) {
+		if ( $dh = opendir( NFW_LOG_DIR . '/nfwlog/' ) ) {
 			while ( ($file = readdir($dh) ) !== false ) {
 				if (preg_match( '/^(firewall_(\d{4})-(\d\d)\.php)$/', $file, $match ) ) {
-					$log_stat = stat( WP_CONTENT_DIR . '/nfwlog/' . $file );
+					$log_stat = stat( NFW_LOG_DIR . '/nfwlog/' . $file );
 					if ( $log_stat['size'] < 10 ) { continue; }
 					$month = date('F', mktime(0, 0, 0, $match[3], 1, 2000) );
 					$avail_logs[$match[1] ] = $month . ' ' . $match[2];

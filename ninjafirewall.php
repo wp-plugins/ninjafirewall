@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.4.1
+Version: 1.4.2-RC1
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -17,11 +17,11 @@ Text Domain: ninjafirewall
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-26 11:34:19                                       |
+ | REVISION: 2015-05-01 00:41:52                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.4.1' );
-define( 'NFW_RULES_VERSION',  '20150426.1' );
+define( 'NFW_ENGINE_VERSION', '1.4.2-RC1' );
+define( 'NFW_RULES_VERSION',  '20150507.1' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -74,6 +74,11 @@ $err_fw = array(
 	11	=>	__('Cannot retrieve user options from database (#1)'),
 	12	=>	__('Cannot retrieve user rules from database (#1)'),
 );
+
+if (! defined('NFW_LOG_DIR') ) {
+	define('NFW_LOG_DIR', WP_CONTENT_DIR);
+}
+
 /* ------------------------------------------------------------------ */
 
 require( plugin_dir_path(__FILE__) . 'lib/nfw_misc.php' );
@@ -158,6 +163,10 @@ function nfw_activate() {
 			}
 			wp_schedule_event( time() + 90, $schedtype, 'nfsecupdates');
 		}
+		// Re-enable brute-force protection :
+		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php' ) ) {
+			rename(NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php', NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php');
+		}
 
 		// ...and whitelist the admin if needed :
 		if (! empty( $nfw_options['wl_admin']) ) {
@@ -184,9 +193,13 @@ function nfw_deactivate() {
 	if ( wp_next_scheduled('nfscanevent') ) {
 		wp_clear_scheduled_hook('nfscanevent');
 	}
-	// and clear auto updates (if any) :
+	// Clear auto updates (if any) :
 	if ( wp_next_scheduled('nfsecupdates') ) {
 		wp_clear_scheduled_hook('nfsecupdates');
+	}
+	// and disable brute-force protection :
+	if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
+		rename(NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php', NFW_LOG_DIR . '/nfwlog/cache/bf_conf_off.php');
 	}
 
 	update_option( 'nfw_options', $nfw_options);
@@ -216,7 +229,7 @@ function nfw_upgrade() {	//i18n
 			wp_nonce_ays('options_save');
 		}
 		// Export login protection if it exists too :
-		$nfwbfd_log = WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php';
+		$nfwbfd_log = NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php';
 		if ( file_exists($nfwbfd_log) ) {
 			$bd_data = serialize( file_get_contents($nfwbfd_log) );
 		} else {
@@ -236,8 +249,8 @@ function nfw_upgrade() {	//i18n
 		if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'filecheck_save') ) {
 			wp_nonce_ays('filecheck_save');
 		}
-		if (file_exists(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php') ) {
-			$stat = stat(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php');
+		if (file_exists(NFW_LOG_DIR . '/nfwlog/cache/nfilecheck_diff.php') ) {
+			$stat = stat(NFW_LOG_DIR . '/nfwlog/cache/nfilecheck_diff.php');
 			nfw_get_blogtimezone();
 			$data = '== NinjaFirewall File Check (diff)'. "\n";
 			$data.= '== ' . site_url() . "\n";
@@ -246,7 +259,7 @@ function nfw_upgrade() {	//i18n
 						'      [-] = ' . __('Deleted file') .
 						'      [!] = ' . __('Modified file') .
 						"\n\n";
-			$fh = fopen(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_diff.php', 'r');
+			$fh = fopen(NFW_LOG_DIR . '/nfwlog/cache/nfilecheck_diff.php', 'r');
 			while (! feof($fh) ) {
 				$res = explode('::', fgets($fh) );
 				if ( empty($res[1]) ) { continue; }
@@ -278,13 +291,13 @@ function nfw_upgrade() {	//i18n
 		if ( empty($_POST['nfwnonce']) || ! wp_verify_nonce($_POST['nfwnonce'], 'filecheck_save') ) {
 			wp_nonce_ays('filecheck_save');
 		}
-		if (file_exists(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_snapshot.php') ) {
-			$stat = stat(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_snapshot.php');
+		if (file_exists(NFW_LOG_DIR . '/nfwlog/cache/nfilecheck_snapshot.php') ) {
+			$stat = stat(NFW_LOG_DIR . '/nfwlog/cache/nfilecheck_snapshot.php');
 			nfw_get_blogtimezone();
 			$data = '== NinjaFirewall File Check (snapshot)'. "\n";
 			$data.= '== ' . site_url() . "\n";
 			$data.= '== ' . date_i18n('M d, Y @ H:i:s O', $stat['ctime']) . "\n\n";
-			$fh = fopen(WP_CONTENT_DIR . '/nfwlog/cache/nfilecheck_snapshot.php', 'r');
+			$fh = fopen(NFW_LOG_DIR . '/nfwlog/cache/nfilecheck_snapshot.php', 'r');
 			while (! feof($fh) ) {
 				$res = explode('::', fgets($fh) );
 				if (! empty($res[0][0]) && $res[0][0] == '/') {
@@ -354,20 +367,20 @@ function nfw_upgrade() {	//i18n
 		// v1.2.7 update -------------------------------------------------
 		if ( version_compare( $nfw_options['engine_version'], '1.2.7', '<' ) ) {
 			// Create 'wp-content/nfwlog/' directories and files :
-			if ( is_writable(WP_CONTENT_DIR) ) {
-				if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
-					mkdir( WP_CONTENT_DIR . '/nfwlog', 0755);
+			if ( is_writable(NFW_LOG_DIR) ) {
+				if (! file_exists(NFW_LOG_DIR . '/nfwlog') ) {
+					mkdir( NFW_LOG_DIR . '/nfwlog', 0755);
 				}
-				if (! file_exists(WP_CONTENT_DIR . '/nfwlog/cache') ) {
-					mkdir( WP_CONTENT_DIR . '/nfwlog/cache', 0755);
+				if (! file_exists(NFW_LOG_DIR . '/nfwlog/cache') ) {
+					mkdir( NFW_LOG_DIR . '/nfwlog/cache', 0755);
 				}
-				touch( WP_CONTENT_DIR . '/nfwlog/index.html' );
-				touch( WP_CONTENT_DIR . '/nfwlog/cache/index.html' );
-				file_put_contents(WP_CONTENT_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
-				file_put_contents(WP_CONTENT_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
+				touch( NFW_LOG_DIR . '/nfwlog/index.html' );
+				touch( NFW_LOG_DIR . '/nfwlog/cache/index.html' );
+				file_put_contents(NFW_LOG_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
+				file_put_contents(NFW_LOG_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
 
 				// Restore brute-force protection configuration from the DB:
-				$nfwbfd_log = WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php';
+				$nfwbfd_log = NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php';
 				if ((! empty($nfw_options['bf_request'])) && (! empty($nfw_options['bf_bantime'])) &&
 					 (! empty($nfw_options['bf_attempt'])) && (! empty($nfw_options['bf_maxtime'])) &&
 					 (! empty($nfw_options['auth_name'])) && (! empty($nfw_options['auth_pass'])) &&
@@ -403,7 +416,7 @@ function nfw_upgrade() {	//i18n
 				}
 			}
 			// We don't need to backup the brute-force protection data to the DB anymore
-			// because we're now using 'wp-content/nfwlog/cache' directory :
+			// because we're now using the new log/cache directory in the wp-content folder:
 			unset($nfw_options['bf_enable']);
 			unset($nfw_options['bf_request']);
 			unset($nfw_options['bf_bantime']);
@@ -439,7 +452,7 @@ function nfw_upgrade() {	//i18n
 		// v1.3.6 update -------------------------------------------------
 		if ( version_compare( $nfw_options['engine_version'], '1.3.6', '<' ) ) {
 			// Remove all old nfdbhash* files :
-			$path = WP_CONTENT_DIR . '/nfwlog/cache/';
+			$path = NFW_LOG_DIR . '/nfwlog/cache/';
 			$glob = glob($path . "nfdbhash*php");
 			if ( is_array($glob)) {
 				foreach($glob as $file) {
@@ -500,7 +513,7 @@ function nfw_upgrade() {	//i18n
 			if ( isset($nfw_options['nfw_tmp']) ) {
 				unset( $nfw_options['nfw_tmp'] );
 				// Fetch it, unpack it, and save it to disk...
-				$log_file = WP_CONTENT_DIR . '/nfwlog/firewall_' . date( 'Y-m' ) . '.php';
+				$log_file = NFW_LOG_DIR . '/nfwlog/firewall_' . date( 'Y-m' ) . '.php';
 				if ( $tmp_data = @gzinflate( base64_decode( get_option('nfw_tmp') ) ) ) {
 					file_put_contents( $log_file, $tmp_data, LOCK_EX);
 				}
@@ -509,7 +522,7 @@ function nfw_upgrade() {	//i18n
 			}
 			if ( $tmp_data ) {
 				// Try to re-create the widget stats file :
-				$stat_file = WP_CONTENT_DIR . '/nfwlog/stats_' . date( 'Y-m' ) . '.php';
+				$stat_file = NFW_LOG_DIR . '/nfwlog/stats_' . date( 'Y-m' ) . '.php';
 				$nfw_stat = array('0', '0', '0', '0', '0', '0', '0', '0', '0', '0');
 				$stats_lines = explode( PHP_EOL, $tmp_data );
 				foreach ( $stats_lines as $line ) {
@@ -609,7 +622,7 @@ function nfw_housework() {
 
 	// File Guard temp files :
 	if (! empty( $nfw_options['fg_enable']) ) {
-		$path = WP_CONTENT_DIR . '/nfwlog/cache/';
+		$path = NFW_LOG_DIR . '/nfwlog/cache/';
 		$glob = glob($path . "fg_*.php");
 		if ( is_array($glob)) {
 			foreach($glob as $file) {
@@ -1076,13 +1089,25 @@ function nf_menu_main() {
 		<?php
 		}
 	}
-	// Ensure log dir is writable :
-	if (! is_writable( WP_CONTENT_DIR . '/nfwlog' ) ) {
+
+	// Ensure /log/ dir is writable :
+	if (! is_writable( NFW_LOG_DIR . '/nfwlog') ) {
 		?>
 			<tr>
 			<th scope="row">Log dir</th>
 			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
-			<td><code><?php echo WP_CONTENT_DIR .  '/nfwlog/' ?></code> directory is not writable&nbsp;! Please chmod it to 0777 or equivalent.</td>
+			<td><code><?php echo htmlspecialchars(NFW_LOG_DIR) . '/nfwlog/' ?></code> directory is not writable&nbsp;! Please chmod it to 0777 or equivalent.</td>
+		</tr>
+	<?php
+	}
+
+	// Ensure /log/cache dir is writable :
+	if (! is_writable( NFW_LOG_DIR . '/nfwlog/cache') ) {
+		?>
+			<tr>
+			<th scope="row">Log dir</th>
+			<td width="20" align="left"><img src="<?php echo plugins_url( '/images/icon_error_16.png', __FILE__ )?>" border="0" height="16" width="16"></td>
+			<td><code><?php echo htmlspecialchars(NFW_LOG_DIR) . '/nfwlog/cache/' ?></code> directory is not writable&nbsp;! Please chmod it to 0777 or equivalent.</td>
 		</tr>
 	<?php
 	}
@@ -1953,7 +1978,10 @@ function httponly() {
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
 						<td align="center" width="10"><input type="checkbox" name="nfw_options[wp_upl]" id="wp_03"<?php checked( $wp_upl, 1 ) ?>></td>
-						<td><label for="wp_03"><code>/<?php echo basename(WP_CONTENT_DIR); ?>/uploads/*</code></label></td>
+						<td><label for="wp_03">
+							<p><code>/<?php echo basename(WP_CONTENT_DIR); ?>/uploads/*</code></p>
+							<p><code>/<?php echo basename(WP_CONTENT_DIR); ?>/blogs.dir/*</code></p>
+						</label></td>
 					</tr>
 					<tr style="border: solid 1px #DFDFDF;">
 						<td align="center" style="vertical-align:top" width="10"><input type="checkbox" name="nfw_options[wp_cache]" id="wp_04"<?php checked( $wp_cache, 1 ) ?>></td>
@@ -2310,7 +2338,7 @@ function nf_sub_policies_save() {
 		$tmp .= '/wp-includes/(?:(?:css|images|js(?!/tinymce/wp-tinymce\.php)|theme-compat)/|[^/]+\.php)|';
 	}
 	if ( isset( $_POST['nfw_options']['wp_upl']) ) {
-		$tmp .= '/' . basename(WP_CONTENT_DIR) .'/uploads/|';
+		$tmp .= '/' . basename(WP_CONTENT_DIR) .'/(?:uploads|blogs\.dir)/|';
 	}
 	if ( isset( $_POST['nfw_options']['wp_cache']) ) {
 		$tmp .= '/cache/|';
@@ -2497,7 +2525,7 @@ function nf_sub_policies_default() {
 	$nfw_options['php_path_i']			= 1;
 	$nfw_options['wp_dir'] 				= '/wp-admin/(?:css|images|includes|js)/|' .
 		'/wp-includes/(?:(?:css|images|js(?!/tinymce/wp-tinymce\.php)|theme-compat)/|[^/]+\.php)|' .
-		'/'. basename(WP_CONTENT_DIR) .'/uploads/';
+		'/'. basename(WP_CONTENT_DIR) .'/(?:uploads|blogs\.dir)/';
 	$nfw_options['enum_archives']		= 1;
 	$nfw_options['enum_login']			= 0;
 	$nfw_options['no_xmlrpc']			= 0;
@@ -2576,8 +2604,8 @@ function nf_sub_fileguard() {
 	<?php
 
 	// Ensure cache folder is writable :
-	if (! is_writable( WP_CONTENT_DIR . '/nfwlog/cache/') ) {
-		echo '<div class="error settings-error"><p><strong>The cache directory ('. WP_CONTENT_DIR . '/nfwlog/cache/) is not writable. Please change its permissions (0777 or equivalent).</strong></p></div>';
+	if (! is_writable( NFW_LOG_DIR . '/nfwlog/cache/') ) {
+		echo '<div class="error settings-error"><p><strong>The cache directory ('. htmlspecialchars(NFW_LOG_DIR) . '/nfwlog/cache/) is not writable. Please change its permissions (0777 or equivalent).</strong></p></div>';
 	}
 
 	// Saved ?
@@ -2809,8 +2837,8 @@ function nf_sub_loginprot() {
 	}
 
 	// Fetch the current configuration, if any :
-	if ( file_exists( WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
-		require( WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php' );
+	if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
+		require( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' );
 
 		if (! @preg_match('/^[1-2]$/', $bf_enable) ) {
 			$bf_enable = 0;
@@ -3026,36 +3054,36 @@ function nf_sub_loginprot_save() {
 	nf_not_allowed( 'block', __LINE__ );
 
 	// The directory must be writable :
-	if (! is_writable( WP_CONTENT_DIR . '/nfwlog/cache' ) ) {
-		return( 'Error : <code>' . WP_CONTENT_DIR .
+	if (! is_writable( NFW_LOG_DIR . '/nfwlog/cache' ) ) {
+		return( 'Error : <code>' . htmlspecialchars(NFW_LOG_DIR) .
 			'/nfwlog/cache</code> directory is not writable. Please chmod it to 0777.');
 	}
 
 	$nfw_options = get_option( 'nfw_options' );
 
 	$bf_rand = '';
-	if ( file_exists( WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
-		require( WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php' );
+	if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
+		require( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' );
 	}
 
 	// Disable or enable the protection ?
 	if ( empty( $_POST['nfw_options']['bf_enable']) ) {
 		// Remove all files :
-		if ( file_exists( WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
-			if (! unlink( WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
-				return( 'Error : <code>' . WP_CONTENT_DIR .
+		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
+			if (! unlink( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
+				return( 'Error : <code>' . htmlspecialchars(NFW_LOG_DIR) .
 					'/nfwlog/cache/bf_conf.php</code> is read-only and cannot be deleted. Please chmod it to 0777.');
 			}
 		}
-		if ( file_exists( WP_CONTENT_DIR . '/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
-			if (! unlink( WP_CONTENT_DIR . '/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand )) {
-				return( 'Error : <code>' . WP_CONTENT_DIR .
+		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
+			if (! unlink( NFW_LOG_DIR . '/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand )) {
+				return( 'Error : <code>' . htmlspecialchars(NFW_LOG_DIR) .
 					'/nfwlog/cache/bf_blocked</code> is read-only and cannot be deleted. Please chmod it to 0777.');
 			}
 		}
-		if ( file_exists( WP_CONTENT_DIR . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
-			if (! unlink( WP_CONTENT_DIR . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand )) {
-				return( 'Error : <code>' . WP_CONTENT_DIR .
+		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
+			if (! unlink( NFW_LOG_DIR . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand )) {
+				return( 'Error : <code>' . htmlspecialchars(NFW_LOG_DIR) .
 					'/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand . '</code> is read-only and cannot be deleted. Please chmod it to 0777.');
 			}
 		}
@@ -3142,10 +3170,10 @@ function nf_sub_loginprot_save() {
 		'$auth_msg=\'' . $auth_msg . '\';$bf_rand=\'' . $bf_rand . '\';' .
 		'$bf_authlog=' . $bf_authlog . '; ?>';
 
-	$fh = fopen( WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php', 'w' );
+	$fh = fopen( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php', 'w' );
 	if (! $fh) {
 		return( 'Error : unable to write the configuration to <code>' .
-			WP_CONTENT_DIR . '/nfwlog/cache/bf_conf.php</code>!');
+			htmlspecialchars(NFW_LOG_DIR) . '/nfwlog/cache/bf_conf.php</code>!');
 	}
 	fwrite( $fh, $data );
 	fclose( $fh );
@@ -3188,8 +3216,8 @@ function nfw_log2($loginfo, $logdata, $loglevel, $ruleid) { // i18n
 	nfw_get_blogtimezone();
 
 	$cur_month = date('Y-m');
-	$stat_file = WP_CONTENT_DIR . '/nfwlog/stats_' . $cur_month . '.php';
-	$log_file  = WP_CONTENT_DIR . '/nfwlog/firewall_' . $cur_month . '.php';
+	$stat_file = NFW_LOG_DIR . '/nfwlog/stats_' . $cur_month . '.php';
+	$log_file  = NFW_LOG_DIR . '/nfwlog/firewall_' . $cur_month . '.php';
 
 	// Update stats :
 	if ( file_exists( $stat_file ) ) {
@@ -3479,11 +3507,11 @@ function show_table(table_id) {
 		</table>
 		<br />
 		<br />
-		<input class="button-secondary" type="button" value="Changelog" onclick="show_table(12);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-primary" type="button" value="Spread the word about the Ninja !" onclick="show_table(11);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="System Info" onclick="show_table(13);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="Privacy Policy" onclick="show_table(14);">
+		<input class="button-secondary" type="button" value="Changelog" onclick="show_table(12);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-primary" type="button" value="Spread the word about the Ninja !" onclick="show_table(11);" autofocus>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="System Info" onclick="show_table(13);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="Privacy Policy" onclick="show_table(14);">
 		<br />
 		<br />
 
-		<table id="11" border="0" style="display:none;" width="500">
+		<table id="11" border="0" width="500">
 			<tr style="text-align:center;">
 				<td><a href="http://www.facebook.com/sharer.php?u=http://ninjafirewall.com/" target="_blank"><img src="' . plugins_url( '/images/facebook.png', __FILE__ ) . '" width="90" height="90" style="border: 0px solid #DFDFDF;padding:0px;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;background-color:#FCFCFC;"></a></td>
 				<td><a href="https://plus.google.com/share?url=http://ninjafirewall.com/" target="_blank"><img src="' . plugins_url( '/images/google.png', __FILE__ ) . '" width="90" height="90" style="border: 0px solid #DFDFDF;padding:0px;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;background-color:#FCFCFC;"></a></td>
@@ -3676,7 +3704,7 @@ function nfw_dashboard_widgets() {	//i18n / sa
 function nfw_stats_widget(){
 
 	$critical = $high = $medium = $upload = $total = 0;
-	$stat_file = WP_CONTENT_DIR . '/nfwlog/stats_' . date( 'Y-m' ) . '.php';
+	$stat_file = NFW_LOG_DIR . '/nfwlog/stats_' . date( 'Y-m' ) . '.php';
 	if ( file_exists( $stat_file ) ) {
 		$nfw_stat = file_get_contents( $stat_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 	} else {

@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-16 15:55:01                                       |
+ | REVISION: 2015-05-01 00:55:43                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -37,21 +37,21 @@ function nfw_admin_notice(){
 	}
 
 	// Ensure we have our cache/log folder, or attempt to create it :
-	if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
-		@mkdir( WP_CONTENT_DIR . '/nfwlog', 0755);
-		@touch( WP_CONTENT_DIR . '/nfwlog/index.html' );
-		@file_put_contents(WP_CONTENT_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
-		if (! file_exists(WP_CONTENT_DIR . '/nfwlog/cache') ) {
-			@mkdir( WP_CONTENT_DIR . '/nfwlog/cache', 0755);
-			@touch( WP_CONTENT_DIR . '/nfwlog/cache/index.html' );
-			@file_put_contents(WP_CONTENT_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
+	if (! file_exists(NFW_LOG_DIR . '/nfwlog') ) {
+		@mkdir( NFW_LOG_DIR . '/nfwlog', 0755);
+		@touch( NFW_LOG_DIR . '/nfwlog/index.html' );
+		@file_put_contents(NFW_LOG_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
+		if (! file_exists(NFW_LOG_DIR . '/nfwlog/cache') ) {
+			@mkdir( NFW_LOG_DIR . '/nfwlog/cache', 0755);
+			@touch( NFW_LOG_DIR . '/nfwlog/cache/index.html' );
+			@file_put_contents(NFW_LOG_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
 		}
 	}
-	if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory cannot be created. Please review your installation and ensure that <code>/wp-content/</code> is writable.', 'ninjafirewall'), WP_CONTENT_DIR) . '</p></div>';
+	if (! file_exists(NFW_LOG_DIR . '/nfwlog') ) {
+		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory cannot be created. Please review your installation and ensure that <code>/wp-content/</code> is writable.', 'ninjafirewall'), htmlspecialchars(NFW_LOG_DIR) ) . '</p></div>';
 	}
-	if (! is_writable(WP_CONTENT_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory is read-only. Please review your installation and ensure that <code>/nfwlog/</code> is writable.', 'ninjafirewall'), WP_CONTENT_DIR) . '</p></div>';
+	if (! is_writable(NFW_LOG_DIR . '/nfwlog') ) {
+		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory is read-only. Please review your installation and ensure that <code>/nfwlog/</code> is writable.', 'ninjafirewall'), htmlspecialchars(NFW_LOG_DIR) ) . '</p></div>';
 	}
 
 	if (! NF_DISABLED) {
@@ -59,9 +59,10 @@ function nfw_admin_notice(){
 		return;
 	}
 
-	// Don't display anything if we are looking at the main page (error message will
-	// be displayed already) or during the installation process :
-	if (isset($_GET['page']) && $_GET['page'] == 'NinjaFirewall' ) {
+	// Don't display anything if we are looking at the main/options pages
+	// (error message will be displayed already) or during the installation
+	// process :
+	if (isset($_GET['page']) && preg_match('/^(?:NinjaFirewall|nfsubopt)$/', $_GET['page']) ) {
 		return;
 	}
 
@@ -152,10 +153,10 @@ function nf_check_dbdata() {
 
 	if ( is_multisite() ) {
 		global $current_blog;
-		$nfdbhash = WP_CONTENT_DIR .'/nfwlog/cache/nfdbhash.'. $current_blog->site_id .'-'. $current_blog->blog_id .'.php';
+		$nfdbhash = NFW_LOG_DIR .'/nfwlog/cache/nfdbhash.'. $current_blog->site_id .'-'. $current_blog->blog_id .'.php';
 	} else {
 		global $blog_id;
-		$nfdbhash = WP_CONTENT_DIR .'/nfwlog/cache/nfdbhash.'. $blog_id .'.php';
+		$nfdbhash = NFW_LOG_DIR .'/nfwlog/cache/nfdbhash.'. $blog_id .'.php';
 	}
 
 	$adm_users = nf_get_dbdata();

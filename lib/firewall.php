@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-04-22 18:48:31                                       |
+// | REVISION: 2015-05-04 17:53:28                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -48,6 +48,19 @@ if ( @file_exists($nfw_['file'] = dirname(getenv('DOCUMENT_ROOT')) .'/.htninja')
 // soon :
 if (empty($nfw_['wp_content'])) {
 	$nfw_['wp_content'] = strstr(__DIR__, '/plugins/ninjafirewall/lib', true);
+}
+
+// Check if we have a user-defined log directory :
+if ( defined('NFW_LOG_DIR') && is_dir(NFW_LOG_DIR) ) {
+	$nfw_['log_dir'] = NFW_LOG_DIR . '/nfwlog';
+	if (! is_dir($nfw_['log_dir']) ) {
+		mkdir( $nfw_['log_dir'], 0755);
+	}
+	if (! is_dir($nfw_['log_dir'] . '/cache') ) {
+		mkdir( $nfw_['log_dir'] . '/cache', 0755);
+	}
+} else {
+	$nfw_['log_dir'] = $nfw_['wp_content'] . '/nfwlog';
 }
 
 // Brute-force attack detection on login page and/or XMLRPC :
@@ -272,7 +285,7 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 
 	// Look for Live Log AJAX request...
 	if (! empty($_SESSION['nfw_livelog']) &&  isset($_POST['livecls']) && isset($_POST['lines'])) {
-		$nfw_['livelog'] = $nfw_['wp_content'] . '/nfwlog/cache/livelog.php';
+		$nfw_['livelog'] = $nfw_['log_dir'] . '/cache/livelog.php';
 		if ( file_exists($nfw_['livelog']) ) {
 			// Check if we need to flush it :
 			if ($_POST['livecls'] > 0) {
@@ -300,7 +313,7 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 			} else {
 				echo '*';
 			}
-			touch($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+			touch($nfw_['log_dir'] .'/cache/livelogrun.php');
 		} else {
 			// Something went wrong :
 			header('HTTP/1.0 503 Service Unavailable');
@@ -350,16 +363,16 @@ if (! empty($_SESSION['nfw_goodguy']) ) {
 define('NFW_SWL', 1);
 
 // Live Log : record the request if needed
-if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
-	$nfw_['stats'] = stat($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+if ( file_exists($nfw_['log_dir'] .'/cache/livelogrun.php')) {
+	$nfw_['stats'] = stat($nfw_['log_dir'] .'/cache/livelogrun.php');
 
 	// If the file was not accessed for more than 100s, we assume
 	// the admin has stopped watching the live log from WordPress
 	// dashboard (max refresh rate is 45s) :
 	if ( $nfw_['fw_starttime'] - $nfw_['stats']['mtime'] > 100 ) {
-		unlink($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php');
+		unlink($nfw_['log_dir'] .'/cache/livelogrun.php');
 		// If the log was not modified for the past 10mn, we delete it as well :
-		$nfw_['livelog'] = $nfw_['wp_content'] . '/nfwlog/cache/livelog.php';
+		$nfw_['livelog'] = $nfw_['log_dir'] . '/cache/livelog.php';
 		if ( file_exists($nfw_['livelog']) ) {
 			$nfw_['stats'] = stat($nfw_['livelog']);
 			if ( $nfw_['fw_starttime'] - $nfw_['stats']['mtime'] > 600 ) {
@@ -399,10 +412,10 @@ if ( file_exists($nfw_['wp_content'] .'/nfwlog/cache/livelogrun.php')) {
 				$nfw_['tmp'] = str_replace(
 					array( '%time', '%name', '%client', '%method', '%uri', '%referrer', '%ua', '%forward', '%host' ),
 					array( date('d/M/y:H:i:s O', time()), $PHP_AUTH_USER, $_SERVER["REMOTE_ADDR"], $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $HTTP_REFERER, $HTTP_USER_AGENT, $HTTP_X_FORWARDED_FOR, $HTTP_HOST ), $nfw_['nfw_options']['liveformat']	);
-				file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php', htmlentities($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND | LOCK_EX);
+				file_put_contents( $nfw_['log_dir'] . '/cache/livelog.php', htmlentities($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND | LOCK_EX);
 			} else {
 				// Default format :
-				file_put_contents( $nfw_['wp_content'] . '/nfwlog/cache/livelog.php',
+				file_put_contents( $nfw_['log_dir'] . '/cache/livelog.php',
 				'['. @date('d/M/y:H:i:s O', time()) .'] '.	htmlentities(
 				$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
 				$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
@@ -450,7 +463,7 @@ if (! empty($nfw_['nfw_options']['fg_enable']) ) {
 			// Was is created/modified lately ?
 			if ( time() - $nfw_['nfw_options']['fg_mtime'] * 3660 < $nfw_['nfw_options']['fg_stat']['ctime'] ) {
 				// Did we check it already ?
-				if (! file_exists( $nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php' ) ) {
+				if (! file_exists( $nfw_['log_dir'] . '/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php' ) ) {
 					// We need to alert the admin :
 					if (! $nfw_['nfw_options']['tzstring'] = ini_get('date.timezone') ) {
 						$nfw_['nfw_options']['tzstring'] = 'UTC';
@@ -472,9 +485,9 @@ if (! empty($nfw_['nfw_options']['fg_enable']) ) {
 						'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 					mail( $nfw_['nfw_options']['alert_email'], $nfw_['nfw_options']['m_subject'], $nfw_['nfw_options']['m_msg'], $nfw_['nfw_options']['m_headers']);
 					// Remember it so that we don't spam the admin each time the script is requested :
-					touch($nfw_['wp_content'] . '/nfwlog/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php');
+					touch($nfw_['log_dir'] . '/cache/fg_' . $nfw_['nfw_options']['fg_stat']['ino'] . '.php');
 					// Log it :
-					nfw_log('Access to a script modified/created less than ' . $nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago', $_SERVER['SCRIPT_FILENAME'], 2, 0);
+					nfw_log('Access to a script modified/created less than ' . $nfw_['nfw_options']['fg_mtime'] . ' hour(s) ago', $_SERVER['SCRIPT_FILENAME'], 6, 0);
 				}
 			}
 		}
@@ -888,6 +901,9 @@ function nfw_block() {
       404 => '404 Not Found', 406 => '406 Not Acceptable',
       500 => '500 Internal Server Error', 503 => '503 Service Unavailable',
    );
+   if (! isset($http_codes[$nfw_['nfw_options']['ret_code']]) ) {
+		$nfw_['nfw_options']['ret_code'] = 403;
+	}
 
 	// Prepare the page to display to the blocked user :
 	if (empty($nfw_['num_incident']) ) { $nfw_['num_incident'] = '000000'; }
@@ -956,9 +972,8 @@ function nfw_log($loginfo, $logdata, $loglevel, $ruleid) {
 	date_default_timezone_set($tzstring);
 	$cur_month = date('Y-m');
 
-	$log_dir = $nfw_['wp_content'] . '/nfwlog/';
-	$stat_file = $log_dir. 'stats_' . $cur_month . '.php';
-	$log_file = $log_dir. 'firewall_' . $cur_month . '.php';
+	$stat_file = $nfw_['log_dir']. '/stats_' . $cur_month . '.php';
+	$log_file = $nfw_['log_dir']. '/firewall_' . $cur_month . '.php';
 
 	// Update stats :
 	if ( file_exists( $stat_file ) ) {
@@ -997,7 +1012,7 @@ function nfw_bfd($where) {
 	if ( defined('NFW_STATUS') ) { return; }
 
 	global $nfw_;
-	$bf_conf_dir = $nfw_['wp_content'] . '/nfwlog/cache';
+	$bf_conf_dir = $nfw_['log_dir'] . '/cache';
 
 	// Is brute-force protection enabled ?
 	if (! file_exists($bf_conf_dir . '/bf_conf.php') ) {

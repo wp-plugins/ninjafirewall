@@ -68,9 +68,7 @@ The protection applies to the `wp-login.php` script but can be extended to the `
 
 = Watch your website traffic in real time =
 
-**Live Log** lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. You can enable/disable the monitoring process, change the refresh rate, clear the screen, enable automatic vertical scrolling, change the log format, select which traffic you want to view (HTTP/HTTPS) and the timezone as well.
-
-Because it communicates directly with the firewall, i.e., without loading any WordPress core file, Live Log is fast, light and it will not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).
+**Live Log** lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Because it communicates directly with the firewall, i.e., without loading any WordPress core file, **Live Log** is fast, light and it will not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).
 
 = Events Notification =
 
@@ -214,6 +212,12 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 
 == Changelog ==
+
+= 1.4.2-RC1 =
+* The path to NinjaFirewall's log/cache directory can be changed with the `NFW_LOG_DIR` constant (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir for more details).
+* When importing its configuration, NinjaFirewall will ensure that the server is compatible with the HTTP response headers option, otherwise it will disable that option.
+* Updated security rules.
+* [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
 
 = 1.4.1 =
 * "File Guard" email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.

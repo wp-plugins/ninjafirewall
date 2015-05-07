@@ -21,7 +21,7 @@
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
-$log_dir = WP_CONTENT_DIR . '/nfwlog/cache/';
+$log_dir = NFW_LOG_DIR . '/nfwlog/cache/';
 $nfmon_snapshot = $log_dir . 'nfilecheck_snapshot.php';
 $nfmon_diff = $log_dir . 'nfilecheck_diff.php';
 $err = $success = '';

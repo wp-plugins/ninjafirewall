@@ -46,7 +46,7 @@ if (! empty($err_msg) ) {
 }
 
 // Create an empty log :
-$fh = fopen( WP_CONTENT_DIR . '/nfwlog/cache/livelog.php', 'w');
+$fh = fopen( NFW_LOG_DIR . '/nfwlog/cache/livelog.php', 'w');
 fclose($fh);
 $_SESSION['nfw_livelog'] = 1;
 

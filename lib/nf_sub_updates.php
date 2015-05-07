@@ -21,7 +21,7 @@
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 
-$update_log = WP_CONTENT_DIR . '/nfwlog/updates.php';
+$update_log = NFW_LOG_DIR . '/nfwlog/updates.php';
 $update_url = array(
 	'http://plugins.svn.wordpress.org/ninjafirewall/trunk/updates/',
 	'version.php',
