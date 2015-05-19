@@ -50,14 +50,15 @@ if (empty($nfw_['wp_content'])) {
 	$nfw_['wp_content'] = strstr(__DIR__, '/plugins/ninjafirewall/lib', true);
 }
 
-// Check if we have a user-defined log directory :
+// Check if we have a user-defined log directory
+// (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir ) :
 if ( defined('NFW_LOG_DIR') && is_dir(NFW_LOG_DIR) ) {
 	$nfw_['log_dir'] = NFW_LOG_DIR . '/nfwlog';
 	if (! is_dir($nfw_['log_dir']) ) {
-		mkdir( $nfw_['log_dir'], 0755);
+		@mkdir( $nfw_['log_dir'], 0755);
 	}
 	if (! is_dir($nfw_['log_dir'] . '/cache') ) {
-		mkdir( $nfw_['log_dir'] . '/cache', 0755);
+		@mkdir( $nfw_['log_dir'] . '/cache', 0755);
 	}
 } else {
 	$nfw_['log_dir'] = $nfw_['wp_content'] . '/nfwlog';
@@ -412,10 +413,10 @@ if ( file_exists($nfw_['log_dir'] .'/cache/livelogrun.php')) {
 				$nfw_['tmp'] = str_replace(
 					array( '%time', '%name', '%client', '%method', '%uri', '%referrer', '%ua', '%forward', '%host' ),
 					array( date('d/M/y:H:i:s O', time()), $PHP_AUTH_USER, $_SERVER["REMOTE_ADDR"], $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $HTTP_REFERER, $HTTP_USER_AGENT, $HTTP_X_FORWARDED_FOR, $HTTP_HOST ), $nfw_['nfw_options']['liveformat']	);
-				file_put_contents( $nfw_['log_dir'] . '/cache/livelog.php', htmlentities($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND | LOCK_EX);
+				@file_put_contents( $nfw_['log_dir'] . '/cache/livelog.php', htmlentities($nfw_['tmp'], ENT_NOQUOTES) ."\n", FILE_APPEND | LOCK_EX);
 			} else {
 				// Default format :
-				file_put_contents( $nfw_['log_dir'] . '/cache/livelog.php',
+				@file_put_contents( $nfw_['log_dir'] . '/cache/livelog.php',
 				'['. @date('d/M/y:H:i:s O', time()) .'] '.	htmlentities(
 				$PHP_AUTH_USER .' '.	$_SERVER['REMOTE_ADDR'] .' "'. $_SERVER['REQUEST_METHOD'] .' '.
 				$_SERVER['REQUEST_URI'] .'" "'. $HTTP_REFERER .'" "'. $HTTP_USER_AGENT .'" "'.
@@ -791,7 +792,7 @@ function nfw_check_b64( $reqkey, $string ) {
 	if ( (! $string) || (strlen($string) % 4 != 0) ) { return; }
 
 	if ( base64_encode( $decoded = base64_decode($string) ) === $string ) {
-		if ( preg_match( '`\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|chmod|curl_exec|(?:ex|im)plode|error_reporting|eval|file(?:_get_contents)?|f(?:open|write|close)|fsockopen|function_exists|gzinflate|md5|move_uploaded_file|ob_start|passthru|preg_replace|phpinfo|stripslashes|strrev|(?:shell_)?exec|system|unlink)\s*\(|\becho\s*[\'"]|<\s*(?i:applet|div|embed|i?frame(?:set)?|img|meta|marquee|object|script|textarea)\b|\b(?i:(?:ht|f)tps?|php)://|\W\$\{\s*[\'"]\w+[\'"]|<\?(?i:php)`', $decoded) ) {
+		if ( preg_match( '`\b(?:\$?_(COOKIE|ENV|FILES|(?:GE|POS|REQUES)T|SE(RVER|SSION))|HTTP_(?:(?:POST|GET)_VARS|RAW_POST_DATA)|GLOBALS)\s*[=\[)]|\b(?i:array_map|assert|base64_(?:de|en)code|chmod|curl_exec|(?:ex|im)plode|error_reporting|eval|file(?:_get_contents)?|f(?:open|write|close)|fsockopen|function_exists|gzinflate|md5|move_uploaded_file|ob_start|passthru|preg_replace|phpinfo|stripslashes|strrev|(?:shell_)?exec|system|unlink)\s*\(|\becho\s*[\'"]|<\s*(?i:applet|div|embed|i?frame(?:set)?|img|meta|marquee|object|script|textarea)\b|\W\$\{\s*[\'"]\w+[\'"]|<\?(?i:php)`', $decoded) ) {
 			nfw_log('base64-encoded injection', 'POST:' . $reqkey . ' = ' . $string, '3', 0);
 			nfw_block();
 		}
@@ -1095,7 +1096,7 @@ function nfw_bfd($where) {
 	}
 
 	// Let it go, but record the request :
-	file_put_contents($bf_conf_dir . '/bf_' . $where . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND | LOCK_EX);
+	@file_put_contents($bf_conf_dir . '/bf_' . $where . $_SERVER['SERVER_NAME'] . $bf_rand, $now . "\n", FILE_APPEND | LOCK_EX);
 
 }
 // =====================================================================

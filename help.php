@@ -137,7 +137,7 @@ function help_nfsubpolicies() {
 
 		<strong>HTTP POST variable</strong>
 		<li>Whether to scan and/or sanitise the <code>POST</code> variable.</li>
-		<li>Decode base64-encoded <code>POST</code> variable:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for the <code>POST</code> variable.</span></li>
+		<li>Decode Base64-encoded <code>POST</code> variable:<span class="description"> NinjaFirewall will decode and scan base64 encoded values in order to detect obfuscated malicious code. This option is only available for the <code>POST</code> variable.</span></li>
 
 		<br />
 

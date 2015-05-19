@@ -72,7 +72,7 @@ function nfw_uninstall() {
 		$data = file_get_contents( $htaccess_file );
 		// Find / delete instructions :
 		$data = preg_replace( '/\s?'. HTACCESS_BEGIN .'.+?'. HTACCESS_END .'[^\r\n]*\s?/s' , "\n", $data);
-		file_put_contents( $htaccess_file,  $data, LOCK_EX );
+		@file_put_contents( $htaccess_file,  $data, LOCK_EX );
 	}
 
 	// Clean up PHP INI file :
@@ -99,7 +99,7 @@ function nfw_uninstall() {
 	foreach( $phpini as $ini ) {
 		$data = file_get_contents( $ini );
 		$data = preg_replace( '/\s?'. PHPINI_BEGIN .'.+?'. PHPINI_END .'[^\r\n]*\s?/s' , "\n", $data);
-		file_put_contents( $ini, $data, LOCK_EX );
+		@file_put_contents( $ini, $data, LOCK_EX );
 	}
 
 	// Remove any scheduled cron job :

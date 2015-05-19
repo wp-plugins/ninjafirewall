@@ -182,7 +182,7 @@ function nf_check_dbdata() {
 		}
 
 		// Save the new hash :
-		$tmp = file_put_contents( $nfdbhash, md5( serialize( $adm_users) ), LOCK_EX );
+		$tmp = @file_put_contents( $nfdbhash, md5( serialize( $adm_users) ), LOCK_EX );
 		if ( $tmp === FALSE ) {
 			return;
 		}

@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.4.2-RC1
+Version: 1.4.2-RC2
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -17,10 +17,10 @@ Text Domain: ninjafirewall
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-05-01 00:41:52                                       |
+ | REVISION: 2015-05-18 17:58:32                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.4.2-RC1' );
+define( 'NFW_ENGINE_VERSION', '1.4.2-RC2' );
 define( 'NFW_RULES_VERSION',  '20150507.1' );
  /*
  +---------------------------------------------------------------------+
@@ -38,15 +38,17 @@ define( 'NFW_RULES_VERSION',  '20150507.1' );
 
 if (! defined( 'ABSPATH' ) ) { die( 'Forbidden' ); }
 
-if (version_compare(PHP_VERSION, '5.4', '<') ) {
-	if (! session_id() ) {
-		session_start();
-		$_SESSION['nfw_st'] = 1;
-	}
-} else {
-	if (session_status() !== PHP_SESSION_ACTIVE) {
-		session_start();
-		$_SESSION['nfw_st'] = 2;
+if (! headers_sent() ) {
+	if (version_compare(PHP_VERSION, '5.4', '<') ) {
+		if (! session_id() ) {
+			session_start();
+			$_SESSION['nfw_st'] = 1;
+		}
+	} else {
+		if (session_status() !== PHP_SESSION_ACTIVE) {
+			session_start();
+			$_SESSION['nfw_st'] = 2;
+		}
 	}
 }
 
@@ -105,6 +107,11 @@ function nfw_activate() {
 		but your current version is " . PHP_VERSION );
 	}
 
+	// We need the mysqli extension loaded :
+	if (! function_exists('mysqli_connect') ) {
+		exit( sprintf( __('NinjaFirewall requires the PHP %s extension.'), '<code>mysqli</code>') );
+	}
+
 	// Yes, there are still some people who have SAFE_MODE enabled with
 	// PHP 5.3 ! We must check that right away otherwise the user may lock
 	// himself/herself out of the site as soon as NinjaFirewall will be
@@ -116,7 +123,7 @@ function nfw_activate() {
 
 	// Multisite installation requires superadmin privileges :
 	if ( ( is_multisite() ) && (! current_user_can( 'manage_network' ) ) ) {
-		exit( "You are not allowed to activate NinjaFirewall");
+		exit( "You are not allowed to activate NinjaFirewall.");
 	}
 
 	// We don't do Windows :
@@ -376,8 +383,8 @@ function nfw_upgrade() {	//i18n
 				}
 				touch( NFW_LOG_DIR . '/nfwlog/index.html' );
 				touch( NFW_LOG_DIR . '/nfwlog/cache/index.html' );
-				file_put_contents(NFW_LOG_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
-				file_put_contents(NFW_LOG_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
+				@file_put_contents(NFW_LOG_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
+				@file_put_contents(NFW_LOG_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
 
 				// Restore brute-force protection configuration from the DB:
 				$nfwbfd_log = NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php';
@@ -515,7 +522,7 @@ function nfw_upgrade() {	//i18n
 				// Fetch it, unpack it, and save it to disk...
 				$log_file = NFW_LOG_DIR . '/nfwlog/firewall_' . date( 'Y-m' ) . '.php';
 				if ( $tmp_data = @gzinflate( base64_decode( get_option('nfw_tmp') ) ) ) {
-					file_put_contents( $log_file, $tmp_data, LOCK_EX);
+					@file_put_contents( $log_file, $tmp_data, LOCK_EX);
 				}
 				// ... and clear it from the DB :
 				delete_option( 'nfw_tmp' );
@@ -1410,7 +1417,7 @@ function httponly() {
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row">Decode base64-encoded <code>POST</code> variable</th>
+			<th scope="row">Decode Base64-encoded <code>POST</code> variable</th>
 			<td width="20">&nbsp;</td>
 			<td align="left" width="120">
 				<label><input type="radio" name="nfw_options[post_b64]" value="1"<?php checked( $post_b64, 1 ) ?>>&nbsp;Yes (default)</label>
@@ -3038,6 +3045,8 @@ function nf_sub_loginprot() {
 	<a href="http://blog.nintechnet.com/wordpress-brute-force-attack-detection-plugins-comparison/" target="_blank">WordPress brute-force attack detection plugins comparison.</a>
 	<br />
 	<a href="http://blog.nintechnet.com/brute-force-attack-protection-in-a-production-environment/" target="_blank">WordPress brute-force attack protection in a production environment.</a>
+	<br />
+	<a href="http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/#benchmarks" target="_blank">Benchmarks with PHP 5.5.6 and Hip-Hop VM 3.4.2.</a>
 	</div>
 </form>
 </div>

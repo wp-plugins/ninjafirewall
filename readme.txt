@@ -15,7 +15,7 @@ NinjaFirewall (WP edition) is a true Web Application Firewall. Although it can b
 
 It allows any blog administrator to benefit from very advanced and powerful security features that usually aren't available at the WordPress level, but only in security applications such as the Apache [ModSecurity](http://www.modsecurity.org/ "") module or the PHP [Suhosin](http://suhosin.org/ "") extension.
 
-> NinjaFirewall requires at least PHP 5.3 (5.4 or higher recommended to enable all its features) and is only compatible with Unix-like OS (Linux, BSD). It is not compatible with Windows.
+> NinjaFirewall requires at least PHP 5.3 (5.4 or higher recommended to enable all its features), MySQLi extension and is only compatible with Unix-like OS (Linux, BSD). It is not compatible with Windows.
 
 = Web Application Firewall =
 
@@ -143,6 +143,7 @@ Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall
 
 * WordPress 3.3+
 * PHP 5.3+ (5.4 or higher recommended) or [HHVM 3.4+](http://blog.nintechnet.com/installing-ninjafirewall-with-hhvm-hiphop-virtual-machine/ "")
+* MySQLi extension
 * Apache / Nginx / LiteSpeed
 * Unix-like OS (Linux, BSD) only. NinjaFirewall is **NOT** compatible with Windows.
 
@@ -213,11 +214,16 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.2-RC1 =
+= 1.4.2-RC2 =
 * The path to NinjaFirewall's log/cache directory can be changed with the `NFW_LOG_DIR` constant (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir for more details).
 * When importing its configuration, NinjaFirewall will ensure that the server is compatible with the HTTP response headers option, otherwise it will disable that option.
+* The installer will return an error message if the PHP mysqli extension is not loaded.
+* Fixed PHP warning on systems that do not support exclusive locks.
+* Fixed potential PHP warning when headers are wrongly sent by another plugin before NinjaFirewall starts a PHP session.
+* Loosened Base64 decoder rules to reduce the risk of false-positives.
 * Updated security rules.
 * [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
+* [WP+ edition] Added a warning about caching plugins to the antispam protection.
 
 = 1.4.1 =
 * "File Guard" email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.

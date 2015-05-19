@@ -808,7 +808,7 @@ function nf_scan_email($nfmon_diff, $log_dir) {
 		}
 		fclose($fh);
 		$data .= "\n== EOF\n";
-		file_put_contents($log_dir . 'nf_filecheck.txt', $data, LOCK_EX);
+		@file_put_contents($log_dir . 'nf_filecheck.txt', $data, LOCK_EX);
 		$subject = __('[NinjaFirewall] Alert: File Check detection');
 		$msg = __('NinjaFirewall detected that changes were made to your files.') . "\n\n";
 		if ( is_multisite() ) {
