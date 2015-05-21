@@ -214,8 +214,9 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.2-RC2 =
+= 1.4.2-RC3 =
 * The path to NinjaFirewall's log/cache directory can be changed with the `NFW_LOG_DIR` constant (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir for more details).
+* Disabling NinjaFirewall will disable the brute-force protection as well.
 * When importing its configuration, NinjaFirewall will ensure that the server is compatible with the HTTP response headers option, otherwise it will disable that option.
 * The installer will return an error message if the PHP mysqli extension is not loaded.
 * Fixed PHP warning on systems that do not support exclusive locks.
@@ -223,7 +224,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 * Loosened Base64 decoder rules to reduce the risk of false-positives.
 * Updated security rules.
 * [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
-* [WP+ edition] Added a warning about caching plugins to the antispam protection.
+* [WP+ edition] Added a warning to the antispam protection about caching plugins.
 
 = 1.4.1 =
 * "File Guard" email alert will contain the date/time the file was last changed, rather than the date/time the detection occurred.

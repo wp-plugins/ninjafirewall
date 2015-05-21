@@ -42,13 +42,7 @@ if ( @file_exists($nfw_['file'] = dirname(getenv('DOCUMENT_ROOT')) .'/.htninja')
 	}
 }
 
-// ** DO NOT USE **
-// As of January 2015, the "$nfw_['wp_content']" variable is deprecated.
-// It is kept here only for backward compatibility, but will be removed
-// soon :
-if (empty($nfw_['wp_content'])) {
-	$nfw_['wp_content'] = strstr(__DIR__, '/plugins/ninjafirewall/lib', true);
-}
+$nfw_['wp_content'] = dirname(dirname(dirname( __DIR__ )));
 
 // Check if we have a user-defined log directory
 // (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir ) :
