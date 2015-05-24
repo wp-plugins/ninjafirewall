@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall.
-Version: 1.4.2-RC3
+Version: 1.4.2
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -17,11 +17,11 @@ Text Domain: ninjafirewall
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-05-21 16:25:02                                       |
+ | REVISION: 2015-05-23 18:14:38                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.4.2-RC3' );
-define( 'NFW_RULES_VERSION',  '20150519.1' );
+define( 'NFW_ENGINE_VERSION', '1.4.2' );
+define( 'NFW_RULES_VERSION',  '20150522.1' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -75,6 +75,7 @@ $err_fw = array(
 	10	=> __('Unable to communicate with the firewall. Please check your PHP INI settings'),
 	11	=>	__('Cannot retrieve user options from database (#1)'),
 	12	=>	__('Cannot retrieve user rules from database (#1)'),
+	13 => sprintf( __("The firewall cannot access its log and cache folders. If you changed the name of WordPress <code>/wp-content/</code> or <code>/plugins/</code> folders, you <b>must</b> define NinjaFirewall's built-in <code>NFW_LOG_DIR</code> constant (see %s for more info)"), "<a href='http://ninjafirewall.com/wordpress/htninja/#nfwlogdir' target='_blank'>Path to NinjaFirewall's log and cache directory</a>"),
 );
 
 if (! defined('NFW_LOG_DIR') ) {

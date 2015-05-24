@@ -43,19 +43,20 @@ if ( @file_exists($nfw_['file'] = dirname(getenv('DOCUMENT_ROOT')) .'/.htninja')
 }
 
 $nfw_['wp_content'] = dirname(dirname(dirname( __DIR__ )));
-
 // Check if we have a user-defined log directory
 // (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir ) :
-if ( defined('NFW_LOG_DIR') && is_dir(NFW_LOG_DIR) ) {
+if ( defined('NFW_LOG_DIR') ) {
 	$nfw_['log_dir'] = NFW_LOG_DIR . '/nfwlog';
-	if (! is_dir($nfw_['log_dir']) ) {
-		@mkdir( $nfw_['log_dir'], 0755);
-	}
-	if (! is_dir($nfw_['log_dir'] . '/cache') ) {
-		@mkdir( $nfw_['log_dir'] . '/cache', 0755);
-	}
 } else {
 	$nfw_['log_dir'] = $nfw_['wp_content'] . '/nfwlog';
+}
+// We ensure the log dir exists otherwise we try to create it.
+// We quit and warn immediately if we fail :
+if (! is_dir($nfw_['log_dir']) ) {
+	if (! mkdir( $nfw_['log_dir'] . '/cache', 0755, true) ) {
+		define( 'NFW_STATUS', 13 );
+		return;
+	}
 }
 
 // Brute-force attack detection on login page and/or XMLRPC :

@@ -214,7 +214,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.2-RC3 =
+= 1.4.2 =
 * The path to NinjaFirewall's log/cache directory can be changed with the `NFW_LOG_DIR` constant (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir for more details).
 * Disabling NinjaFirewall will disable the brute-force protection as well.
 * When importing its configuration, NinjaFirewall will ensure that the server is compatible with the HTTP response headers option, otherwise it will disable that option.
