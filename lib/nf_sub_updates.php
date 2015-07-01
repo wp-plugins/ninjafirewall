@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-16 21:59:04                                       |
+ | REVISION: 2015-06-16 17:23:54                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -151,10 +151,11 @@ function toogle_table(off) {
 
 	<?php
 	if (! empty($nfw_options['enable_updates']) ) {
+		$log_data = array();
 		if ( file_exists($update_log) ) {
-			$log_data = file_get_contents($update_log);
+			$log_data = file($update_log);
 		} else {
-			$log_data = __('The updates log is currently empty.');
+			$log_data[] = __('The updates log is currently empty.');
 		}
 	?>
 	<br />
@@ -165,7 +166,10 @@ function toogle_table(off) {
 				<th scope="row"><?php _e('Updates Log') ?></th>
 				<td align="left">
 					<textarea class="small-text code" style="width:100%;height:150px;" wrap="off"><?php
-						echo htmlentities($log_data); ?></textarea>
+						$reversed = array_reverse($log_data);
+						foreach ($reversed as $key) {
+							echo htmlentities($key);
+						}?></textarea>
 						<p>
 						<?php
 						echo '<input type="submit" name="clear_updates_log" value="' . __('Delete Log') . '" class="button-secondary"';
@@ -357,7 +361,7 @@ function nf_sub_updates_getversion($update_url, $rules_version, $update_log) {
 	} else {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$result->get_error_message()})")
+			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$res->get_error_message()})")
 		);
 	}
 	return 0;
@@ -402,7 +406,7 @@ function nf_sub_updates_download($update_url, $update_log, $new_rules_version) {
 	} else {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$result->get_error_message()})")
+			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$res->get_error_message()})")
 		);
 	}
 	return 0;

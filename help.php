@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-05-01 00:48:41                                       |
+ | REVISION: 2015-06-17 15:52:09                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -199,7 +199,7 @@ function help_nfsubpolicies() {
 		<br />
 
 		<strong>Various</strong>
-		<li>Block the <code>DOCUMENT_ROOT</code> server variable <code>' . getenv( 'DOCUMENT_ROOT' ) . '</code> in HTTP requests:<span class="description"> this option will block scripts attempting to pass the <code>DOCUMENT_ROOT</code> server variable in a <code>GET</code> or <code>POST</code> request. Hackers use shell scripts that often need to pass this value, but most legitimate programs do not.</span></li>
+		<li>Block the <code>DOCUMENT_ROOT</code> server variable (<code>' . $_SERVER['DOCUMENT_ROOT'] . '</code>) in HTTP requests:<span class="description"> this option will block scripts attempting to pass the <code>DOCUMENT_ROOT</code> server variable in a <code>GET</code> or <code>POST</code> request. Hackers use shell scripts that often need to pass this value, but most legitimate programs do not.</span></li>
 		<li>Block ASCII character 0x00 (NULL byte):<span class="description"> this option will reject any <code>GET</code> or <code>POST</code> request, <code>COOKIE</code>, <code>HTTP_USER_AGENT</code>, <code>REQUEST_URI</code>, <code>PHP_SELF</code>, <code>PATH_INFO</code> variables containing the ASCII character 0x00 (NULL byte). Such a character is dangerous and should always be rejected.</span></li>
 		<li>Block ASCII control characters 1 to 8 and 14 to 31:<span class="description"> in most cases, those control characters are not needed and should be rejected as well.</span></li>
 
@@ -233,7 +233,6 @@ function help_nfsubfileguard() {
 		'title'     => __('File Guard'),
 		'content'   => __('<br/>File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.<br />
 		If a hacker uploaded a shell script to your site (or injected a backdoor into an already existing file) and tried to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you a detailed alert (script name, IP, request, date and time). Alerts will be sent to the contact email address defined in the <a href="?page=nfsubevent">Event Notifications</a> menu.
-		<p>Modifications detected by NinjaFirewall include <code>mtime</code> (saved or updated content of a file) and <code>ctime</code> (permissions, ownership etc).</p>
 		<p>If you do not want to monitor a folder, you can exclude its full path or a part of it (e.g., <code>/var/www/public_html/cache/</code> or <code>/cache/</code> etc). NinjaFirewall will compare this value to the <code>$_SERVER["SCRIPT_FILENAME"]</code> server variable and, if it matches, will ignore it.</p>') .
 		'<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;' . __('<span class="description">File Guard real-time detection is a totally unique feature, because NinjaFirewall is the only plugin for WordPress that can hook HTTP requests sent to any PHP script, even if that script is not part of the WordPress package (third-party software, shell script, backdoor etc).</span></p>')
 	) );
@@ -258,7 +257,7 @@ function help_nfsubfilecheck() {	// i18n
 		'title'     => __('File Check'),
 		'content'   => __('<p>File Check lets you perform file integrity monitoring upon request or on a specific interval.
 		<br />
-		You need to create a snapshot of all your files and then, at a later time, you can scan your system to compare it with the previous snapshot. Any modification will be immediately detected: file content, file permissions, file ownership, timestamp (<code>ctime</code> and <code>mtime</code>) as well as file creation and deletion.
+		You need to create a snapshot of all your files and then, at a later time, you can scan your system to compare it with the previous snapshot. Any modification will be immediately detected: file content, file permissions, file ownership, timestamp as well as file creation and deletion.
 		</p>
 		<li>Create a snapshot of all files stored in that directory: by default, the directory is set to WordPress <code>ABSPATH</code> (<code>' . ABSPATH . '</code>).</li>
 		<li>Exclude the following files/folders: you can enter a directory or a file name (e.g., <code>/foo/bar/</code>), or a part of it (e.g., <code>foo</code>). Or you can exclude a file extension (e.g., <code>.css</code>).
@@ -512,7 +511,6 @@ function help_nfsubabout() {
 		<li>Virus &amp; Malware removal</li>
 		<li>Hacking recovery</li>
 		<br />
-		Whether it is a simple website defacement or a completely compromised server, we will remove any harmful application (code injection, backdoor etc), as we will find and patch the vulnerability exploited by the hackers. We will secure your site and server in order to avoid any similar problem in the future.<br />
 		All our offers include 1-month warranty and monitoring of your site.
 		<br/><br/>
 		<center><a href="http://ninjarecovery.com/" title="NinjaRecovery.com" target="_blank"><b>www.NinjaRecovery.com</b></a></center><br />'

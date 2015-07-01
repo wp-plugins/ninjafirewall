@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-16 19:37:07                                       |
+ | REVISION: 2015-06-06 13:57:29                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -26,7 +26,18 @@ nf_not_allowed( 'block', __LINE__ );
 
 $nfw_options = get_option( 'nfw_options' );
 
-echo '<div class="wrap">
+echo '<script>
+function ac_radio_toogle(on_off, rbutton) {
+	var what = "nfw_options["+rbutton+"]";
+	if (on_off) {
+		document.nfwalerts.elements[what].disabled = false;
+		document.nfwalerts.elements[what].focus();
+	} else {
+		document.nfwalerts.elements[what].disabled = true;
+	}
+}
+</script>
+<div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
 	<h2>' . __('Event Notifications') . '</h2>
 	<br />';
@@ -53,8 +64,8 @@ if (! isset( $nfw_options['a_0'] ) ) {
 			<th scope="row"><?php _e('Send me an alert whenever') ?></th>
 			<td align="left">
 			<p><label><input type="radio" name="nfw_options[a_0]" value="1"<?php checked( $nfw_options['a_0'], 1) ?>>&nbsp;<?php _e('An administrator logs in (default)') ?></label></p>
-			<p><label><input type="radio" name="nfw_options[a_0]" value="2"<?php checked( $nfw_options['a_0'], 2) ?>>&nbsp;<?php _e('Someone (user, admin, editor...) logs in') ?></label></p>
-			<p><label><input type="radio" name="nfw_options[a_0]" value="0"<?php checked( $nfw_options['a_0'], 0) ?>>&nbsp;<?php _e('No, thanks') ?></label></p>
+			<p><label><input type="radio" name="nfw_options[a_0]" value="2"<?php checked( $nfw_options['a_0'], 2) ?>>&nbsp;<?php _e('Someone - user, admin, editor, etc - logs in') ?></label></p>
+			<p><label><input type="radio" name="nfw_options[a_0]" value="0"<?php checked( $nfw_options['a_0'], 0) ?>>&nbsp;<?php _e('No, thanks (not recommended)') ?></label></p>
 			</td>
 		</tr>
 	</table>
@@ -149,6 +160,7 @@ if (! is_multisite() ) {
 				echo htmlspecialchars( $nfw_options['alert_email'] );
 			}
 			?>">
+			<br /><span class="description">Multiple recipients must be comma-separated (e.g., <code>joe@example.org,alice@example.org</code>).</span>
 			<input type="hidden" name="nfw_options[alert_sa_only]" value="2">
 			</td>
 		</tr>
@@ -160,14 +172,21 @@ if (! is_multisite() ) {
 	if (! isset( $nfw_options['alert_sa_only'] ) ) {
 		$nfw_options['alert_sa_only'] = 2;
 	}
+	if ($nfw_options['alert_sa_only'] == 3) {
+		$tmp_email = htmlspecialchars( $nfw_options['alert_email'] );
+	} else {
+		$tmp_email = '';
+	}
 ?>
 	<h3><?php _e('Contact email') ?></h3>
 	<table class="form-table">
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
 			<th scope="row"><?php _e('Alerts should be sent to') ?></th>
 			<td align="left">
-			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php checked( $nfw_options['alert_sa_only'], 1 ) ?>>&nbsp;<?php _e('Only to me, the Super Admin') ?> (<?php echo htmlspecialchars(get_option('admin_email')); ?>)</label></p>
-			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="2"<?php checked( $nfw_options['alert_sa_only'], 2) ?>>&nbsp;<?php _e('To the administrator of the site where originated the alert (default)') ?></label></p>
+			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="1"<?php checked( $nfw_options['alert_sa_only'], 1 ) ?> onclick="ac_radio_toogle(0,'alert_multirec');" />&nbsp;<?php _e('Only to me, the Super Admin') ?> (<?php echo htmlspecialchars(get_option('admin_email')); ?>)</label></p>
+			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="2"<?php checked( $nfw_options['alert_sa_only'], 2) ?> onclick="ac_radio_toogle(0,'alert_multirec');" />&nbsp;<?php _e('To the administrator of the site where originated the alert (default)') ?></label></p>
+			<p><label><input type="radio" name="nfw_options[alert_sa_only]" value="3"<?php checked( $nfw_options['alert_sa_only'], 3) ?> onclick="ac_radio_toogle(1,'alert_multirec');" />&nbsp;<?php _e('Other(s)') ?>: </label><input class="regular-text" type="text" name="nfw_options[alert_multirec]" size="45" maxlength="250" value="<?php echo $tmp_email ?>" <?php disabled($tmp_email, '') ?>></p>
+			<span class="description">Multiple recipients must be comma-separated (e.g., <code>joe@example.org,alice@example.org</code>).</span>
 			<input type="hidden" name="nfw_options[alert_email]" value="<?php echo htmlspecialchars(get_option('admin_email')); ?>">
 			</td>
 		</tr>
@@ -202,7 +221,7 @@ function nf_sub_event_save() {
 		$nfw_options['a_0'] = $_POST['nfw_options']['a_0'];
 	}
 
-	if (! preg_match('/^[12]$/', $_POST['nfw_options']['alert_sa_only']) ) {
+	if (! preg_match('/^[123]$/', $_POST['nfw_options']['alert_sa_only']) ) {
 		$nfw_options['alert_sa_only'] = 2;
 	} else {
 		$nfw_options['alert_sa_only'] = $_POST['nfw_options']['alert_sa_only'];
@@ -278,8 +297,18 @@ function nf_sub_event_save() {
 		$nfw_options['a_51'] = 1;
 	}
 
+	// Multiple recipients (WPMU only) ?
+	if (! empty( $_POST['nfw_options']['alert_multirec']) ) {
+		$_POST['nfw_options']['alert_email'] = $_POST['nfw_options']['alert_multirec'];
+	}
+
 	if (! empty( $_POST['nfw_options']['alert_email']) ) {
-		$nfw_options['alert_email'] = sanitize_email( $_POST['nfw_options']['alert_email'] );
+		$nfw_options['alert_email'] = '';
+		$tmp_email = explode(',', preg_replace('/\s/', '', $_POST['nfw_options']['alert_email']) );
+		foreach ($tmp_email as $notif_email) {
+			$nfw_options['alert_email'] .= sanitize_email($notif_email) . ', ';
+		}
+		$nfw_options['alert_email'] = rtrim($nfw_options['alert_email'], ', ' );
 	}
 	if ( empty( $nfw_options['alert_email'] ) ) {
 		$nfw_options['alert_email'] = get_option('admin_email');

@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-10 16:31:24                                       |
+ | REVISION: 2015-06-06 17:40:51                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -73,6 +73,10 @@ if (! empty($_REQUEST['nfw_act'])) {
 		if (file_exists($nfmon_snapshot) ) {
 			unlink ($nfmon_snapshot);
 			$success = __('Snapshot file successfully deleted.');
+			// Remove old diff file as well :
+			if ( file_exists($nfmon_diff . '.php') ) {
+				unlink($nfmon_diff . '.php');
+			}
 			// Clear scheduled scan (if any) and its options :
 			if ( wp_next_scheduled('nfscanevent') ) {
 				wp_clear_scheduled_hook('nfscanevent');
@@ -183,8 +187,11 @@ fclose($fh);
 nfw_get_blogtimezone();
 // Look for new/mod/del files :
 $res = $new_file = $del_file = $mod_file = array();
+// If no changes were detected, we display the last ones (if any) :
+if (! file_exists($nfmon_diff) && file_exists($nfmon_diff . '.php') ) {
+	$nfmon_diff = $nfmon_diff . '.php';
+}
 if (file_exists($nfmon_diff) ) {
-	$stat2 = stat($nfmon_diff);
 	$fh = fopen($nfmon_diff, 'r');
 	while (! feof($fh) ) {
 		$res = explode('::', fgets($fh) );
@@ -335,7 +342,6 @@ if (file_exists($nfmon_diff) ) {
 			// Show info about last changes, if any :
 			if ($mod) {
 			?>
-				<p><?php printf( __('Detected on: %s'), date_i18n('M d, Y @ H:i:s O', $stat2['ctime'])); ?></p>
 				<p><?php printf( __('New files: %s'), count($new_file) ) ?></p>
 				<p><?php printf( __('Deleted files: %s'), count($del_file) ) ?></p>
 				<p><?php printf( __('Modified files: %s'), count($mod_file) ) ?></p>
@@ -664,7 +670,9 @@ function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
 	$old_files = $file = $new_files =  array();
 	$modified_files = $match = array();
 
-	$fh = fopen($nfmon_snapshot, 'r');
+	if (! $fh = fopen($nfmon_snapshot, 'r') ) {
+		return sprintf( __('Error reading old snapshot file.'), __LINE__ );
+	}
 	while (! feof($fh) ) {
 		$match = explode('::', rtrim(fgets($fh)) . '::' );
 		if (! empty($match[1]) ) {
@@ -673,7 +681,9 @@ function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
 	}
 	fclose($fh);
 
-	$fh = fopen($nfmon_snapshot . '_tmp', 'r');
+	if (! $fh = fopen($nfmon_snapshot . '_tmp', 'r') ) {
+		return sprintf( __('Error reading new snapshot file.'), __LINE__ );
+	}
 	while (! feof($fh) ) {
 		$match = explode('::', rtrim(fgets($fh)) . '::' );
 
@@ -725,7 +735,8 @@ function nf_sub_monitoring_scan($nfmon_snapshot, $nfmon_diff) {
 
 	} else {
 		if (file_exists($nfmon_diff) ) {
-			unlink($nfmon_diff);
+			// Keep last changes :
+			rename($nfmon_diff, $nfmon_diff. '.php');
 		}
 		unlink( $nfmon_snapshot . '_tmp');
 	}

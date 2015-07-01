@@ -24,7 +24,7 @@ NinjaFirewall can hook, scan, sanitise or reject any HTTP/HTTPS request sent to 
 Some of its features are:
 
 * Full standalone web application firewall. Works before WordPress is loaded.
-* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, MySQL injections, brute-force scanners, shell scripts, backdoors etc.
+* Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, SQL injections, brute-force scanners, shell scripts, backdoors etc.
 * Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (`HTTP_USER_AGENT`, `HTTP_REFERER`, `PHP_SELF`, `PATH_TRANSLATED`, `PATH_INFO`).
 * Sanitises variables names and values.
 * Advanced filtering options to block ASCII control characters, NULL bytes and PHP built-in wrappers.
@@ -213,6 +213,15 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 
 == Changelog ==
+
+= 1.4.3-RC1 =
+* Fixed a bug in the firewall that could corrupt the content of a POST or GET array.
+* It is now possible to send notifications and alerts to multiple recipients (see "Event Notifications > Contact email").
+* After each scan, "File Check" will always keep the list of the previous changes rather than deleting it.
+* Updates log is sorted in reverse order.
+* [WP+ edition] Whitelisted and blacklisted IPs are sorted using "natural order" algorithm in the "Access Control" page.
+* [WP+ edition] Updated IPv4/IPv6 GeoIP databases.
+* Updated security rules.
 
 = 1.4.2 =
 * The path to NinjaFirewall's log/cache directory can be changed with the `NFW_LOG_DIR` constant (see http://ninjafirewall.com/wordpress/htninja/#nfwlogdir for more details).

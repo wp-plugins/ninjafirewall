@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-05-03 23:19:46                                       |
+ | REVISION: 2015-06-17 17:29:43                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -339,10 +339,10 @@ function nf_sub_options_import() {
 	update_option( 'nfw_options', $nfw_options);
 
 	// Add the correct DOCUMENT_ROOT :
-	if ( strlen( getenv( 'DOCUMENT_ROOT' ) ) > 5 ) {
-		$nfw_rules[NFW_DOC_ROOT]['what'] = getenv( 'DOCUMENT_ROOT' );
-	} elseif ( strlen( $_SERVER['DOCUMENT_ROOT'] ) > 5 ) {
+	if ( strlen( $_SERVER['DOCUMENT_ROOT'] ) > 5 ) {
 		$nfw_rules[NFW_DOC_ROOT]['what'] = $_SERVER['DOCUMENT_ROOT'];
+	} elseif ( strlen( getenv( 'DOCUMENT_ROOT' ) ) > 5 ) {
+		$nfw_rules[NFW_DOC_ROOT]['what'] = getenv( 'DOCUMENT_ROOT' );
 	} else {
 		$nfw_rules[NFW_DOC_ROOT]['on']  = 0;
 	}
