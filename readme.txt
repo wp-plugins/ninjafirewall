@@ -214,7 +214,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.4.3-RC1 =
+= 1.4.3 =
 * Fixed a bug in the firewall that could corrupt the content of a POST or GET array.
 * It is now possible to send notifications and alerts to multiple recipients (see "Event Notifications > Contact email").
 * After each scan, "File Check" will always keep the list of the previous changes rather than deleting it.
