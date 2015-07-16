@@ -93,16 +93,17 @@ function nfw_welcome() {
 	<p>This installer will help you to make the setup process as quick and easy as possible. But before doing so, please read carefully the following lines:</p>
 	<p>Although NinjaFirewall looks like a regular plugin, it is not. It can be installed and configured from WordPress admin console, but it is a stand-alone Web Application Firewall that sits in front of WordPress. That means that it will hook, scan, reject and/or sanitise any HTTP/HTTPS request sent to a PHP script before it reaches WordPress and any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren't part of the WordPress package. Even encoded PHP scripts, hackers backdoors &amp; shell scripts will be filtered by NinjaFirewall.</p>
 	<p>That's cool and makes NinjaFirewall a true firewall. And probably the most powerful security applications for WordPress. But just like any firewall, if you misuse it, you can get into serious problems and crash your site.</p>
-	<div class="updated settings-error"><br />Use ONLY your WordPress administration console (<a href="<?php echo admin_url() ?>plugins.php" style="text-decoration:underline;">Plugins</a> menu) to activate, deactivate, install, update, upgrade, uninstall or even delete NinjaFirewall.
+	<div class="updated settings-error">
 	<br />
-	Do NOT attempt to perform any of the above operations using another application ( FTP, cPanel, Plesk etc), or to modify, rename, move, edit, or overwrite its files, EVEN when it is disabled.
+	1 - Use ONLY your WordPress administration console (<a href="<?php echo admin_url() ?>plugins.php" style="text-decoration:underline;">Plugins</a> menu) to activate, deactivate, install, update, upgrade, uninstall or even delete NinjaFirewall.
 	<br />
-	Do NOT attempt to migrate your site with NinjaFirewall installed. Uninstall it, migrate your site and reinstall it.
+	2 - Do NOT attempt to perform any of the above operations using another application ( FTP, cPanel, Plesk etc), or to modify, rename, move, edit, or overwrite its files, EVEN when it is disabled.
+	<br />
+	3 - Do NOT attempt to migrate your site with NinjaFirewall installed. Uninstall it, migrate your site and reinstall it.
 	<br />
 	<br />
 	<center><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ ) ?>" border="0" height="16" width="16">&nbsp;<strong>Failure to do so will almost always cause you to be locked out of your own site and/or to crash it.</strong><br />&nbsp;</center>
 	</div>
-	<br />
 	<h3>Privacy Policy</h3>
 	<a href="http://nintechnet.com/" title="nintechnet.com">NinTechNet</a> strictly follows the WordPress <a href="http://wordpress.org/plugins/about/guidelines/">Plugin Developer guidelines</a>&nbsp;: our software, NinjaFirewall (WP edition), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.<br />Because <strong>we do not collect any user data</strong>, we do not even know that you are using (and hopefully enjoying&nbsp;!) our product.
 	<br />
@@ -116,8 +117,7 @@ function nfw_welcome() {
 	If you need some help regarding the installation, please consult our <a href="http://ninjafirewall.com/">site</a>.
 	<br />
 	Updates info are available via Twitter:<br /><a href="https://twitter.com/nintechnet"><img border="0" src="<?php echo plugins_url( '/images/twitter_ntn.png', __FILE__ ) ?>" width="116" height="28" target="_blank"></a>
-	<br />
-	<br />
+	<p style="color:red">Ensure that you have an FTP access to your website so that, if there was a problem during the installation of the firewall, you could undo the changes.</p>
 	<form method="post">
 		<p><input class="button-primary" type="submit" name="Save" value="Enough chitchat, let's go ! &#187;" /></p>
 		<input type="hidden" name="nfw_act" value="logdir" />
@@ -516,7 +516,7 @@ function nfw_integration($err) {
 	// Skip that section if we are running with HHVM:
 	if ($_SESSION['http_server'] != 7) {
 		?>
-		<p>In order to hook and protect all PHP files, NinjaFirewall needs to add some specific directives to your <?php echo $directives ?> located inside WordPress root directory. <?php echo $t1 ?> will have to be created or, <?php echo $t2 ?>, to be edited. If your WordPress root directory is writable, I can make those changes for you.</p>
+		<p>In order to hook and protect all PHP files, NinjaFirewall needs to add some specific directives to your <?php echo $directives ?> located inside WordPress root directory. <?php echo $t1 ?> will have to be created or, <?php echo $t2 ?>, to be edited. If your WordPress root directory is writable, the installer can make those changes for you.</p>
 
 		<li>Checking if WordPress root directory is writable&nbsp;: <strong><?php
 		if ( $_SESSION['abspath_writable']) {
@@ -685,7 +685,7 @@ function nfw_integration($err) {
 			// We offer to make the changes, or to let the user handle that (could be
 			// useful if the admin wants to use a PHP INI or .htaccess in another folder) :
 			echo '<p><label><input type="radio" name="makechange" onClick="diy_chg(this.value)" value="nfw" checked="checked">Let NinjaFirewall make the above changes (recommended).</label></p>
-			<p><font color="red" id="lnfw">Ensure that you have an FTP access to your website so that, in case of a problem, you could undo the above changes.</font>&nbsp;</p>
+			<p><font color="red" id="lnfw">Ensure that you have an FTP access to your website so that, if there was a problem, you could undo the above changes.</font>&nbsp;</p>
 			<p><label><input type="radio" name="makechange" onClick="diy_chg(this.value)" value="usr">I want to make the changes myself.</label></p>
 			<p id="diy" style="display:none;">' . $chg_str . '</p>';
 		} else {
