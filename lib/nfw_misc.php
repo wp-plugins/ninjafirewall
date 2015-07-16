@@ -1,12 +1,11 @@
 <?php
 /*
  +---------------------------------------------------------------------+
- | NinjaFirewall (WP  edition)                                         |
+ | NinjaFirewall (WP edition)                                          |
  |                                                                     |
- | (c) NinTechNet - http://nintechnet.com/ - wordpress@nintechnet.com  |
- |                                                                     |
+ | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-01-01 19:10:17                                       |
+ | REVISION: 2015-05-01 00:55:43                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -17,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n
+ +---------------------------------------------------------------------+ i18n / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -38,21 +37,21 @@ function nfw_admin_notice(){
 	}
 
 	// Ensure we have our cache/log folder, or attempt to create it :
-	if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
-		@mkdir( WP_CONTENT_DIR . '/nfwlog', 0755);
-		@touch( WP_CONTENT_DIR . '/nfwlog/index.html' );
-		@file_put_contents(WP_CONTENT_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all");
-		if (! file_exists(WP_CONTENT_DIR . '/nfwlog/cache') ) {
-			@mkdir( WP_CONTENT_DIR . '/nfwlog/cache', 0755);
-			@touch( WP_CONTENT_DIR . '/nfwlog/cache/index.html' );
-			@file_put_contents(WP_CONTENT_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all");
+	if (! file_exists(NFW_LOG_DIR . '/nfwlog') ) {
+		@mkdir( NFW_LOG_DIR . '/nfwlog', 0755);
+		@touch( NFW_LOG_DIR . '/nfwlog/index.html' );
+		@file_put_contents(NFW_LOG_DIR . '/nfwlog/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
+		if (! file_exists(NFW_LOG_DIR . '/nfwlog/cache') ) {
+			@mkdir( NFW_LOG_DIR . '/nfwlog/cache', 0755);
+			@touch( NFW_LOG_DIR . '/nfwlog/cache/index.html' );
+			@file_put_contents(NFW_LOG_DIR . '/nfwlog/cache/.htaccess', "Order Deny,Allow\nDeny from all", LOCK_EX);
 		}
 	}
-	if (! file_exists(WP_CONTENT_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory cannot be created. Please review your installation and ensure that <code>/wp-content/</code> is writable.', 'ninjafirewall'), WP_CONTENT_DIR) . '</p></div>';
+	if (! file_exists(NFW_LOG_DIR . '/nfwlog') ) {
+		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory cannot be created. Please review your installation and ensure that <code>/wp-content/</code> is writable.', 'ninjafirewall'), htmlspecialchars(NFW_LOG_DIR) ) . '</p></div>';
 	}
-	if (! is_writable(WP_CONTENT_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory is read-only. Please review your installation and ensure that <code>/nfwlog/</code> is writable.', 'ninjafirewall'), WP_CONTENT_DIR) . '</p></div>';
+	if (! is_writable(NFW_LOG_DIR . '/nfwlog') ) {
+		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory is read-only. Please review your installation and ensure that <code>/nfwlog/</code> is writable.', 'ninjafirewall'), htmlspecialchars(NFW_LOG_DIR) ) . '</p></div>';
 	}
 
 	if (! NF_DISABLED) {
@@ -60,17 +59,21 @@ function nfw_admin_notice(){
 		return;
 	}
 
-	// Don't display anything if we are looking at the main page (error message will
-	// be displayed already) or during the installation process :
-	if (isset($_GET['page']) && $_GET['page'] == 'NinjaFirewall' ) {
+	// Don't display anything if we are looking at the main/options pages
+	// (error message will be displayed already) or during the installation
+	// process :
+	if (isset($_GET['page']) && preg_match('/^(?:NinjaFirewall|nfsubopt)$/', $_GET['page']) ) {
 		return;
 	}
 
 	$nfw_options = get_option('nfw_options');
-	if ( empty($nfw_options['ret_code']) ) {
-		// we will assume that NinjaFirewall it is not installed yet :
+	// If we cannot find options and if the firewall did not return
+	// a #11 status code (corrupted DB/tables)...
+	if ( empty($nfw_options['ret_code']) && NF_DISABLED != 11 ) {
+		// ...we will assume that NinjaFirewall it is not installed yet :
 		return;
 	}
+
 	if (! empty($GLOBALS['err_fw'][NF_DISABLED]) ) {
 		$msg = $GLOBALS['err_fw'][NF_DISABLED];
 	} else {
@@ -148,7 +151,13 @@ function nf_check_dbdata() {
 	// Don't do anything if NinjaFirewall is disabled or DB monitoring option is off :
 	if ( empty( $nfw_options['enabled'] ) || empty($nfw_options['a_51']) ) { return; }
 
-	$nfdbhash = WP_CONTENT_DIR . '/nfwlog/cache/nfdbhash.' . $_SERVER['SERVER_NAME'] . '.php';
+	if ( is_multisite() ) {
+		global $current_blog;
+		$nfdbhash = NFW_LOG_DIR .'/nfwlog/cache/nfdbhash.'. $current_blog->site_id .'-'. $current_blog->blog_id .'.php';
+	} else {
+		global $blog_id;
+		$nfdbhash = NFW_LOG_DIR .'/nfwlog/cache/nfdbhash.'. $blog_id .'.php';
+	}
 
 	$adm_users = nf_get_dbdata();
 	if (! $adm_users) { return; }
@@ -156,7 +165,7 @@ function nf_check_dbdata() {
 	if (! file_exists($nfdbhash) ) {
 		// We don't have any hash yet, let's create one and quit
 		// (md5 is faster than sha1 or crc32 with long strings) :
-		file_put_contents( $nfdbhash, md5( serialize( $adm_users) ) );
+		@file_put_contents( $nfdbhash, md5( serialize( $adm_users) ), LOCK_EX );
 		return;
 	}
 
@@ -173,7 +182,7 @@ function nf_check_dbdata() {
 		}
 
 		// Save the new hash :
-		$tmp = file_put_contents( $nfdbhash, md5( serialize( $adm_users) ) );
+		$tmp = @file_put_contents( $nfdbhash, md5( serialize( $adm_users) ), LOCK_EX );
 		if ( $tmp === FALSE ) {
 			return;
 		}
@@ -190,8 +199,12 @@ function nf_check_dbdata() {
 
 		$subject = __('[NinjaFirewall] Alert: Database changes detected', 'ninjafirewall');
 		$message = __('NinjaFirewall has detected that one or more administrator accounts were modified in the database:', 'ninjafirewall') . "\n\n";
-		$message.= __('- Blog : ', 'ninjafirewall') . site_url() . "\n";
-		$message.= __('- Date : ', 'ninjafirewall') . date('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
+		if ( is_multisite() ) {
+			$message.= __('Blog : ', 'ninjafirewall') . network_home_url('/') . "\n";
+		} else {
+			$message.= __('Blog : ', 'ninjafirewall') . home_url('/') . "\n";
+		}
+		$message.= __('Date : ', 'ninjafirewall') . date_i18n('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
 		$message.= sprintf(__('Total administrators : %s', 'ninjafirewall'), count($adm_users) ) . "\n\n";
 		foreach( $adm_users as $obj => $adm ) {
 			$message.= 'Admin ID : ' . $adm->ID . "\n";
