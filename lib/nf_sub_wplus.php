@@ -55,7 +55,7 @@ nf_not_allowed( 'block', __LINE__ );
 
 				<br />
 
-				<p><b>Access Control</b> can be used to whitelist/blacklist an IP or any part of it. NinjaFirewall natively supports IPv4 and IPv6 protocols, for both public and private addresses.:</p>
+				<p><b>Access Control</b> can be used to whitelist/blacklist an IP or any part of it. NinjaFirewall natively supports IPv4 and IPv6 protocols, for both public and private addresses:</p>
 				<center><img src="<?php echo plugins_url() ?>/ninjafirewall/images/screenshots/03_ac_ip.png" width="471" height="374" style="border: 1px solid #999;-moz-box-shadow:-3px 5px 5px #999;-webkit-box-shadow:-3px 5px 5px #999;box-shadow:-3px 5px 5px #999;"></center>
 
 				<br />
