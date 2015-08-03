@@ -7,7 +7,7 @@ Stable tag: 1.4.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A true Web Application Firewall.
+A true Web Application Firewall to protect and secure WordPress.
 
 == Description ==
 
@@ -25,7 +25,7 @@ Some of its features are:
 
 * Full standalone web application firewall. Works before WordPress is loaded.
 * Protects against remote file inclusion, local file inclusion, cross-site scripting, code execution, SQL injections, brute-force scanners, shell scripts, backdoors etc.
-* Scans and/or sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (`HTTP_USER_AGENT`, `HTTP_REFERER`, `PHP_SELF`, `PATH_TRANSLATED`, `PATH_INFO`).
+* Scans and sanitises GET/POST requests, HTTP/HTTPS traffic, cookies, server variables (`HTTP_USER_AGENT`, `HTTP_REFERER`, `PHP_SELF`, `PATH_TRANSLATED`, `PATH_INFO`).
 * Sanitises variables names and values.
 * Advanced filtering options to block ASCII control characters, NULL bytes and PHP built-in wrappers.
 * Decodes and scans Base64-encoded POST requests to detect backdoors and code injection attempts.
@@ -60,7 +60,7 @@ The protection applies to the `wp-login.php` script but can be extended to the `
 
 = Real-time detection =
 
-**File Guard** real-time detection is a totally unique feature provided by NinjaFirewall: it can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this. If a hacker uploaded a shell script to your site (or injected a backdoor into an already existing file) and tried to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified/created. It would send you an alert with all details (script name, IP, request, date and time).
+**File Guard** real-time detection is a totally unique feature provided by NinjaFirewall: it can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this. If a hacker uploaded a shell script to your site (or injected a backdoor into an already existing file) and tried to directly access that file using his browser or a script, NinjaFirewall would hook the HTTP request and immediately detect that the file was recently modified or created. It would send you an alert with all details (script name, IP, request, date and time).
 
 = File integrity monitoring  =
 
@@ -68,7 +68,7 @@ The protection applies to the `wp-login.php` script but can be extended to the `
 
 = Watch your website traffic in real time =
 
-**Live Log** lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Because it communicates directly with the firewall, i.e., without loading any WordPress core file, **Live Log** is fast, light and it will not affect your server load, even if you set its refresh rate to the lowest value (5 seconds).
+**Live Log** lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Because it communicates directly with the firewall, i.e., without loading WordPress, **Live Log** is fast, light and it will not affect your server load, even if you set its refresh rate to the lowest value.
 
 = Events Notification =
 
@@ -103,7 +103,7 @@ You can prepend your own PHP code to the firewall with the help of an [optional 
 = Low Footprint Firewall =
 
 NinjaFirewall is very fast, optimised, compact, and requires very low system resource.
-Don't believe us? See for yourself: download and install [GoDaddy's P3 Plugin Performance Profiler](http://wordpress.org/plugins/p3-profiler/ "") and compare NinjaFirewall performances with other security plugins.
+See for yourself: download and install [GoDaddy's P3 Plugin Performance Profiler](http://wordpress.org/plugins/p3-profiler/ "") and compare NinjaFirewall performances with other security plugins.
 
 = Non-Intrusive User Interface =
 
@@ -213,6 +213,9 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 
 == Changelog ==
+
+= 1.5-RC1 =
+* Internationalization support.
 
 = 1.4.3 =
 * Fixed a bug in the firewall that could corrupt the content of a POST or GET array.
@@ -381,7 +384,7 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 * Security update: added protection against the new ThimThumb vulnerability (WebShot Remote Code Execution).
 
 = 1.2.1 =
-* Added a new feature that can detect, in real-time, any access to a PHP file that was recently modified/created, and can alert the administrator (see new "File Guard" menu and its contextual help).
+* Added a new feature that can detect, in real-time, any access to a PHP file that was recently modified or created, and can alert the administrator (see new "File Guard" menu and its contextual help).
 * Added a call to `stripslashes()` to prevent WordPress from escaping quotes in the "Login Protection" password.
 * The length of the "Login Protection" message (realm) was increased from 100 to 150 characters.
 * Removed a small piece of code from the "Login Protection" that could block some browsers.

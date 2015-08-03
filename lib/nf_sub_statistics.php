@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2014-10-08 00:37:55                                       |
+ | REVISION: 2015-08-01 17:43:40                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n / sa
+ +---------------------------------------------------------------------+ i18n+ / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -73,7 +73,7 @@ if ($fh = @fopen($fw_log, 'r') ) {
 	}
 	fclose( $fh);
 } else {
-	echo '<div class="error settings-error"><p><strong>' . __('Cannot open logfile', 'ninjafirewall') . ' :</strong> <code>' . $fw_log . '</code></p></div></div>';
+	echo '<div class="error notice is-dismissible"><p>' . __('Cannot open logfile', 'ninjafirewall') . ' : <code>' . $fw_log . '</code></p></div></div>';
 	summary_stats_combo($xtr);
 	return;
 }
@@ -84,7 +84,7 @@ $total = $critical + $high + $medium;
 if ($total == 1) {$fast = $slow;}
 
 if (! $total ) {
-	echo '<div class="error settings-error"><p>' . __('You do not have any stats for the current month yet.', 'ninjafirewall') . '</p></div>';
+	echo '<div class="error notice is-dismissible"><p>' . __('You do not have any stats for the current month yet.', 'ninjafirewall') . '</p></div>';
 	$fast = 0;
 } else {
 	$coef = 100 / $total;

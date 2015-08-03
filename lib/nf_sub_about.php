@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-05-28 16:56:10                                       |
+ | REVISION: 2015-07-31 17:15:02                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n / sa
+ +---------------------------------------------------------------------+ i18n+ / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -30,7 +30,7 @@ if ( $data = @file_get_contents( dirname( plugin_dir_path(__FILE__) ) . '/readme
 	$pos_start = strpos( $data, $what );
 	$changelog = substr( $data, $pos_start + strlen( $what ) + 1 );
 } else {
-	$changelog = __('Error : cannot find changelog :(');
+	$changelog = __('Error : cannot find changelog :(', 'ninjafirewall');
 }
 
 // Hide/show the corresponding table when the user clicks a button
@@ -53,7 +53,7 @@ function nfw_eg() {
 </script>
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;" title="NinTechNet"></div>
-	<h2>' . __('About') .'</h2>
+	<h2>' . __('About', 'ninjafirewall') .'</h2>
 	<br />
 	<br />
 	<center>
@@ -76,21 +76,21 @@ function nfw_eg() {
 								<br />
 								<a href="http://ninjamonitoring.com/"><b>NinjaMonitoring.com</b></a>
 								<br />
-								' . __('Monitor your website for just $4.99 per month.') . '
+								' . __('Monitor your website for just $4.99 per month.', 'ninjafirewall') . '
 							</td>
 							<td align="center" width="34%">
 								<img src="' . plugins_url() . '/ninjafirewall/images/logo_pro_65.png" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjafirewall.com/"><b>NinjaFirewall.com</b></a>
 								<br />
-								' . __('Advanced firewall software for all your PHP applications.') . '
+								' . __('Advanced firewall software for all your PHP applications.', 'ninjafirewall') . '
 							</td>
 							<td align="center" width="33%">
 								<img src="' . plugins_url() . '/ninjafirewall/images/logo_nr_65.png" width="65" height="65" border=0>
 								<br />
 								<a href="http://ninjarecovery.com/"><b>NinjaRecovery.com</b></a>
 								<br />
-								' . __('Incident response, malware removal and hacking recovery.') . '
+								' . __('Incident response, malware removal and hacking recovery.', 'ninjafirewall') . '
 							</td>
 						</tr>
 					</table>
@@ -99,7 +99,7 @@ function nfw_eg() {
 		</table>
 		<br />
 		<br />
-		<input class="button-secondary" type="button" value="' . __('Changelog') . '" onclick="show_table(12);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-primary" type="button" value="' . __('Spread the word about the Ninja !') . '" onclick="show_table(11);" autofocus>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="' . __('System Info') . '" onclick="show_table(13);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="' . __('Privacy Policy') . '" onclick="show_table(14);">
+		<input class="button-secondary" type="button" value="' . __('Changelog', 'ninjafirewall') . '" onclick="show_table(12);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-primary" type="button" value="' . __('Spread the word about the Ninja !', 'ninjafirewall') . '" onclick="show_table(11);" autofocus>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="' . __('System Info', 'ninjafirewall') . '" onclick="show_table(13);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="button-secondary" type="button" value="' . __('Privacy Policy', 'ninjafirewall') . '" onclick="show_table(14);">
 		<br />
 		<br />
 
@@ -124,7 +124,7 @@ function nfw_eg() {
 			<tr valign="top"><td width="47%;" align="right">SERVER_ADDR</td><td width="3%">&nbsp;</td><td width="50%" align="left">' .htmlspecialchars($_SERVER['SERVER_ADDR']) . '</td></tr>';
 
 if ( PHP_VERSION ) {
-	echo '<tr valign="top"><td width="47%;" align="right">' . __('PHP version') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">'. PHP_VERSION . ' (';
+	echo '<tr valign="top"><td width="47%;" align="right">' . __('PHP version', 'ninjafirewall') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">'. PHP_VERSION . ' (';
 	if ( defined('HHVM_VERSION') ) {
 		echo 'HHVM';
 	} else {
@@ -133,13 +133,13 @@ if ( PHP_VERSION ) {
 	echo ')</td></tr>';
 }
 if ( $_SERVER['SERVER_SOFTWARE'] ) {
-	echo '<tr valign="top"><td width="47%;" align="right">' . __('HTTP server') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . htmlspecialchars($_SERVER['SERVER_SOFTWARE']) . '</td></tr>';
+	echo '<tr valign="top"><td width="47%;" align="right">' . __('HTTP server', 'ninjafirewall') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . htmlspecialchars($_SERVER['SERVER_SOFTWARE']) . '</td></tr>';
 }
 if ( PHP_OS ) {
-	echo '<tr valign="top"><td width="47%;" align="right">' . __('Operating System') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_OS . '</td></tr>';
+	echo '<tr valign="top"><td width="47%;" align="right">' . __('Operating System', 'ninjafirewall') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . PHP_OS . '</td></tr>';
 }
 if ( $load = sys_getloadavg() ) {
-	echo '<tr valign="top"><td width="47%;" align="right">' . __('Load Average') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $load[0] . ', '. $load[1] . ', '. $load[2] . '</td></tr>';
+	echo '<tr valign="top"><td width="47%;" align="right">' . __('Load Average', 'ninjafirewall') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . $load[0] . ', '. $load[1] . ', '. $load[2] . '</td></tr>';
 }
 if (! preg_match( '/^win/i', PHP_OS ) ) {
 	$MemTotal = $MemFree = $Buffers = $Cached = 0;
@@ -157,14 +157,14 @@ if (! preg_match( '/^win/i', PHP_OS ) ) {
 	}
 	$free = ( $MemFree + $Buffers + $Cached ) / 1024;
 	if ( $free ) {
-		echo '<tr valign="top"><td width="47%;" align="right">' . __('RAM') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . number_format( $free ) . ' ' . __('MB free') . ' / '. number_format( $MemTotal ) . ' ' . __('MB total') . '</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">' . __('RAM', 'ninjafirewall') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . number_format( $free ) . ' ' . __('MB free', 'ninjafirewall') . ' / '. number_format( $MemTotal ) . ' ' . __('MB total', 'ninjafirewall') . '</td></tr>';
 	}
 
 	$cpu = @explode( "\n", `grep 'model name' /proc/cpuinfo` );
 	if (! empty( $cpu[0] ) ) {
 		array_pop( $cpu );
-		echo '<tr valign="top"><td width="47%;" align="right">' . __('Processor(s)') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . count( $cpu ) . '</td></tr>';
-		echo '<tr valign="top"><td width="47%;" align="right">' . __('CPU model') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . str_replace ("model name\t:", '', htmlspecialchars($cpu[0])) . '</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">' . __('Processor(s)', 'ninjafirewall') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . count( $cpu ) . '</td></tr>';
+		echo '<tr valign="top"><td width="47%;" align="right">' . __('CPU model', 'ninjafirewall') . '</td><td width="3%">&nbsp;</td><td width="50%" align="left">' . str_replace ("model name\t:", '', htmlspecialchars($cpu[0])) . '</td></tr>';
 	}
 }
 
@@ -173,7 +173,7 @@ echo '
 		<table id="14" style="display:none;" width="500">
 			<tr>
 				<td>
-					<textarea class="small-text code" cols="60" rows="8">' . __('NinTechNet strictly follows the WordPress Plugin Developer guidelines &lt;http://wordpress.org/plugins/about/guidelines/&gt;: NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.') . "\n" .  __('Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.') . '</textarea>
+					<textarea class="small-text code" cols="60" rows="8">' . __('NinTechNet strictly follows the WordPress Plugin Developer guidelines', 'ninjafirewall') . ' &lt;http://wordpress.org/plugins/about/guidelines/&gt;: ' . __('NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.', 'ninjafirewall') . "\n" .  __('Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying !) our product.', 'ninjafirewall') . '</textarea>
 				</td>
 			</tr>
 		</table>

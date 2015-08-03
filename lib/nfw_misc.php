@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-05-01 00:55:43                                       |
+ | REVISION: 2015-07-31 17:34:49                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n / sa
+ +---------------------------------------------------------------------+ i18n+ / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -48,10 +48,12 @@ function nfw_admin_notice(){
 		}
 	}
 	if (! file_exists(NFW_LOG_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory cannot be created. Please review your installation and ensure that <code>/wp-content/</code> is writable.', 'ninjafirewall'), htmlspecialchars(NFW_LOG_DIR) ) . '</p></div>';
+		echo '<div class="error"><p><strong>' . __('NinjaFirewall error', 'ninjafirewall') . ' :</strong> ' .
+			sprintf( __('%s directory cannot be created. Please review your installation and ensure that %s is writable.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/</code>',  '<code>/wp-content/</code>') . '</p></div>';
 	}
 	if (! is_writable(NFW_LOG_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p>' . sprintf( __('<strong>NinjaFirewall error :</strong> <code>%s/nfwlog/</code> directory is read-only. Please review your installation and ensure that <code>/nfwlog/</code> is writable.', 'ninjafirewall'), htmlspecialchars(NFW_LOG_DIR) ) . '</p></div>';
+		echo '<div class="error"><p><strong>' . __('NinjaFirewall error', 'ninjafirewall') . ' :</strong> ' .
+			sprintf( __('%s directory is read-only. Please review your installation and ensure that %s is writable.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/</code>', '<code>/nfwlog/</code>') . '</p></div>';
 	}
 
 	if (! NF_DISABLED) {
@@ -77,7 +79,7 @@ function nfw_admin_notice(){
 	if (! empty($GLOBALS['err_fw'][NF_DISABLED]) ) {
 		$msg = $GLOBALS['err_fw'][NF_DISABLED];
 	} else {
-		$msg = 'unknown error #' . NF_DISABLED;
+		$msg = __('unknown error', 'ninjafirewall') . ' #' . NF_DISABLED;
 	}
 	echo '<div class="error"><p><strong>' . __('NinjaFirewall fatal error :', 'ninjafirewall') . '</strong> ' . $msg .
 		'. ' . __('Review your installation, your site is not protected.', 'ninjafirewall') . '</p></div>';

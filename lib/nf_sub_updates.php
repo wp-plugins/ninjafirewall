@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-06-16 17:23:54                                       |
+ | REVISION: 2015-08-01 17:53:59                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n / sa
+ +---------------------------------------------------------------------+ i18n+ / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -39,7 +39,7 @@ nf_not_allowed( 'block', __LINE__ );
 
 echo '<div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>' . __('Updates') . '</h2>
+	<h2>' . __('Updates', 'ninjafirewall') . '</h2>
 	<br />';
 
 //Saved options ?
@@ -52,7 +52,7 @@ if (! empty($_POST['nfw_act']) ) {
 	} elseif ($_POST['nfw_act'] == 2) {
 		nf_sub_updates_clearlog($update_log);
 	}
-	echo '<div class="updated settings-error"><p><strong>' . __('Your changes have been saved.') . '</strong></p></div>';
+	echo '<div class="updated notice is-dismissible"><p>' . __('Your changes have been saved.', 'ninjafirewall') . '</p></div>';
 }
 
 $nfw_options = get_option('nfw_options');
@@ -90,12 +90,12 @@ function toogle_table(off) {
 	<?php wp_nonce_field('updates_save', 'nfwnonce', 0); ?>
 	<table class="form-table">
 		<tr style="background-color:#F9F9F9;border: solid 1px #DFDFDF;">
-			<th scope="row"><?php _e('Automatically update NinjaFirewall security rules') ?></th>
+			<th scope="row"><?php _e('Automatically update NinjaFirewall security rules', 'ninjafirewall') ?></th>
 			<td align="left">
-			<label><input type="radio" name="enable_updates" value="1"<?php checked($enable_updates, 1) ?> onclick="toogle_table(1);">&nbsp;<?php _e('Yes') ?></label>
+			<label><input type="radio" name="enable_updates" value="1"<?php checked($enable_updates, 1) ?> onclick="toogle_table(1);">&nbsp;<?php _e('Yes', 'ninjafirewall') ?></label>
 			</td>
 			<td align="left">
-			<label><input type="radio" name="enable_updates" value="0"<?php checked($enable_updates, 0) ?> onclick="toogle_table(2);">&nbsp;<?php _e('No (default)') ?></label>
+			<label><input type="radio" name="enable_updates" value="0"<?php checked($enable_updates, 0) ?> onclick="toogle_table(2);">&nbsp;<?php _e('No (default)', 'ninjafirewall') ?></label>
 			</td>
 		</tr>
 	</table>
@@ -104,32 +104,32 @@ function toogle_table(off) {
 	// If WP cron is disabled, we simply warn the user :
 	if ( defined('DISABLE_WP_CRON') ) {
 	?>
-		<p><img src="<?php echo plugins_url() ?>/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description"><?php printf( __('It seems that %s is enabled. Ensure you have another way to run WP-Cron, otherwise NinjaFirewall automatic updates will not work.'), '<code>DISABLE_WP_CRON</code>' ) ?></span></p>
+		<p><img src="<?php echo plugins_url() ?>/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description"><?php printf( __('It seems that %s is enabled. Ensure you have another way to run WP-Cron, otherwise NinjaFirewall automatic updates will not work.', 'ninjafirewall'), '<code>DISABLE_WP_CRON</code>' ) ?></span></p>
 	<?php
 	}
 	?>
 
 	<table class="form-table" id="upd_table"<?php echo $enable_updates == 1 ? '' : ' style="display:none"' ?>>
 		<tr>
-			<th scope="row"><?php _e('Check for updates') ?></th>
+			<th scope="row"><?php _e('Check for updates', 'ninjafirewall') ?></th>
 				<td align="left">
-					<p><label><input type="radio" name="sched_updates" value="1"<?php checked($sched_updates, 1) ?> /><?php _e('Hourly') ?></label></p>
-					<p><label><input type="radio" name="sched_updates" value="2"<?php checked($sched_updates, 2) ?> /><?php _e('Twicedaily') ?></label></p>
-					<p><label><input type="radio" name="sched_updates" value="3"<?php checked($sched_updates, 3) ?> /><?php _e('Daily') ?></label></p>
+					<p><label><input type="radio" name="sched_updates" value="1"<?php checked($sched_updates, 1) ?> /><?php _e('Hourly', 'ninjafirewall') ?></label></p>
+					<p><label><input type="radio" name="sched_updates" value="2"<?php checked($sched_updates, 2) ?> /><?php _e('Twicedaily', 'ninjafirewall') ?></label></p>
+					<p><label><input type="radio" name="sched_updates" value="3"<?php checked($sched_updates, 3) ?> /><?php _e('Daily', 'ninjafirewall') ?></label></p>
 					<?php
 					if ( $nextcron = wp_next_scheduled('nfsecupdates') ) {
 						$sched = new DateTime( date('M d, Y H:i:s', $nextcron) );
 						$now = new DateTime( date('M d, Y H:i:s', time() ) );
 						$diff = $now->diff($sched);
 					?>
-						<p><span class="description"><?php printf( __('Next scheduled update will start in approximately %s day, %s hour(s), %s minute(s) and %s seconds.'), $diff->format('%a') % 7, $diff->format('%h'), $diff->format('%i'), $diff->format('%s') ) ?></span></p>
+						<p><span class="description"><?php printf( __('Next scheduled update will start in approximately %s day, %s hour(s), %s minute(s) and %s seconds.', 'ninjafirewall'), $diff->format('%a') % 7, $diff->format('%h'), $diff->format('%i'), $diff->format('%s') ) ?></span></p>
 					<?php
 						// Ensure that the scheduled scan time is in the future,
 						// not in the past, otherwise send a warning because wp-cron
 						// is obviously not working as expected :
 						if ( $nextcron < time() ) {
 						?>
-							<p><img src="<?php echo plugins_url() ?>/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description"><?php _e('The next scheduled date is in the past! WordPress wp-cron may not be working or may have been disabled.'); ?></span>
+							<p><img src="<?php echo plugins_url() ?>/ninjafirewall/images/icon_warn_16.png" height="16" border="0" width="16">&nbsp;<span class="description"><?php _e('The next scheduled date is in the past! WordPress wp-cron may not be working or may have been disabled.', 'ninjafirewall'); ?></span>
 						<?php
 						}
 					}
@@ -137,16 +137,16 @@ function toogle_table(off) {
 				</td>
 			</tr>
 		<tr>
-			<th scope="row"><?php _e('Notification') ?></th>
+			<th scope="row"><?php _e('Notification', 'ninjafirewall') ?></th>
 			<td align="left">
-				<p><label><input type="checkbox" name="notify_updates" value="1"<?php checked($notify_updates, 1) ?> /><?php _e('Send me a report by email when security rules have been updated.') ?></label></p>
-				<span class="description"><?php _e('Reports will be sent to the contact email address defined in the Event Notifications menu.') ?></span>
+				<p><label><input type="checkbox" name="notify_updates" value="1"<?php checked($notify_updates, 1) ?> /><?php _e('Send me a report by email when security rules have been updated.', 'ninjafirewall') ?></label></p>
+				<span class="description"><?php _e('Reports will be sent to the contact email address defined in the Event Notifications menu.', 'ninjafirewall') ?></span>
 			</td>
 		</tr>
 	</table>
 
 	<input type="hidden" name="nfw_act" value="1" />
-	<p><input type="submit" class="button-primary" value="<?php _e('Save Updates Options') ?>" /></p>
+	<p><input type="submit" class="button-primary" value="<?php _e('Save Updates Options', 'ninjafirewall') ?>" /></p>
 	</form>
 
 	<?php
@@ -155,7 +155,7 @@ function toogle_table(off) {
 		if ( file_exists($update_log) ) {
 			$log_data = file($update_log);
 		} else {
-			$log_data[] = __('The updates log is currently empty.');
+			$log_data[] = __('The updates log is currently empty.', 'ninjafirewall');
 		}
 	?>
 	<br />
@@ -163,7 +163,7 @@ function toogle_table(off) {
 		<?php wp_nonce_field('updates_save', 'nfwnonce', 0); ?>
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php _e('Updates Log') ?></th>
+				<th scope="row"><?php _e('Updates Log', 'ninjafirewall') ?></th>
 				<td align="left">
 					<textarea class="small-text code" style="width:100%;height:150px;" wrap="off"><?php
 						$reversed = array_reverse($log_data);
@@ -172,13 +172,13 @@ function toogle_table(off) {
 						}?></textarea>
 						<p>
 						<?php
-						echo '<input type="submit" name="clear_updates_log" value="' . __('Delete Log') . '" class="button-secondary"';
+						echo '<input type="submit" name="clear_updates_log" value="' . __('Delete Log', 'ninjafirewall') . '" class="button-secondary"';
 						if (file_exists($update_log) ) {
 							echo ' />';
 						} else {
 							echo ' disabled="disabled" />';
 						}
-						echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="description">' . __('Log is flushed automatically.') . '</span>';
+						echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="description">' . __('Log is flushed automatically.', 'ninjafirewall') . '</span>';
 						?>
 				</td>
 			</tr>
@@ -269,7 +269,7 @@ function nf_sub_do_updates($update_url, $update_log) {
 	if (! $new_rules = @unserialize(preg_replace('/eeee/', 'e', $data)) ) {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unable to unserialize the new rules.')
+			__('Error: Unable to unserialize the new rules.', 'ninjafirewall')
 		);
 		return 0;
 	}
@@ -277,7 +277,7 @@ function nf_sub_do_updates($update_url, $update_log) {
 	if (! is_array($new_rules) || empty($new_rules[1]['where']) ) {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unserialized rules seem corrupted.')
+			__('Error: Unserialized rules seem corrupted.', 'ninjafirewall')
 		);
 		return 0;
 	}
@@ -305,7 +305,7 @@ function nf_sub_do_updates($update_url, $update_log) {
 
 	nf_sub_updates_log(
 		$update_log,
-		sprintf( __('Security rules updated to version %s.'),
+		sprintf( __('Security rules updated to version %s.', 'ninjafirewall'),
 		preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', $new_rules_version) )
 	);
 
@@ -336,7 +336,7 @@ function nf_sub_updates_getversion($update_url, $rules_version, $update_log) {
 				// Not what we were expecting:
 				nf_sub_updates_log(
 					$update_log,
-					__('Error: Unable to retrieve the new rules version.')
+					__('Error: Unable to retrieve the new rules version.', 'ninjafirewall')
 				);
 				return 0;
 			}
@@ -347,21 +347,21 @@ function nf_sub_updates_getversion($update_url, $rules_version, $update_log) {
 			} else {
 				nf_sub_updates_log(
 				$update_log,
-				__('Security rules are up-to-date.')
+				__('Security rules are up-to-date.', 'ninjafirewall')
 				);
 			}
 		// Not a 200 OK ret code :
 		} else {
 			nf_sub_updates_log(
 				$update_log,
-				sprintf( __('Error: Server returned a %s HTTP error code (#1).'), htmlspecialchars($res['response']['code']))
+				sprintf( __('Error: Server returned a %s HTTP error code (#1).', 'ninjafirewall'), htmlspecialchars($res['response']['code']))
 			);
 		}
 	// Connection error :
 	} else {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$res->get_error_message()})")
+			__('Error: Unable to connect to WordPress server', 'ninjafirewall') . htmlspecialchars(" ({$res->get_error_message()})")
 		);
 	}
 	return 0;
@@ -388,7 +388,7 @@ function nf_sub_updates_download($update_url, $update_log, $new_rules_version) {
 			if ( $new_rules_version != $data[1]) {
 				nf_sub_updates_log(
 					$update_log,
-					sprintf( __('Error: The new rules versions do not match (%s != %s).'), $new_rules_version, htmlspecialchars($data[1]) )
+					sprintf( __('Error: The new rules versions do not match (%s != %s).', 'ninjafirewall'), $new_rules_version, htmlspecialchars($data[1]) )
 				);
 				return 0;
 			}
@@ -399,14 +399,14 @@ function nf_sub_updates_download($update_url, $update_log, $new_rules_version) {
 		} else {
 			nf_sub_updates_log(
 				$update_log,
-				sprintf( __('Error: Server returned a %s HTTP error code (#2).'), htmlspecialchars($res['response']['code']))
+				sprintf( __('Error: Server returned a %s HTTP error code (#2).', 'ninjafirewall'), htmlspecialchars($res['response']['code']))
 			);
 		}
 	// Connection error :
 	} else {
 		nf_sub_updates_log(
 			$update_log,
-			__('Error: Unable to connect to WordPress server') . htmlspecialchars(" ({$res->get_error_message()})")
+			__('Error: Unable to connect to WordPress server', 'ninjafirewall') . htmlspecialchars(" ({$res->get_error_message()})")
 		);
 	}
 	return 0;
@@ -443,15 +443,15 @@ function nf_sub_updates_notification($new_rules_version) {
 
 	nfw_get_blogtimezone();
 
-	$subject = __('[NinjaFirewall] Security rules update');
-	$msg = __('NinjaFirewall security rules have been updated:') . "\n\n";
+	$subject = __('[NinjaFirewall] Security rules update', 'ninjafirewall');
+	$msg = __('NinjaFirewall security rules have been updated:', 'ninjafirewall') . "\n\n";
 	if ( is_multisite() ) {
-		$msg .=__('Blog: ') . network_home_url('/') . "\n";
+		$msg .=__('Blog: ', 'ninjafirewall') . network_home_url('/') . "\n";
 	} else {
-		$msg .=__('Blog: ') . home_url('/') . "\n";
+		$msg .=__('Blog: ', 'ninjafirewall') . home_url('/') . "\n";
 	}
-	$msg .=__('Rules version: ') . preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', $new_rules_version) . "\n";
-	$msg .= sprintf( __('Date: %s'), date_i18n('M d, Y @ H:i:s O') ) . "\n\n" .
+	$msg .=__('Rules version: ', 'ninjafirewall') . preg_replace('/(\d{4})(\d\d)(\d\d)/', '$1-$2-$3', $new_rules_version) . "\n";
+	$msg .= sprintf( __('Date: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O') ) . "\n\n" .
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
 			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 	wp_mail( $recipient, $subject, $msg );

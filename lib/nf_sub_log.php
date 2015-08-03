@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-03-13 15:06:08                                       |
+ | REVISION: 2015-08-01 02:08:23                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n / sa
+ +---------------------------------------------------------------------+ i18n+ / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -61,31 +61,31 @@ if (empty( $avail_logs) ) {
 $err = '';
 if ( file_exists( $log_dir . $selected_log ) ) {
 	if (! is_writable( $log_dir . $selected_log ) ) {
-		$err = __('logfile is not writable. Please chmod it and its parent directory to 0777');
+		$err = __('logfile is not writable. Please chmod it and its parent directory to 0777', 'ninjafirewall');
 	}
 } else {
 	if (! is_writable( $log_dir ) ) {
-		$err = __('log directory is not writable. Please chmod it to 0777');
+		$err = __('log directory is not writable. Please chmod it to 0777', 'ninjafirewall');
 	}
 }
 
 echo '<div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( ' . plugins_url() . '/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2>' . __('Firewall Log') . '</h2>
+	<h2>' . __('Firewall Log', 'ninjafirewall') . '</h2>
 	<br />';
 
 if ( $err ) {
-	echo '<div class="error settings-error"><p><strong>' . __('Error') . ' : </strong>' . $err . '</p></div>';
+	echo '<div class="error notice is-dismissible"><p>' . __('Error', 'ninjafirewall') . ' : ' . $err . '</p></div>';
 }
 
 // Do we have any log for this month ?
 if (! file_exists( $log_dir . $selected_log ) ) {
-	echo '<div class="error settings-error"><p>' . __('You do not have any log for the current month yet.') . '</p></div></div>';
+	echo '<div class="error notice is-dismissible"><p>' . __('You do not have any log for the current month yet.', 'ninjafirewall') . '</p></div></div>';
 	return;
 }
 
 if (! $fh = @fopen( $log_dir . $selected_log, 'r' ) ) {
-	echo '<div class="error settings-error"><p><strong>' . __('Fatal error') . ' :</strong> ' . __('cannot open the log') . ' ( ' . $selected_log .' )</p></div></div>';
+	echo '<div class="error notice is-dismissible"><p>' . __('Fatal error', 'ninjafirewall') . ' : ' . __('cannot open the log', 'ninjafirewall') . ' ( ' . $selected_log .' )</p></div></div>';
 	return;
 }
 // We will only display the last $max_lines lines, and will warn about it
@@ -102,21 +102,21 @@ fclose( $fh );
 if ( $count < $max_lines ) {
 	$skip = 0;
 } else  {
-	echo '<div class="error settings-error"><p><strong>' . __('Warning') . ' :</strong> ';
-	printf( __('your log has %s lines. I will display the last 500 lines only.' ), $count );
+	echo '<div class="error notice is-dismissible"><p>' . __('Warning', 'ninjafirewall') . ' : ';
+	printf( __('your log has %s lines. I will display the last 500 lines only.', 'ninjafirewall'), $count );
 	echo '</p></div>';
 	$skip = $count - $max_lines;
 }
 
 // Add select box:
-echo '<center>' . __('Viewing :') . ' <select name="nfw_sort" onChange=\'window.location="?page=nfsublog&nfw_sort=" + this.value;\'>';
+echo '<center>' . __('Viewing :', 'ninjafirewall') . ' <select name="nfw_sort" onChange=\'window.location="?page=nfsublog&nfw_sort=" + this.value;\'>';
 foreach ($avail_logs as $log_name => $tmp) {
 	echo '<option value="' . $log_name . '"';
 	if ( $selected_log == $log_name ) {
 		echo ' selected';
 	}
 	$log_stat = stat($log_dir . $log_name);
-	echo '>' . str_replace('.php', '', $log_name) . ' (' . number_format($log_stat['size']) . __(' bytes') . ')</option>';
+	echo '>' . str_replace('.php', '', $log_name) . ' (' . number_format($log_stat['size']) . __(' bytes', 'ninjafirewall') . ')</option>';
 }
 echo '</select></center>';
 
@@ -158,7 +158,7 @@ fclose( $fh );
 					echo '       DATE         INCIDENT  LEVEL     RULE     IP            REQUEST' . "\n";
 				echo $logline; ?></textarea>
 				<br />
-				<center><span class="description"><?php _e('The log is rotated monthly') ?></span>
+				<center><span class="description"><?php _e('The log is rotated monthly', 'ninjafirewall') ?></span>
 				</center>
 			</td>
 		</tr>

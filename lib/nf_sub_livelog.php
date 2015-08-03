@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-04-09 16:22:59                                       |
+ | REVISION: 2015-07-31 19:39:44                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n / sa
+ +---------------------------------------------------------------------+ i18n+ / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -28,18 +28,18 @@ if (! defined('NF_DISABLED') ) {
 	is_nfw_enabled();
 }
 if (NF_DISABLED) {
-	$err_msg = __('Error: NinjaFirewall must be enabled and working in order to use the Live Log feature.' );
+	$err_msg = __('Error: NinjaFirewall must be enabled and working in order to use the Live Log feature.', 'ninjafirewall');
 }
 if ( empty($_SESSION['nfw_goodguy']) ) {
-	$err_msg = __('Error: You must be whitelisted in order to use that feature: click on the <a href="?page=nfsubpolicies">Firewall Policies</a> menu and ensure that the "Do not block WordPress administrator" option is enabled.' );
+	$err_msg = __('Error: You must be whitelisted in order to use that feature: click on the <a href="?page=nfsubpolicies">Firewall Policies</a> menu and ensure that the "Do not block WordPress administrator" option is enabled.', 'ninjafirewall');
 }
 if (! empty($err_msg) ) {
 	?>
 	<div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( <?php echo plugins_url() ?>/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2><?php _e('Live Log') ?></h2>
+	<h2><?php _e('Live Log', 'ninjafirewall') ?></h2>
 	<br />
-	<div class="error settings-error"><p><?php echo $err_msg ?></p></div>
+	<div class="error notice is-dismissible"><p><?php echo $err_msg ?></p></div>
 	</div>
 	<?php
 	return;
@@ -94,7 +94,7 @@ function getHTTPObject(){
 var http = getHTTPObject();
 function live_fetch() {
 	if (count) {
-		document.getElementById("loading").innerHTML = "<?php _e('Loading...') ?>";
+		document.getElementById("loading").innerHTML = "<?php _e('Loading...', 'ninjafirewall') ?>";
 		document.getElementById('radioon').style.background = 'orange';
 		document.getElementById('radiooff').disabled = true;
 	}
@@ -112,10 +112,10 @@ function live_fetchRes() {
 	if (http.readyState == 4) {
 		if (http.status == 200) {
 			if (http.responseText == '') {
-				document.liveform.txtlog.value = '<?php _e('No traffic yet, please wait...') ?>' + "\n";
+				document.liveform.txtlog.value = '<?php _e('No traffic yet, please wait...', 'ninjafirewall') ?>' + "\n";
 			} else if (http.responseText != '*') {
 				if ( http.responseText.charAt(0) != '^' ) {
-					document.liveform.txtlog.value = '<?php _e('Error: Live Log did not receive the expected response from your server:') ?>' + "\n\n" + http.responseText;
+					document.liveform.txtlog.value = '<?php _e('Error: Live Log did not receive the expected response from your server:', 'ninjafirewall') ?>' + "\n\n" + http.responseText;
 				} else {
 					var line = http.responseText.substr(1);
 					// Get number of lines :
@@ -134,16 +134,16 @@ function live_fetchRes() {
 				}
 			}
 		} else if (http.status == 404) {
-			document.liveform.txtlog.value += '<?php _e('Error: URL does not seem to exist: ') ?>' + ajaxURL + "\n";
+			document.liveform.txtlog.value += '<?php _e('Error: URL does not seem to exist: ', 'ninjafirewall') ?>' + ajaxURL + "\n";
 		} else if (http.status == 503) {
-			document.liveform.txtlog.value += '<?php _e('Error: cannot find your log file. Try to reload this page.') ?>' + "\n";
+			document.liveform.txtlog.value += '<?php _e('Error: cannot find your log file. Try to reload this page.', 'ninjafirewall') ?>' + "\n";
 		} else {
-			document.liveform.txtlog.value += '<?php _e('Error: the HTTP server returned the following error code: ') ?>' + http.status + "\n";
+			document.liveform.txtlog.value += '<?php _e('Error: the HTTP server returned the following error code: ', 'ninjafirewall') ?>' + http.status + "\n";
 		}
 		if (document.liveform.txtlog.value == '') {
-			document.liveform.txtlog.value = '<?php _e('No traffic yet, please wait...') ?>' + "\n";
+			document.liveform.txtlog.value = '<?php _e('No traffic yet, please wait...', 'ninjafirewall') ?>' + "\n";
 		}
-		document.getElementById('loading').innerHTML = "<?php _e('Sleeping') ?> " + liveint/1000 + " <?php _e('seconds') ?>...";
+		document.getElementById('loading').innerHTML = "<?php _e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php _e('seconds', 'ninjafirewall') ?>...";
 		document.getElementById('radioon').style.background = 'green';
 		document.getElementById('radiooff').disabled = false;
 		return false;
@@ -156,7 +156,7 @@ function on_off(onoff) {
 		if (scroll == 1) {
 			document.getElementById("idtxtlog").scrollTop = document.getElementById("idtxtlog").scrollHeight;
 		}
-		document.getElementById("loading").innerHTML = "<?php _e('Sleeping') ?> " + liveint/1000 + " <?php _e('seconds') ?>...";
+		document.getElementById("loading").innerHTML = "<?php _e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php _e('seconds', 'ninjafirewall') ?>...";
 		document.getElementById("liveint").disabled = false;
 		document.getElementById("livescroll").disabled = false;
 		document.getElementById('radioon').style.background = 'green';
@@ -176,7 +176,7 @@ function on_off(onoff) {
 function change_int(intv) {
 	clearInterval(myinterval);
 	liveint = intv;
-	document.getElementById("loading").innerHTML = "<?php _e('Sleeping') ?> " + liveint/1000 + " <?php _e('seconds') ?>...";
+	document.getElementById("loading").innerHTML = "<?php _e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php _e('seconds', 'ninjafirewall') ?>...";
 	myinterval = setInterval(live_fetch, liveint);
 	// Add cookie so that we remember the user choice for 365 days:
 	create_cookie('nfwintval', intv);
@@ -209,15 +209,15 @@ function create_cookie(name, value) {
 
 <div class="wrap">
 	<div style="width:54px;height:52px;background-image:url( <?php echo plugins_url() ?>/ninjafirewall/images/ninjafirewall_50.png);background-repeat:no-repeat;background-position:0 0;margin:7px 5px 0 0;float:left;"></div>
-	<h2><?php _e('Live Log') ?></h2>
+	<h2><?php _e('Live Log', 'ninjafirewall') ?></h2>
 	<br />
 <?php
 if ( isset($_POST['lf']) ) {
 	$res = nf_sub_liveloge_save();
 	if ($res) {
-		echo '<div class="error settings-error"><p><strong>' . $res . '</strong></p></div>';
+		echo '<div class="error notice is-dismissible"><p>' . $res . '</p></div>';
 	} else {
-		echo '<div class="updated settings-error"><p><strong>'. __('Your changes have been saved.') .'</strong></p></div>';
+		echo '<div class="updated notice is-dismissible"><p>'. __('Your changes have been saved.', 'ninjafirewall') .'</p></div>';
 	}
 }
 $nfw_options = get_option('nfw_options');
@@ -227,23 +227,23 @@ $nfw_options = get_option('nfw_options');
 		<tr>
 			<td style="width:100%;text-align:center;">
 				<span class="description" id="loading">&nbsp;</span><br />
-				<textarea name="txtlog" id="idtxtlog" class="small-text code" style="width:100%;height:325px;" wrap="off"><?php _e('No traffic yet, please wait...'); echo "\n"; ?></textarea>
+				<textarea name="txtlog" id="idtxtlog" class="small-text code" style="width:100%;height:325px;" wrap="off"><?php _e('No traffic yet, please wait...', 'ninjafirewall'); echo "\n"; ?></textarea>
 				<br />
 				<center>
 					<p>
-					<label><input type="radio" name="liveon" value="1" onclick="on_off(1)" checked="checked"><font style="color:white;background-color:green;padding:3px;border-radius:15px;" id="radioon"><?php _e('On') ?></font></label>&nbsp;&nbsp;<label><input type="radio" name="liveon" value="0" onclick="on_off(0)" id="radiooff"><?php _e('Off') ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php _e('Refresh rate:') ?>
+					<label><input type="radio" name="liveon" value="1" onclick="on_off(1)" checked="checked"><font style="color:white;background-color:green;padding:3px;border-radius:15px;" id="radioon"><?php _e('On', 'ninjafirewall') ?></font></label>&nbsp;&nbsp;<label><input type="radio" name="liveon" value="0" onclick="on_off(0)" id="radiooff"><?php _e('Off', 'ninjafirewall') ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php _e('Refresh rate:', 'ninjafirewall') ?>
 					<select name="liveint" id="liveint" onchange="change_int(this.value);">
-						<option value="5000"<?php selected($nfwintval, 5000) ?>><?php _e('5 seconds') ?></option>
-						<option value="10000"<?php selected($nfwintval, 10000) ?>><?php _e('10 seconds') ?></option>
-						<option value="20000"<?php selected($nfwintval, 20000) ?>><?php _e('20 seconds') ?></option>
-						<option value="45000"<?php selected($nfwintval, 45000) ?>><?php _e('45 seconds') ?></option>
-					</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button-secondary" name="livecls" value="Clear screen" onClick="cls()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label><input type="checkbox" name="livescroll" id="livescroll" value="1" onchange="is_scroll()" <?php checked($nfwscroll, 1)?>><?php _e('Autoscrolling') ?></label>
+						<option value="5000"<?php selected($nfwintval, 5000) ?>><?php _e('5 seconds', 'ninjafirewall') ?></option>
+						<option value="10000"<?php selected($nfwintval, 10000) ?>><?php _e('10 seconds', 'ninjafirewall') ?></option>
+						<option value="20000"<?php selected($nfwintval, 20000) ?>><?php _e('20 seconds', 'ninjafirewall') ?></option>
+						<option value="45000"<?php selected($nfwintval, 45000) ?>><?php _e('45 seconds', 'ninjafirewall') ?></option>
+					</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button-secondary" name="livecls" value="Clear screen" onClick="cls()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label><input type="checkbox" name="livescroll" id="livescroll" value="1" onchange="is_scroll()" <?php checked($nfwscroll, 1)?>><?php _e('Autoscrolling', 'ninjafirewall') ?></label>
 				</p>
 				</center>
 			</td>
 		</tr>
 	</table>
-	<div align="right"><span class="description"><?php _e('Live Log will not include yourself or any other whitelisted users.') ?></span></div>
+	<div align="right"><span class="description"><?php _e('Live Log will not include yourself or any other whitelisted users.', 'ninjafirewall') ?></span></div>
 </form>
 <?php
 if ( empty($nfw_options['liveformat']) ) {
@@ -266,28 +266,28 @@ if ( empty($nfw_options['livetz']) || preg_match('/[^\w\/]/', $nfw_options['live
 }
 ?>
 <form method="post">
-	<h3><?php _e('Live Log options') ?></h3>
+	<h3><?php _e('Live Log options', 'ninjafirewall') ?></h3>
 	<table class="form-table">
 		<tr>
-			<th scope="row"><?php _e('Format') ?></th>
+			<th scope="row"><?php _e('Format', 'ninjafirewall') ?></th>
 			<td align="left">
 				<p><label><input type="radio" name="lf" value="0"<?php checked($lf, 0) ?> onclick="document.getElementById('liveformat').disabled=true"><code>[%time] %name %client &quot;%method %uri&quot; &quot;%referrer&quot; &quot;%ua&quot; &quot;%forward&quot; &quot;%host&quot;</code></label></p>
-				<p><label><input type="radio" name="lf" value="1"<?php checked($lf, 1) ?> onclick="document.getElementById('liveformat').disabled=false"><?php _e('Custom') ?> </label><input id="liveformat" type="text" class="regular-text" name="liveformat" value="<?php echo $liveformat ?>"<?php disabled($lf, 0) ?> autocomplete="off"></p>
-				<span class="description"><?php _e('See contextual help for available log format.') ?></span>
+				<p><label><input type="radio" name="lf" value="1"<?php checked($lf, 1) ?> onclick="document.getElementById('liveformat').disabled=false"><?php _e('Custom', 'ninjafirewall') ?> </label><input id="liveformat" type="text" class="regular-text" name="liveformat" value="<?php echo $liveformat ?>"<?php disabled($lf, 0) ?> autocomplete="off"></p>
+				<span class="description"><?php _e('See contextual help for available log format.', 'ninjafirewall') ?></span>
 			</td>
 		</tr>
 		<tr>
-			<th scope="row"><?php _e('Display') ?></th>
+			<th scope="row"><?php _e('Display', 'ninjafirewall') ?></th>
 			<td align="left">
 				<select name="liveport">
-					<option value="0"<?php selected($liveport, 0) ?>><?php _e('HTTP and HTTPS traffic (default)') ?></option>
-					<option value="1"<?php selected($liveport, 1) ?>><?php _e('HTTP traffic only') ?></option>
-					<option value="2"<?php selected($liveport, 2) ?>><?php _e('HTTPS traffic only') ?></option>
+					<option value="0"<?php selected($liveport, 0) ?>><?php _e('HTTP and HTTPS traffic (default)', 'ninjafirewall') ?></option>
+					<option value="1"<?php selected($liveport, 1) ?>><?php _e('HTTP traffic only', 'ninjafirewall') ?></option>
+					<option value="2"<?php selected($liveport, 2) ?>><?php _e('HTTPS traffic only', 'ninjafirewall') ?></option>
 				</select>
 			</td>
 		</tr>
 		<tr>
-			<th scope="row"><?php _e('Timezone') ?></th>
+			<th scope="row"><?php _e('Timezone', 'ninjafirewall') ?></th>
 			<td align="left">
 				<select name="livetz">
 				<?php
@@ -302,7 +302,7 @@ if ( empty($nfw_options['livetz']) || preg_match('/[^\w\/]/', $nfw_options['live
 			</td>
 		</tr>
 	</table>
-	<p><input type="submit" class="button-primary" value="<?php _e('Save Live Log Options') ?>" /></p>
+	<p><input type="submit" class="button-primary" value="<?php _e('Save Live Log Options', 'ninjafirewall') ?>" /></p>
 	<?php wp_nonce_field('livelog_save', 'nfwnonce', 0); ?>
 </form>
 </div>
@@ -326,7 +326,7 @@ function nf_sub_liveloge_save() {
 			$nfw_options['liveformat'] = preg_replace('`[^a-z%[\]"\x20]`', '', $tmp);
 		}
 		if (empty($_POST['liveformat']) ) {
-			return __('Error: please enter the custom log format.');
+			return __('Error: please enter the custom log format.', 'ninjafirewall');
 		}
 	}
 

@@ -5,7 +5,7 @@
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-05-28 19:59:56                                       |
+ | REVISION: 2015-08-01 18:12:57                                       |
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
  | modify it under the terms of the GNU General Public License as      |
@@ -16,7 +16,7 @@
  | but WITHOUT ANY WARRANTY; without even the implied warranty of      |
  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       |
  | GNU General Public License for more details.                        |
- +---------------------------------------------------------------------+ i18n / sa
+ +---------------------------------------------------------------------+ i18n+ / sa
 */
 
 if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
@@ -24,7 +24,7 @@ if (! defined( 'NFW_ENGINE_VERSION' ) ) { die( 'Forbidden' ); }
 // Return immediately if user is not allowed :
 if (nf_not_allowed( 0, __LINE__ ) ) { return; }
 
-wp_add_dashboard_widget( 'nfw_dashboard_welcome', __('NinjaFirewall Statistics'), 'nfw_stats_widget' );
+wp_add_dashboard_widget( 'nfw_dashboard_welcome', __('NinjaFirewall Statistics', 'ninjafirewall'), 'nfw_stats_widget' );
 
 function nfw_stats_widget(){
 
@@ -46,13 +46,13 @@ function nfw_stats_widget(){
 	echo '
 	<table border="0" width="100%">
 		<tr>
-			<th width="50%" align="left">' . __('Blocked hacking attempts') .'</th>
+			<th width="50%" align="left">' . __('Blocked hacking attempts', 'ninjafirewall') .'</th>
 			<td width="50%" align="left">' . $total . '</td>
 		</tr>
 		<tr>
-			<th width="50%" align="left">' . __('Hacking attempts severity') .'</th>
+			<th width="50%" align="left">' . __('Hacking attempts severity', 'ninjafirewall') .'</th>
 			<td width="50%" align="left">
-				<i>' . __('Critical : ') . $critical . '%</i>
+				<i>' . __('Critical : ', 'ninjafirewall') . $critical . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -60,7 +60,7 @@ function nfw_stats_widget(){
 					</tr>
 				</table>
 				<br />
-				<i>' . __('High : ') . $high . '%</i>
+				<i>' . __('High : ', 'ninjafirewall') . $high . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -68,7 +68,7 @@ function nfw_stats_widget(){
 					</tr>
 				</table>
 				<br />
-				<i>' . __('Medium : ') . $medium . '%</i>
+				<i>' . __('Medium : ', 'ninjafirewall') . $medium . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -78,13 +78,13 @@ function nfw_stats_widget(){
 			</td>
 		</tr>
 		<tr>
-			<th width="50%" align="left">' . __('Uploaded files') .'</th>
+			<th width="50%" align="left">' . __('Uploaded files', 'ninjafirewall') .'</th>
 			<td width="50%" align="left">' . round($upload) . '</td>
 		</tr>
 	</table>';
 	// Display the link to the log page only if the log is not empty :
 	if ( $total || $upload ) {
-		echo '<div align="right"><small><a href="admin.php?page=nfsublog">' . __('View firewall log') .'</a></small></div>';
+		echo '<div align="right"><small><a href="admin.php?page=nfsublog">' . __('View firewall log', 'ninjafirewall') .'</a></small></div>';
 	}
 }
 // EOF
