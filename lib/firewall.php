@@ -4,7 +4,7 @@
 // |                                                                     |
 // | (c) NinTechNet - http://nintechnet.com/                             |
 // +---------------------------------------------------------------------+
-// | REVISION: 2015-06-26 20:54:43                                       |
+// | REVISION: 2015-08-03 17:53:14                                       |
 // +---------------------------------------------------------------------+
 // | This program is free software: you can redistribute it and/or       |
 // | modify it under the terms of the GNU General Public License as      |
@@ -1019,6 +1019,9 @@ function nfw_bfd($where) {
 	$now = time();
 	// Get config :
 	require($bf_conf_dir . '/bf_conf.php');
+	if ( empty($bf_enable) ) {
+		return;
+	}
 
 	// Should it apply to the xmlrpc.php script as well ?
 	if ( $where == 2 && empty($bf_xmlrpc) ) {

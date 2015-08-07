@@ -214,8 +214,9 @@ NinjaFirewall works on Unix-like servers only. There is no Windows version and w
 
 == Changelog ==
 
-= 1.5-RC1 =
-* Internationalization support.
+= 1.5-RC2 =
+* Internationalization support. The POT file is included in the `/languages/` folder.
+* French (fr_FR) language added.
 
 = 1.4.3 =
 * Fixed a bug in the firewall that could corrupt the content of a POST or GET array.

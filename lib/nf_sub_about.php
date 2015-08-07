@@ -90,7 +90,7 @@ function nfw_eg() {
 								<br />
 								<a href="http://ninjarecovery.com/"><b>NinjaRecovery.com</b></a>
 								<br />
-								' . __('Incident response, malware removal and hacking recovery.', 'ninjafirewall') . '
+								' . __('Malware removal and hacking recovery for just $89.', 'ninjafirewall') . '
 							</td>
 						</tr>
 					</table>
@@ -173,7 +173,7 @@ echo '
 		<table id="14" style="display:none;" width="500">
 			<tr>
 				<td>
-					<textarea class="small-text code" cols="60" rows="8">' . __('NinTechNet strictly follows the WordPress Plugin Developer guidelines', 'ninjafirewall') . ' &lt;http://wordpress.org/plugins/about/guidelines/&gt;: ' . __('NinjaFirewall (WP edition) is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.', 'ninjafirewall') . "\n" .  __('Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying !) our product.', 'ninjafirewall') . '</textarea>
+					<textarea class="small-text code" cols="60" rows="8">' . __('NinTechNet strictly follows the WordPress Plugin Developer guidelines', 'ninjafirewall') . ' &lt;http://wordpress.org/plugins/about/guidelines/&gt;: ' . __('NinjaFirewall (WP edition) is free, open source and fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.', 'ninjafirewall') . "\n" .  __('Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying !) our product.', 'ninjafirewall') . '</textarea>
 				</td>
 			</tr>
 		</table>

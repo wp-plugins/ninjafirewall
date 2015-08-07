@@ -86,14 +86,14 @@ function help_nfsubopt() {
 		'id'        => 'opt02',
 		'title'     => __('Debugging mode', 'ninjafirewall'),
 		'content'   => '<br />' .
-			sprintf( __('In Debugging mode, NinjaFirewall will not block or sanitise suspicious requests but will only log them (the <a href="%s">Firewall Log</a> will display <code>DEBUG_ON</code> in the LEVEL column).', 'ninjafirewall'), '?page=nfsublog') .
+			sprintf( __('In Debugging mode, NinjaFirewall will not block or sanitise suspicious requests but will only log them. The <a href="%s">Firewall Log</a> will display <code>DEBUG_ON</code> in the LEVEL column.', 'ninjafirewall'), '?page=nfsublog') .
 			'<p>' . __('We recommend to run it in Debugging Mode for at least 24 hours after installing it on a new site and then to keep an eye on the firewall log during that time. If you notice a false positive in the log, you can simply use NinjaFirewall\'s Rules Editor to disable the security rule that was wrongly triggered.', 'ninjafirewall') . '</p>'
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'opt03',
 		'title'     =>  __('Error code and message to return', 'ninjafirewall'),
 		'content'   => '<br />' .
-			__('Lets you customize the HTTP error code returned by NinjaFirewall when blocking a dangerous request and the message to display to the user.' , 'ninjafirewall') .
+			__('Lets you customize the HTTP error code returned by NinjaFirewall when blocking a dangerous request and the message to display to the user.' , 'ninjafirewall') . ' ' .
 			__('You can use any HTML tags and 3 built-in variables:' , 'ninjafirewall') .
 			'<li><code>%%REM_ADDRESS%%</code> : '. __('the blocked user IP.' , 'ninjafirewall') . '</li>
 			<li><code>%%NUM_INCIDENT%%</code> : '. __('the unique incident number as it will appear in the firewall log "INCIDENT" column.' , 'ninjafirewall') . '</li>
@@ -211,7 +211,7 @@ function help_nfsubpolicies() {
 
 		<strong>IP</strong>
 		<li>' . __('Block localhost IP in <code>GET/POST</code> requests:', 'ninjafirewall'). '<span class="description"> ' . __('this option will block any <code>GET</code> or <code>POST</code> request containing the localhost IP (127.0.0.1). It can be useful to block SQL dumpers and various hacker\'s shell scripts.', 'ninjafirewall'). '</span></li>
-		<li' . __('>Block HTTP requests with an IP in the <code>HTTP_HOST</code> header:', 'ninjafirewall'). '<span class="description"> ' . sprintf( __('this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. %s), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.', 'ninjafirewall'), 'http://' . htmlspecialchars($_SERVER['SERVER_ADDR']) . '/index.php'). '</span></li>
+		<li>' . __('Block HTTP requests with an IP in the <code>HTTP_HOST</code> header:', 'ninjafirewall'). '<span class="description"> ' . sprintf( __('this option will reject any request using an IP instead of a domain name in the <code>Host</code> header of the HTTP request. Unless you need to connect to your site using its IP address, (e.g. %s), enabling this option will block a lot of hackers scanners because such applications scan IPs rather than domain names.', 'ninjafirewall'), 'http://' . htmlspecialchars($_SERVER['SERVER_ADDR']) . '/index.php'). '</span></li>
 		<li>' . __('Scan traffic coming from localhost and private IP address spaces:', 'ninjafirewall'). '<span class="description"> ' . __('this option will allow the firewall to scan traffic from all non-routable private IPs (IPv4 and IPv6) as well as the localhost IP. We recommend to keep it enabled if you have a private network (2 or more servers interconnected).', 'ninjafirewall'). '</span></li>
 
 		<br />
@@ -334,7 +334,7 @@ function help_nfsublogin() {
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'login01',
-		'title'     => __('Login protection', 'ninjafirewall'),
+		'title'     => __('Login Protection', 'ninjafirewall'),
 		'content'   => '
 		<div style="height:250px;">
 
@@ -357,7 +357,7 @@ function help_nfsublogin() {
 
 		<strong>' . __('Always ON :', 'ninjafirewall') . '</strong>
 		<br />'.
-		__('NinjaFirewall will always enforce HTTP authentication implementation and you will be prompted to enter your choosen username/password each time you will access the login page.', 'ninjafirewall') . '
+		__('NinjaFirewall will always enforce HTTP authentication implementation and you will be prompted to enter your chosen username/password each time you will access the login page.', 'ninjafirewall') . '
 		<br />
 		<ul>
 		<li>' . __('HTTP authentication:', 'ninjafirewall') . '<span class="description"> ' . __('enter the user name and password that you want to use to access the login page.', 'ninjafirewall') . '</span></li>
@@ -431,8 +431,8 @@ function help_nfsublivelog() {
 
 			<p>' . __('Live Log does not make use of any WordPress core file (e.g., <code>admin-ajax.php</code>). It communicates directly with the firewall without loading WordPress bootstrap. Consequently, it is fast, light and it should not affect your server load, even if you set its refresh rate to the lowest value.', 'ninjafirewall') .	'</p>
 
-			<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">' . __('If you are using the optional <code>.htninja</code> configuration file to whitelist your IP, the Live Log feature will not work.', 'ninjafirewall') . '</p>
-		</span>'
+			<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">' . __('If you are using the optional <code>.htninja</code> configuration file to whitelist your IP, the Live Log feature will not work.', 'ninjafirewall') . '
+		</span></p>'
 	) );
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log02',

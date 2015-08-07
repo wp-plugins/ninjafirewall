@@ -1,0 +1,4829 @@
+# Copyright (C) 2015 NinjaFirewall (WP edition)
+# This file is distributed under the same license as the NinjaFirewall (WP edition) package.
+msgid ""
+msgstr ""
+"Project-Id-Version: NinjaFirewall (WP edition)\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ninjafirewall\n"
+"POT-Creation-Date: 2015-08-08 01:15+0700\n"
+"PO-Revision-Date: 2015-08-08 01:16+0700\n"
+"Last-Translator: NinTechNet <nintechnet.com>\n"
+"Language-Team: NinTechNet <nintechnet.com>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.10\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: help.php:38 ninjafirewall.php:789
+msgid "Overview"
+msgstr "Aperçu"
+
+#: help.php:39
+msgid ""
+"This is the Overview page; it shows information about the firewall status. "
+"We recommend you keep an eye on it because, in case of problems, all "
+"possible errors and warnings will be displayed here."
+msgstr ""
+"La page Aperçu affiche toutes les informations relatives au bon "
+"fonctionnement du pare-feu ainsi que les mises à jour; il vous est conseillé "
+"de la consulter fréquemment car, en cas de problèmes, ceux-ci seront "
+"indiqués ici."
+
+#: help.php:42
+msgid "For more information:"
+msgstr "Pour plus d'information&nbsp;:"
+
+#: help.php:43
+msgid "Installation, help and troubleshooting"
+msgstr "Installation, aide et problèmes"
+
+#: help.php:44
+msgid "Support Forum"
+msgstr "Forum"
+
+#: help.php:45
+msgid "Updates via Twitter"
+msgstr "Mises à jour via Twitter"
+
+#: help.php:58 lib/nf_sub_statistics.php:113
+msgid "Monthly stats"
+msgstr "Statistiques mensuelles"
+
+#: help.php:60
+msgid ""
+"Statistics are taken from the current log. It is rotated on the first day of "
+"each month."
+msgstr ""
+"Les statistiques sont tirées du journal du pare-feu qui est, par défaut, "
+"réinitialisé le 1er jour de chaque mois."
+
+#: help.php:62
+#, php-format
+msgid ""
+"You can view the log by clicking on the <a href=\"%s\">Firewall Log</a> menu."
+msgstr ""
+"Vous pouvez consuler ce journal en cliquant sur le menu <a href=\"%s"
+"\">Journal du Pare-feu</a>."
+
+#: help.php:66 lib/nf_sub_statistics.php:147
+msgid "Benchmarks"
+msgstr "Performances"
+
+#: help.php:68
+msgid ""
+"Benchmarks show the time NinjaFirewall took, in seconds, to proceed each "
+"request it has blocked."
+msgstr ""
+"Indique le temps qu'il a fallu à NinjaFirewall pour intercepter, analyser et "
+"bloquer les requêtes dangereuses."
+
+#: help.php:79 lib/nf_sub_options.php:68
+msgid "Firewall protection"
+msgstr "Pare-feu"
+
+#: help.php:81
+#, php-format
+msgid ""
+"This option allows you to disable NinjaFirewall. It has basically the same "
+"effect as deactivating it from the <a href=\"%s\">Plugins</a> menu page."
+msgstr ""
+"Cette option vous permet de rapidement désactiver le pare-feu. Elle a "
+"essentiellement le même effet que la désactivation effectuée depuis la page "
+"<a href=\"%s\">Extensions</a> du Tableau de bord."
+
+#: help.php:83
+msgid "Your site will remain unprotected until you enable it again."
+msgstr ""
+"Votre site ne sera plus protégé par NinjaFirewall durant cette période."
+
+#: help.php:87 lib/nf_sub_options.php:93 ninjafirewall.php:1002
+msgid "Debugging mode"
+msgstr "Mode débogage"
+
+#: help.php:89
+#, php-format
+msgid ""
+"In Debugging mode, NinjaFirewall will not block or sanitise suspicious "
+"requests but will only log them. The <a href=\"%s\">Firewall Log</a> will "
+"display <code>DEBUG_ON</code> in the LEVEL column."
+msgstr ""
+"Lorsque ce mode est activé, NinjaFirewall ne bloque pas les requêtes mais "
+"les enregistre uniquement dans le <a href=\"%s\">Journal du Pare-feu</a>. "
+"Les lignes correspondantes seront indiquée par la mention <code>DEBUG_ON</"
+"code> dans la colonne LEVEL du journal. "
+
+#: help.php:90
+msgid ""
+"We recommend to run it in Debugging Mode for at least 24 hours after "
+"installing it on a new site and then to keep an eye on the firewall log "
+"during that time. If you notice a false positive in the log, you can simply "
+"use NinjaFirewall's Rules Editor to disable the security rule that was "
+"wrongly triggered."
+msgstr ""
+"Nous vous conseillons de laisser NinjaFirewall en Mode débogage pendant 24 "
+"heures après son installation sur un nouveau site afin de vous assurer que "
+"tout fonctionne bien. Vous pourrez pendant cette période consulter le "
+"journal du pare-feu pour y voir les éventuels problèmes et, le cas échéant, "
+"désactiver les options ou règles pouvant créer des faux-positifs."
+
+#: help.php:94
+msgid "Error code and message to return"
+msgstr "Code HTTP et Message  à retourner"
+
+#: help.php:96
+msgid ""
+"Lets you customize the HTTP error code returned by NinjaFirewall when "
+"blocking a dangerous request and the message to display to the user."
+msgstr ""
+"Vous permet de choisir le code HTTP que vous souhaitez que NinjaFirewall "
+"retourne lorsqu'il bloque une requête dangereuse ansi que le message à "
+"afficher à l'utilisateur bloqué."
+
+#: help.php:97
+msgid "You can use any HTML tags and 3 built-in variables:"
+msgstr ""
+"Vous pouvez utiliser le language HTML ainsi que les 3 variables suivantes :"
+
+#: help.php:98
+msgid "the blocked user IP."
+msgstr "l'adresse IP de l'utilisateur."
+
+#: help.php:99
+msgid ""
+"the unique incident number as it will appear in the firewall log \"INCIDENT"
+"\" column."
+msgstr ""
+"le numéro d'incident, tel qu'il apparaîtra dans la colonne \"INCIDENT\" du "
+"journal du pare-feu."
+
+#: help.php:100
+msgid "NinjaFirewall logo."
+msgstr "le logo de NinjaFirewall."
+
+#: help.php:104
+msgid "Export/import configuration"
+msgstr "Configuration de l'exportation / importation"
+
+#: help.php:106
+msgid ""
+"This options lets you export you current configuration or import it from "
+"another NinjaFirewall (WP edition) installation. The imported file must "
+"match your current version otherwise it will be rejected. Note that "
+"importing will override all firewall rules and options."
+msgstr ""
+"Cette option vous permet d'importer ou exporter votre configuration. Le "
+"fichier importé doit provenir de la même version de NinjaFirewall, sinon il "
+"sera rejeté. Notez que l'importation effacera toute votre configuration "
+"actuelle (options et règles du pare-feu)."
+
+#: help.php:108
+msgid "\"File Check\" configuration will not be exported/imported."
+msgstr ""
+"La configuration de \"File Check\" ne peut pas être importée ou exportée."
+
+#: help.php:119
+msgid "Policies overview"
+msgstr "Politiques du pare-feu"
+
+#: help.php:121
+#, php-format
+msgid ""
+"Because NinjaFirewall sits in front of WordPress, it can hook, scan and "
+"sanitise all PHP requests, HTTP variables, headers and IPs before they reach "
+"your blog: <code><a href=\"%s\">$_GET</a></code>, <code><a href=\"%s\">"
+"$_POST</a></code>, <code><a href=\"%s\">$_COOKIES</a></code>, <code><a href="
+"\"%s\">$_REQUEST</a></code>, <code><a href=\"%s\">$_FILES</a></code>, "
+"<code><a href=\"%s\">$_SERVER</a></code> in HTTP and/or HTTPS mode."
+msgstr ""
+"Parcequ'il agit en amont de votre application, NinjaFirewall peut "
+"intercepter, scanner, nettoyer et bloquer les requêtes HTTP envoyées à un "
+"script PHP, ainsi que les variables (<code><a href=\"%s\">$_GET</a></code>, "
+"<code><a href=\"%s\">$_POST</a></code>, <code><a href=\"%s\">$_COOKIES</a></"
+"code>, <code><a href=\"%s\">$_REQUEST</a></code>, <code><a href=\"%s\">"
+"$_FILES</a></code>, <code><a href=\"%s\">$_SERVER</a></code>), en-têtes et "
+"adresses IP, avant que celles-ci n'atteignent votre application, que ce soit "
+"en mode HTTP ou HTTPS."
+
+#: help.php:123
+msgid ""
+"Use the options below to enable, disable or to tweak these rules according "
+"to your needs."
+msgstr ""
+"Utilisez les options ci-dessous pour configurer NinjaFirewall suivant vos "
+"besoins."
+
+#: help.php:125
+#, php-format
+msgid ""
+"Keep in mind, however, that the Firewall Policies apply to any PHP scripts "
+"located inside the %s directory and its sub-directories, and not only to "
+"your WordPress index page."
+msgstr ""
+"Gardez à l'esprit que les politiques de pare-feu appliquent à <b>tous les "
+"scripts PHP</b> situés à l'intérieur du répertoire  %s ainsi que ses sous-"
+"répertoires, et non pas seulement à la page d'index de WordPress."
+
+#: help.php:130
+msgid "Scan and Sanitise"
+msgstr "Filtrer et Nettoyer"
+
+#: help.php:132
+msgid ""
+"You can choose to scan and reject dangerous content but also to sanitise "
+"requests and variables. Those two actions are different and can be combined "
+"together for better security."
+msgstr ""
+"Vous pouvez choisir de filtrer et rejeter les requêtes HTTP dangereuses, "
+"mais aussi de les nettoyer. Ces deux actions sont différentes et peuvent "
+"être combinées pour plus de sécurité."
+
+#: help.php:133
+msgid ""
+"Scan : if anything suspicious is detected, NinjaFirewall will block the "
+"request and return an HTTP error code and message (defined in the \"Firewall "
+"Options\" page). The user request will fail and the connection will be "
+"closed immediately."
+msgstr ""
+"Filtrer : lorsqu'il détecte une requête dangereuse, NinjaFirewall la bloque "
+"et retourne un message et code d'erreur HTTP (définis dans la page \"Options "
+"du Pare-feu\"). La requête ne pourra pas aboutir et la connexion sera fermée "
+"immédiatement."
+
+#: help.php:134
+#, php-format
+msgid ""
+"Sanitise : this option will not block but sanitise the user request by "
+"escaping characters that can be used to perform code or SQL injections (%s) "
+"and various exploits (XSS etc). If it is a variable, i.e. <code>?name=value</"
+"code>, both its name and value will be sanitised."
+msgstr ""
+"Nettoyer : cette action ne bloque pas la requête mais l'analyse afin d'y "
+"trouver des caractères pouvant être dangereux, par exemple pour injecter du "
+"code dans la base de données (%s) et, le cas échéant, nettoie cette requête "
+"en y insérant des caractères d'échappement. S'il s'agit d'une variable et de "
+"sa valeur (<code>?variable=valeur</code>), les deux éléments seront nettoyés."
+
+#: help.php:136
+msgid ""
+"This action will be performed when the filtering process is over, right "
+"before NinjaFirewall forwards the request to your PHP script."
+msgstr ""
+"Veuillez noter que cette action est effectuée en dernier, après le filtrage, "
+"juste avant que NinjaFirewall fasse suivre la requête à votre application "
+"PHP."
+
+#: help.php:139
+msgid ""
+"If you enabled <code>POST</code> requests sanitising, articles and messages "
+"posted by your visitors could be corrupted with excessive backslashes or "
+"substitute characters."
+msgstr ""
+"Si vous activé le nettoyage de la variable <code>POST</code>, les articles, "
+"commentaires et messages de vos visiteurs pourraient être endommagés par "
+"cette option."
+
+#: help.php:143 ninjafirewall.php:804 ninjafirewall.php:1267
+msgid "Firewall Policies"
+msgstr "Politiques du Pare-feu"
+
+#: help.php:148
+msgid "Whether to filter HTTP and/or HTTPS traffic"
+msgstr ""
+"Sélectionnez le type de trafic filtré par le pare-feu (HTTP et/ou HTTPS)."
+
+#: help.php:152
+msgid "Uploads"
+msgstr "Téléchargements"
+
+#: help.php:153
+msgid "File Uploads:"
+msgstr "Autoriser les téléchargements&nbsp;:"
+
+#: help.php:153
+msgid "whether to allow/disallow file uploads."
+msgstr ""
+"vous pouvez autoriser ou interdire tout téléchargement de fichiers vers "
+"votre site."
+
+#: help.php:154
+msgid "Sanitise filenames:"
+msgstr "Nettoyer le nom des fichiers&nbsp;:"
+
+#: help.php:154
+msgid ""
+"any character that is not a letter <code>a-zA-Z</code>, a digit <code>0-9</"
+"code>, a dot <code>.</code>, a hyphen <code>-</code> or an underscore "
+"<code>_</code> will be removed from the filename and replaced with the "
+"<code>X</code> character."
+msgstr ""
+"si le nom du fichier contient un caractère qui n'est pas une lettre <code>a-"
+"zA-Z</code>, un chiffre <code>0-9</code>, un point <code>.</code>, un trait "
+"d'union <code>-</code> ou un caractère de soulignement <code>_</code>, celui-"
+"si sera remplacé par le caractère <code>X</code>."
+
+#: help.php:158 ninjafirewall.php:1352
+msgid "HTTP GET variable"
+msgstr "Variable HTTP GET"
+
+#: help.php:159
+msgid "Whether to scan and/or sanitise the <code>GET</code> variable."
+msgstr "S'il faut filtrer / nettoyer la variable <code>GET</code>."
+
+#: help.php:163 ninjafirewall.php:1395
+msgid "HTTP POST variable"
+msgstr "Variable HTTP POST"
+
+#: help.php:164
+msgid "Whether to scan and/or sanitise the <code>POST</code> variable."
+msgstr "S'il faut filtrer / nettoyer la variable <code>POST</code>."
+
+#: help.php:165
+msgid "Decode Base64-encoded <code>POST</code> variable:"
+msgstr ""
+"Décoder les chaîne encodées en Base64 dans la variable <code>POST</"
+"code>&nbsp;:"
+
+#: help.php:165
+msgid ""
+"NinjaFirewall will decode and scan base64 encoded values in order to detect "
+"obfuscated malicious code. This option is only available for the <code>POST</"
+"code> variable."
+msgstr ""
+"NinjaFirewall peut décoder et filtrer les chaînes de caractères encodées en "
+"Base64 afin d'y détecter du code malveillant caché."
+
+#: help.php:169 ninjafirewall.php:1438
+msgid "HTTP REQUEST variable"
+msgstr "Variable HTTP REQUEST"
+
+#: help.php:170
+msgid "Whether to sanitise the <code>REQUEST</code> variable."
+msgstr "S'il faut filtrer / nettoyer la variable <code>REQUEST</code>."
+
+#: help.php:174 ninjafirewall.php:1466
+msgid "Cookies"
+msgstr "Cookies"
+
+#: help.php:175
+msgid "Whether to scan and/or sanitise cookies."
+msgstr "S'il faut filtrer / nettoyer les cookies."
+
+#: help.php:179 ninjafirewall.php:1511
+msgid "HTTP_USER_AGENT server variable"
+msgstr "Variable HTTP_USER_AGENT"
+
+#: help.php:180
+msgid "Whether to scan and/or sanitise <code>HTTP_USER_AGENT</code> requests."
+msgstr "S'il faut filtrer / nettoyer la variable <code>HTTP_USER_AGENT</code>."
+
+#: help.php:181
+msgid "Block suspicious bots/scanners:"
+msgstr "Bloquer les requêtes provenant de bots/scanners suspects&nbsp;:"
+
+#: help.php:181
+msgid ""
+"rejects some known bots, scanners and various malicious scripts attempting "
+"to access your blog."
+msgstr ""
+"cette option peut bloquer de nombreux crawlers, spambots et autres scrappers."
+
+#: help.php:185 ninjafirewall.php:1564
+msgid "HTTP_REFERER server variable"
+msgstr "Variable HTTP_REFERER"
+
+#: help.php:186
+msgid "Whether to scan and/or sanitise <code>HTTP_REFERER</code> requests."
+msgstr "S'il faut filtrer / nettoyer la variable <code>HTTP_REFERER</code>."
+
+#: help.php:187
+msgid ""
+"Block POST requests that do not have an <code>HTTP_REFERER</code> header:"
+msgstr ""
+"Bloquer les requêtes POST qui n'ont pas d'en-tête <code>HTTP_REFERER</"
+"code>&nbsp;:"
+
+#: help.php:187
+msgid ""
+"this option will block any <code>POST</code> request that does not have a "
+"Referrer header (<code>HTTP_REFERER</code> variable). If you need external "
+"applications to post to your scripts (e.g. Paypal IPN, WordPress WP-"
+"Cron...), you are advised to keep this option disabled otherwise they will "
+"likely be blocked. Note that <code>POST</code> requests are not required to "
+"have a Referrer header and, for that reason, this option is disabled by "
+"default."
+msgstr ""
+"cette option bloque toutes les requêtes POST qui n'incluent pas le Referrer "
+"<code>HTTP_REFERER</code> (adresse de la page -si elle existe- qui a conduit "
+"le client à la page courante). Puisque les requêtes POST ne sont pas "
+"obligées d'avoir un Referrer, cette option n'est pas activée par défaut. Si "
+"vous utilisez des scripts comme Paypal IPN, WordPress WP-Cron etc, "
+"désactivez cette fonction."
+
+#: help.php:191 ninjafirewall.php:1621
+msgid "HTTP response headers"
+msgstr "En-têtes de réponse HTTP"
+
+#: help.php:193
+msgid ""
+"In addition to filtering incoming requests, NinjaFirewall can also hook the "
+"HTTP response in order to alter its headers. Those modifications can help to "
+"mitigate threats such as XSS, phishing and clickjacking attacks."
+msgstr ""
+"En plus de filtrer les requêtes entrantes, NinjaFirewall peut aussi "
+"intercepter la réponse HTTP afin de modifier ses en-têtes. Ces modifications "
+"peuvent aider à atténuer les menaces telles que les attaques XSS, phishing "
+"et clickjacking."
+
+#: help.php:195
+msgid ""
+"Set <code>X-Content-Type-Options</code> to protect against MIME type "
+"confusion attacks:"
+msgstr ""
+"Activer  <code>X-Content-Type-Options</code> pour protéger contre les "
+"attaques basées sur la confusion du type MIME&nbsp;:"
+
+#: help.php:195
+msgid ""
+"sending this response header with the <code>nosniff</code> value will "
+"prevent compatible browsers from MIME-sniffing a response away from the "
+"declared content-type."
+msgstr ""
+"les éléments script et styleSheet rejettent les réponses avec des types MIME "
+"incorrects si le serveur envoie l’en-tête de réponse <code>X-Content-Type-"
+"Options: nosniff</code>. Il s’agit d’une fonctionnalité de sécurité qui "
+"facilite la prévention des attaques basées sur la confusion du type MIME."
+
+#: help.php:196
+msgid ""
+"Set <code>X-Frame-Options</code> to protect against clickjacking attempts:"
+msgstr ""
+"Activer <code>X-Frame-Options</code> pour protéger contre les attaques de "
+"détournement de clic (clickjacking)&nbsp;:"
+
+#: help.php:196
+msgid ""
+"this header indicates a policy whether a browser must not allow to render a "
+"page in a &lt;frame&gt; or &lt;iframe&gt;. Hosts can declare this policy in "
+"the header of their HTTP responses to prevent clickjacking attacks, by "
+"ensuring that their content is not embedded into other pages or frames. "
+"NinjaFirewall accepts two different values:"
+msgstr ""
+"cet en-tête informe le navigateur s'il doit autoriser ou non l'affichage "
+"d'une page dans une &lt;frame&gt; ou &lt;iframe&gt;. Cela permet d'empêcher "
+"les attaques de clickjacking, en veillant à ce que le contenu d'une page ne "
+"sont pas intégré dans d'autres pages ou cadres, notamment d'un autre site. "
+"NinjaFirewall accepte deux valeurs différentes&nbsp;:"
+
+#: help.php:198
+msgid ""
+"a browser receiving content with this header must not display this content "
+"in any frame from a page of different origin than the content itself."
+msgstr ""
+"un navigateur ne doit pas afficher le contenu dans une &lt;frame&gt; ou &lt;"
+"iframe&gt; d'une page d'origine différente que le contenu lui-même."
+
+#: help.php:199
+msgid ""
+"a browser receiving content with this header must not display this content "
+"in any frame."
+msgstr ""
+"un navigateur ne doit jamais afficher le contenu dans une &lt;frame&gt; ou "
+"&lt;iframe&gt;"
+
+#: help.php:202
+msgid "NinjaFirewall does not support the <code>ALLOW-FROM</code> value."
+msgstr ""
+"La valeur <code>ALLOW-FROM</code> n'est pas prise en charge par "
+"NinjaFirewall."
+
+#: help.php:204
+msgid ""
+"Since v3.1.3, WordPress sets this value to <code>SAMEORIGIN</code> for the "
+"administrator and the login page only."
+msgstr ""
+"Depuis la version 3.1.3, WordPress active <code>SAMEORIGIN</code> pour "
+"l'administrateur et la page de connexion uniquement."
+
+#: help.php:205
+msgid ""
+"Set <code>X-XSS-Protection</code> to enable browser's built-in XSS filter "
+"(IE, Chrome and Safari):"
+msgstr ""
+"Activer <code>X-XSS-Protection</code> pour utiliser les filtres anti-XSS des "
+"navigateurs (IE, Chrome et Safari)&nbsp;:"
+
+#: help.php:205
+msgid ""
+"this header allows compatible browsers to identify and block XSS attack by "
+"preventing the malicious script from executing. NinjaFirewall will set its "
+"value to <code>1; mode=block</code>."
+msgstr ""
+"cet en-tête permet aux navigateurs compatibles d'identifier et bloquer les "
+"attaques XSS en empêchant un script malveillant de s'exécuter. NinjaFirewall "
+"envoie cet en-tête avec la valeur <code>1; mode=block</code>."
+
+#: help.php:206
+msgid ""
+"Force <code>HttpOnly</code> flag on all cookies to mitigate XSS attacks:"
+msgstr ""
+"Activer la propriété <code>HttpOnly</code> pour tous les cookies afin "
+"d'atténuer les menaces XSS qui génèrent des vols de cookies&nbsp;:"
+
+#: help.php:206
+msgid ""
+"adding this flag to cookies helps to mitigate the risk of cross-site "
+"scripting by preventing them from being accessed through client-side script. "
+"NinjaFirewall can hook all cookies sent by your blog, its plugins or any "
+"other PHP script, add the <code>HttpOnly</code> flag if it is missing, and "
+"re-inject those cookies back into your server HTTP response headers right "
+"before they are sent to your visitors. Note that WordPress sets that flag on "
+"the logged in user cookies only."
+msgstr ""
+"cette protection permet de diminuer les risques d'attaques XSS en empêchant "
+"JavaScript d'accéder aux cookies de l'utilisateur. NinjaFirewall peut "
+"intercepter les cookies envoyés par vos scripts PHP, activer la propriété "
+"<code>HttpOnly</code> si elle est manquante, puis réinjecter les cookies "
+"dans la réponse HTTP juste avant que celle-ci ne soit envoyée à vos "
+"visiteurs."
+
+#: help.php:207
+msgid ""
+"If your PHP scripts send cookies that need to be accessed from JavaScript, "
+"you should keep that option disabled."
+msgstr ""
+"Si vos scripts PHP envoient des cookies qui doivent être accessibles à "
+"partir de JavaScript, vous devez garder cette option désactivée."
+
+#: help.php:208
+msgid ""
+"Set <code>Strict-Transport-Security</code> (HSTS) to enforce secure "
+"connections to the server:"
+msgstr ""
+"Activer <code>Strict-Transport-Security</code> (HSTS) pour forcer les "
+"connexions sécurisées vers le serveur&nbsp;"
+
+#: help.php:208
+msgid ""
+"this policy enforces secure HTTPS connections to the server. Web browsers "
+"will not allow the user to access the web application over insecure HTTP "
+"protocol. It helps to defend against cookie hijacking and Man-in-the-middle "
+"attacks. Most recent browsers support HSTS headers."
+msgstr ""
+"cette politique force les connexions HTTPS sécurisées vers le serveur. Les "
+"navigateurs n'accepteront pas de se connecter au site si la connexion n'est "
+"pas sécurisée (HTTPS). Cela permet de se défendre contre les détournements "
+"de cookies ou les attaques du type \"Man-in-the-middle\". La plupart des "
+"navigateurs récents sont compatibles avec <code>Strict-Transport-Security</"
+"code>."
+
+#: help.php:213
+msgid "Block localhost IP in <code>GET/POST</code> requests:"
+msgstr ""
+"Bloquer les requêtes <code>GET/POST</code> contenant l'IP localhost&nbsp;:"
+
+#: help.php:213
+msgid ""
+"this option will block any <code>GET</code> or <code>POST</code> request "
+"containing the localhost IP (127.0.0.1). It can be useful to block SQL "
+"dumpers and various hacker's shell scripts."
+msgstr ""
+"cette option bloque toute requête <code>GET</code> ou <code>POST</code> "
+"contenant l'IP localhost (127.0.0.1). Cela peut s'avérer utile pour bloquer "
+"les programmes malveillants. Attention toutefois à ne pas bloquer certains "
+"scripts d'installation ou de configuration si vous l'activez. "
+
+#: help.php:214
+msgid "Block HTTP requests with an IP in the <code>HTTP_HOST</code> header:"
+msgstr ""
+"Bloquer les requêtes HTTP dont l'en-tête <code>HTTP_HOST</code> contient une "
+"IP&nbsp;:"
+
+#: help.php:214
+#, php-format
+msgid ""
+"this option will reject any request using an IP instead of a domain name in "
+"the <code>Host</code> header of the HTTP request. Unless you need to connect "
+"to your site using its IP address, (e.g. %s), enabling this option will "
+"block a lot of hackers scanners because such applications scan IPs rather "
+"than domain names."
+msgstr ""
+"cette option rejette toute requête HTTP contenant une adresse IP au lieu "
+"d'un nom de domaine dans son en-tête <code>Host</code>. Sauf si vous avez "
+"besoin de vous connecter à votre site en utilisant son adresse IP (ex: %s), "
+"activer cette option bloquera de nombreux scanners de vulnérabilité car ces "
+"application trouvent les sites en scannant les plages d'adresses IP plutôt "
+"que les noms de domaine. "
+
+#: help.php:215
+msgid "Scan traffic coming from localhost and private IP address spaces:"
+msgstr ""
+"Filtrer les connexions provenant de localhost et d'adresses IP privées&nbsp;:"
+
+#: help.php:215
+msgid ""
+"this option will allow the firewall to scan traffic from all non-routable "
+"private IPs (IPv4 and IPv6) as well as the localhost IP. We recommend to "
+"keep it enabled if you have a private network (2 or more servers "
+"interconnected)."
+msgstr ""
+"cette option vous permet de filtrer le trafic émanant de votre réseau privé. "
+"Nous vous recommandons de le garder activé si vous avez 2 ou plusieurs "
+"serveurs reliés entre eux."
+
+#: help.php:220
+msgid "Block PHP built-in wrappers:"
+msgstr "Bloquer les gestionnaires (wrappers) PHP dangereux&nbsp;:"
+
+#: help.php:220
+msgid ""
+"PHP has several wrappers for use with the filesystem functions. It is "
+"possible for an attacker to use them to bypass firewalls and various IDS to "
+"exploit remote and local file inclusions. This option lets you block any "
+"script attempting to pass a <code>php://</code> or a <code>data://</code> "
+"stream inside a <code>GET</code> or <code>POST</code> request, cookies, user "
+"agent and referrer variables."
+msgstr ""
+"PHP dispose de nombreux gestionnaires pour différents types de protocoles de "
+"style URL, à utiliser avec les fonctions de manipulation de fichiers. Il est "
+"possible pour un hacker de les utiliser afin de passer outre un pare-feu ou "
+"des extensions de sécurité afin d'exploiter une vulnérabilité dans un script "
+"(RFI/LFI etc). Cette option détecte et bloque toute tentative d'utilisation "
+"de <code>php://</code> ou <code>data://</code> dans une requête <code>GET</"
+"code> ou <code>POST</code>, des cookies, ou dans les variables "
+"<code>HTTP_REFERER</code> et <code>HTTP_USER_AGENT</code>."
+
+#: help.php:221
+msgid "Hide PHP notice and error messages:"
+msgstr "Masquer les messages d'erreur de PHP&nbsp;:"
+
+#: help.php:221
+msgid ""
+"this option lets you hide errors returned by your scripts. Such errors can "
+"leak sensitive informations which can be exploited by hackers."
+msgstr ""
+"vous permet de masquer les erreurs retournées par PHP. Ces erreurs peuvent "
+"afficher des informations sensibles qui peuvent être exploitées "
+"ultérieurement par des pirates."
+
+#: help.php:222
+msgid ""
+"Sanitise <code>PHP_SELF</code>, <code>PATH_TRANSLATED</code>, "
+"<code>PATH_INFO</code>:"
+msgstr ""
+"Nettoyer <code>PHP_SELF</code>, <code>PATH_TRANSLATED</code>, "
+"<code>PATH_INFO</code>&nbsp;:"
+
+#: help.php:222
+msgid ""
+"this option can sanitise any dangerous characters found in those 3 server "
+"variables to prevent various XSS and database injection attempts."
+msgstr ""
+"activez ces options si vous souhaitez que le pare-feu nettoie ces trois "
+"variables."
+
+#: help.php:226 ninjafirewall.php:1858
+msgid "Various"
+msgstr "Divers"
+
+#: help.php:227
+#, php-format
+msgid ""
+"Block the <code>DOCUMENT_ROOT</code> server variable (%s) in HTTP requests:"
+msgstr ""
+"Bloquer les requêtes HTTP contenant la variable <code>DOCUMENT_ROOT</code> "
+"(%s)&nbsp;:"
+
+#: help.php:227
+msgid ""
+"this option will block scripts attempting to pass the <code>DOCUMENT_ROOT</"
+"code> server variable in a <code>GET</code> or <code>POST</code> request. "
+"Hackers use shell scripts that often need to pass this value, but most "
+"legitimate programs do not."
+msgstr ""
+"cette option bloque toute tentative de passer la variable "
+"<code>DOCUMENT_ROOT</code> dans une requête <code>GET</code> ou <code>POST</"
+"code>. Les pirates utilisent souvent des scripts qui nécessitent d'utiliser "
+"cette variable, mais pas la plupart des applications légitimes (hormis "
+"certains scripts d'installation ou de configuration)."
+
+#: help.php:228
+msgid "Block ASCII character 0x00 (NULL byte):"
+msgstr "Bloquer le caractère ASCII 0x00 (NULL byte)&nbsp;:"
+
+#: help.php:228
+msgid ""
+"this option will reject any <code>GET</code> or <code>POST</code> request, "
+"<code>COOKIE</code>, <code>HTTP_USER_AGENT</code>, <code>REQUEST_URI</code>, "
+"<code>PHP_SELF</code>, <code>PATH_INFO</code> variables containing the ASCII "
+"character 0x00 (NULL byte). Such a character is dangerous and should always "
+"be rejected."
+msgstr ""
+"toute requête <code>GET</code> ou <code>POST</code>, ainsi que toute "
+"variable <code>COOKIE</code>, <code>HTTP_USER_AGENT</code>, "
+"<code>REQUEST_URI</code>, <code>PHP_SELF</code>, <code>PATH_INFO</code> "
+"contenant le caractère ASCI 0x00 (NULL byte) sera bloquée immédiatement. Ce "
+"caractère est dangereux et devrait toujours être rejeté."
+
+#: help.php:229
+msgid "Block ASCII control characters 1 to 8 and 14 to 31:"
+msgstr "Bloquer les caractères de contrôle ASCII 1 à 8 et 14 à 31&nbsp;:"
+
+#: help.php:229
+msgid ""
+"in most cases, those control characters are not needed and should be "
+"rejected as well."
+msgstr ""
+"dans la plupart des cas, ces caractères de contrôle de l'ASCII ne sont pas "
+"nécessaires et devraient être rejetés."
+
+#: help.php:234
+msgid ""
+"Whether to block direct access to PHP files located in specific WordPress "
+"directories."
+msgstr ""
+"S'il faut bloquer l’accès direct à tout fichier PHP se trouvant dans l'un de "
+"ces répertoires."
+
+#: help.php:235
+msgid "Protect against username enumeration:"
+msgstr "Protéger contre l'énumération des comptes utilisateurs&nbsp;:"
+
+#: help.php:235
+msgid ""
+"it is possible to enumerate usernames either through the WordPress author "
+"archives or the login page. Although this is not a vulnerability but a "
+"WordPress feature, some hackers use it to retrieve usernames in order to "
+"launch more accurate brute-force attacks. NinjaFirewall will not block the "
+"request but, if it is a failed login attempt, it will sanitise the error "
+"message returned by WordPress and, if it is an author archives scan, it will "
+"invalidate it and redirect the user to the blog index page."
+msgstr ""
+"il est possible d'énumérer les noms des utilisateurs de votre blog via la "
+"page d'archive d'un auteur ou la page de connexion au Tableau de bord. Bien "
+"que ce ne soit pas une vulnérabilité, mais une caractéristique de WordPress, "
+"certains hackers utilisent ces astuces pour récupérer les noms d'utilisateur "
+"afin de lancer des attaques par force brute plus précises."
+
+#: help.php:236
+msgid "Block access to WordPress XML-RPC API:"
+msgstr "Bloque l’accès au fichier XML-RPC API de WordPress&nbsp;:"
+
+#: help.php:236
+msgid ""
+"XML-RPC is a remote procedure call (RPC) protocol which uses XML to encode "
+"its calls and HTTP as a transport mechanism. WordPress has an XMLRPC API "
+"that can be accessed through the <code>xmlrpc.php</code> file. Since "
+"WordPress version 3.5, it is always activated and cannot be turned off. "
+"NinjaFirewall allows you to block any access to that file. This option is "
+"not enabled by default."
+msgstr ""
+"XML-RPC est un protocole RPC (Remote procedure call), une spécification "
+"simple et un ensemble de codes qui permettent à des processus s'exécutant "
+"dans des environnements différents de faire des appels de méthodes à travers "
+"un réseau. WordPress dispose d'une API XML-RPC accessible via son fichier "
+"<code>xmlrpc.php</code>. Depuis la version 3.5 de WordPress, elle est "
+"toujours activée et ne peut pas être désactivée. NinjaFirewall vous permet "
+"de bloquer tout accès à ce fichier. Cette option n'est pas activée par "
+"défaut."
+
+#: help.php:237
+msgid ""
+"Block <code>POST</code> requests in the themes folder <code>/wp-content/"
+"themes</code>:"
+msgstr ""
+"Bloquer les requêtes <code>POST</code> dans le dossier des thèmes <code>/wp-"
+"content/themes</code>&nbsp;:"
+
+#: help.php:237
+msgid ""
+"this option can be useful to block hackers from installing backdoor in the "
+"PHP theme files. However, because some custom themes may include an HTML "
+"form (contact, search form etc), this option is not enabled by default."
+msgstr ""
+"cette option peut être utile afin de bloquer l'exploitation de "
+"vulnérabilités dans les fichiers PHP de vos thèmes. Toutefois, parce que "
+"certains thèmes personnalisés peuvent inclure un formulaire HTML (formulaire "
+"de recherche ou de contact etc) nécessitant des requêtes <code>POST</code> , "
+"cette option n'est pas activée par défaut."
+
+#: help.php:238
+msgid "Force SSL for admin and logins <code>FORCE_SSL_ADMIN</code>:"
+msgstr ""
+"Forcer la connexion sécurisée au Tableau de bord <code>FORCE_SSL_ADMIN</"
+"code>&nbsp;:"
+
+#: help.php:238
+msgid ""
+"enable this option when you want to secure logins and the admin area so that "
+"both passwords and cookies are never sent in the clear. Ensure that you can "
+"access your admin console from HTTPS before enabling this option, otherwise "
+"you will lock yourself out of your site!"
+msgstr ""
+"activez cette option lorsque vous souhaitez sécuriser les connexions à votre "
+"Tableau de bord. Assurez-vous que vous pouvez accéder à votre page de "
+"connexion via HTTPS avant d'activer cette option, sinon vous risquez de "
+"bloquer l’accès à votre site&nbsp;!"
+
+#: help.php:239
+msgid "Disable the plugin and theme editor <code>DISALLOW_FILE_EDIT</code>:"
+msgstr ""
+"Désactiver l’éditeur de thème et d'extension <code>DISALLOW_FILE_EDIT</"
+"code>&nbsp;:"
+
+#: help.php:239
+msgid ""
+"disabling the plugin and theme editor provides an additional layer of "
+"security if a hacker gains access to a well-privileged user account."
+msgstr ""
+"désactiver l’éditeur de thème et d'extension fournit une couche de sécurité "
+"supplémentaire. Si un pirate accédait a votre compte administrateur, il ne "
+"pourrait pas l'utiliser pour insérer une porte dérobée dans l'un de vos "
+"scripts PHP."
+
+#: help.php:240
+msgid ""
+"Disable plugin and theme update/installation <code>DISALLOW_FILE_MODS</code>:"
+msgstr ""
+"Désactiver l'installation et mise à jour des thèmes et extensions "
+"<code>DISALLOW_FILE_MODS</code>&nbsp;:"
+
+#: help.php:240
+msgid ""
+"this option will block users being able to use the plugin and theme "
+"installation/update functionality from the WordPress admin area. Setting "
+"this constant also disables the Plugin and Theme editor."
+msgstr ""
+"cette option permet de bloquer les utilisateurs voulant lancer une "
+"installation ou mise à jour d'une extension ou d'un thème. Elle désactive "
+"aussi l’éditeur de thème et d'extension."
+
+#: help.php:246
+msgid "Administrator"
+msgstr "Administrateur"
+
+#: help.php:248
+#, php-format
+msgid ""
+"By default, any logged in WordPress administrator will not be blocked by "
+"NinjaFirewall. This applies to all Firewall Policies listed below, except "
+"<code>FORCE_SSL_ADMIN</code>, <code>DISALLOW_FILE_EDIT</code>, "
+"<code>DISALLOW_FILE_MODS</code> options and the <a href=\"%s\">Login "
+"Protection</a> which, if enabled, are always enforced."
+msgstr ""
+"Par défaut, tout administrateur connecté à WordPress ne sera pas bloqué par "
+"NinjaFirewall. Cela vaut pour toutes les politiques de pare-feu énumérées ci-"
+"dessous, à l'exception de <code>FORCE_SSL_ADMIN</code>, "
+"<code>DISALLOW_FILE_EDIT</code>, <code>DISALLOW_FILE_MODS</code> et les "
+"options de la <a href=\"%s\">Page de Connexion</a> qui, si elle sont "
+"activées, seront toujours appliquées."
+
+#: help.php:262
+msgid ""
+"File Guard can detect, in real-time, any access to a PHP file that was "
+"recently modified or created, and alert you about this."
+msgstr ""
+"File Guard peut détecter, en temps réel, tout accès à un fichier PHP qui a "
+"été récemment modifié ou créé, et vous alerter à ce sujet."
+
+#: help.php:264
+msgid ""
+"If a hacker uploaded a shell script to your site (or injected a backdoor "
+"into an already existing file) and tried to directly access that file using "
+"his browser or a script, NinjaFirewall would hook the HTTP request and "
+"immediately detect that the file was recently modified/created. It would "
+"send you a detailed alert (script name, IP, request, date and time). Alerts "
+"will be sent to the contact email address defined in the \"Event "
+"Notifications\" menu."
+msgstr ""
+"Si un pirate téléchargeait un script PHP sur votre site (ou injectait une "
+"porte dérobée dans un fichier existant) et essayait d'accéder directement à "
+"ce fichier en utilisant son navigateur ou un autre script, NinjaFirewall "
+"intercepterait la requête HTTP et détecterait immédiatement que le fichier a "
+"été récemment modifié ou créé. Il vous enverrait une alerte détaillée (nom "
+"du script, adresse IP, requête HTTP, la date et l'heure). Les alertes seront "
+"envoyées à l'adresse e-mail de contact définie dans le menu \"Notifications "
+"d’Événement\"."
+
+#: help.php:265
+msgid ""
+"If you do not want to monitor a folder, you can exclude its full path or a "
+"part of it (e.g., <code>/var/www/public_html/cache/</code> or <code>/cache/</"
+"code> etc). NinjaFirewall will compare this value to the <code>"
+"$_SERVER[\"SCRIPT_FILENAME\"]</code> server variable and, if it matches, "
+"will ignore it."
+msgstr ""
+"Pour exclure un répertoire, vous pouvez entrer son chemin complet ou une "
+"partie de celui-ci  (par ex. <code>/var/www/public_html/cache/</code> ou "
+"simplement <code>/cache/</code>). NinjaFirewall comparera cette valeur à la "
+"variable <code>$_SERVER[\"SCRIPT_FILENAME\"]</code> et, si elle correspond, "
+"l'ignorera."
+
+#: help.php:266
+msgid ""
+"File Guard real-time detection is a totally unique feature, because "
+"NinjaFirewall is the only plugin for WordPress that can hook HTTP requests "
+"sent to any PHP script, even if that script is not part of the WordPress "
+"package (third-party software, shell script, backdoor etc)."
+msgstr ""
+"La détection en temps réel de File Guard est une caractéristique tout à fait "
+"unique, parce NinjaFirewall est la seule extension pour WordPress pouvant "
+"intercepter les requêtes HTTP envoyées à tout script PHP, même si ce dernier "
+"ne fait pas partie de WordPress (logiciel tiers, backdoor, etc)."
+
+#: help.php:275 ninjafirewall.php:819 ninjafirewall.php:2730
+msgid "Network"
+msgstr "Réseau"
+
+#: help.php:277
+msgid ""
+"Even if NinjaFirewall administration menu is only available to the Super "
+"Admin (from the main site), you can still display its status to all sites in "
+"the network by adding a small NinjaFirewall icon to their admin bar. It will "
+"be visible only to the administrators of those sites."
+msgstr ""
+"Même si NinjaFirewall n'est accessible qu'au Super Administrateur (depuis le "
+"site principal), vous pouvez toujours afficher son statut à tous les sites "
+"du réseau en ajoutant une petite icône à leur barre d'administration. Elle "
+"ne sera visible que par les administrateurs de ces sites."
+
+#: help.php:279
+msgid ""
+"It is recommended to enable this feature as it is the only way to know "
+"whether the sites in your network are protected and if NinjaFirewall "
+"installation was successful."
+msgstr ""
+"Il est recommandé d'activer cette fonction car c'est le seul moyen de savoir "
+"si les sites de votre réseau sont protégés et si l'installation de "
+"NinjaFirewall a réussi."
+
+#: help.php:281
+msgid ""
+"Note that when it is disabled, the icon still remains visible to you, the "
+"Super Admin."
+msgstr ""
+"Notez que même lorsqu'il est désactivé, l'icône reste visible pour vous, le "
+"Super Administrateur."
+
+#: help.php:292
+msgid ""
+"File Check lets you perform file integrity monitoring upon request or on a "
+"specific interval."
+msgstr ""
+"File Check vous permet d'effectuer une analyse de l'intégrité de vos "
+"fichiers sur demande ou à un intervalle spécifique défini."
+
+#: help.php:294
+msgid ""
+"You need to create a snapshot of all your files and then, at a later time, "
+"you can scan your system to compare it with the previous snapshot. Any "
+"modification will be immediately detected: file content, file permissions, "
+"file ownership, timestamp as well as file creation and deletion."
+msgstr ""
+"Vous devez créer un instantané de tous vos fichiers, puis, ultérieurement, "
+"vous pouvez scanner votre système pour le comparer avec l'instantané "
+"précédent. Toute modification sera immédiatement détectée&nbsp;: contenu, "
+"permissions et propriétés des fichiers, leur création et suppression ainsi "
+"que l'horodatage."
+
+#: help.php:295
+#, php-format
+msgid ""
+"Create a snapshot of all files stored in that directory: by default, the "
+"directory is set to WordPress <code>ABSPATH</code> (%s)"
+msgstr ""
+"Créer un instantané de tous les fichiers se trouvant dans ce "
+"répertoire&nbsp;: par défaut, le repertoire est l'<code>ABSPATH</code> de "
+"WordPress (%s)"
+
+#: help.php:296
+msgid ""
+"Exclude the following files/folders: you can enter a directory or a file "
+"name (e.g., <code>/foo/bar/</code>), or a part of it (e.g., <code>foo</"
+"code>). Or you can exclude a file extension (e.g., <code>.css</code>)."
+msgstr ""
+"Exclure les fichiers / dossiers suivants&nbsp;: vous pouvez entrer un "
+"répertoire ou un nom de fichier (par ex. <code>/foo/bar/</code>), ou une "
+"partie de celui-ci (par ex. <code>foo</code>), ou même exclure une extension "
+"de fichier (par ex. <code>.css</code>)."
+
+#: help.php:298
+msgid ""
+"Multiple values must be comma-separated (e.g., <code>/foo/bar/,.css,.png</"
+"code>)."
+msgstr ""
+"Plusieurs valeurs doivent être séparées par des virgules (par ex. <code>/foo/"
+"bar/,.css,.png</code>)."
+
+#: help.php:299
+msgid ""
+"Do not follow symbolic links: by default, NinjaFirewall will not follow "
+"symbolic links."
+msgstr ""
+"Ne pas suivre les liens symboliques&nbsp;: par défaut, NinjaFirewall ignore "
+"les liens symboliques lors de son analyse des fichiers."
+
+#: help.php:304
+msgid "Scheduled scans"
+msgstr "Analyses planifiées"
+
+#: help.php:305
+msgid ""
+"NinjaFirewall can scan your system on a specific interval (hourly, "
+"twicedaily or daily)."
+msgstr ""
+"NinjaFirewall peut scanner votre système à intervalle régulier (une fois par "
+"heure, deux fois par jour ou tous les jours)."
+
+#: help.php:307
+msgid ""
+"It can either send you a scan report only if changes are detected, or always "
+"send you one after each scan."
+msgstr ""
+"Il peut vous envoyer un rapport d'analyse uniquement si des changements ont "
+"été détectés, ou bien vous en envoyer un systématiquement après chaque "
+"analyse."
+
+#: help.php:309
+msgid ""
+"Reports will be sent to the contact email address defined in the \"Event "
+"Notifications\" menu."
+msgstr ""
+"Les rapports seront envoyés à l'adresse e-mail définie dans la page "
+"\"Notifications d'Événement\"."
+
+#: help.php:311
+#, php-format
+msgid ""
+"Scheduled scans rely on <a href=\"%s\">WordPress pseudo cron</a> which works "
+"only if your site gets sufficient traffic."
+msgstr ""
+"Les analyses planifiées utilisent le <a href=\"%s\">pseudo cron de "
+"WordPress</a> qui ne fonctionne que si votre site reçoit un trafic suffisant."
+
+#: help.php:325 lib/nf_sub_event.php:42 ninjafirewall.php:824
+msgid "Event Notifications"
+msgstr "Notifications d'Événement"
+
+#: help.php:326
+msgid ""
+"NinjaFirewall can alert you by email on specific events triggered within "
+"your blog. They include installations, updates, activations etc, as well as "
+"users login and modification of any administrator account in the database. "
+"Some of those alerts are enabled by default and it is highly recommended to "
+"keep them enabled. It is not unusual for a hacker, after breaking into your "
+"WordPress admin console, to install or just to upload a backdoored plugin or "
+"theme in order to take full control of your website."
+msgstr ""
+"NinjaFirewall peut vous alerter par e-mail au sujet d'événements spécifiques "
+"déclenchés au sein de votre blog. Ils comprennent les installations, mises à "
+"jour, activations, ainsi que les connexions des utilisateurs mais aussi la "
+"modification de tout compte d'administrateur dans la base de données. "
+"Certaines de ces alertes sont activées par défaut et il est fortement "
+"recommandé de les garder activées. Il n'est pas inhabituel pour un pirate, "
+"après avoir pénétré dans votre  Tableau de bord de WordPress, d'y installer "
+"une porte dérobée (backdoor) afin de prendre le contrôle de votre blog."
+
+#: help.php:337 ninjafirewall.php:829 ninjafirewall.php:2832
+msgid "Login Protection"
+msgstr "Page de Connexion"
+
+#: help.php:341
+msgid ""
+"By processing incoming HTTP requests before your blog and any of its "
+"plugins, NinjaFirewall is the only plugin for WordPress able to protect it "
+"against very large brute-force attacks, including distributed attacks coming "
+"from several thousands of different IPs."
+msgstr ""
+"Parce qu’il intercepte les requêtes HTTP avant même que WordPress et ses "
+"extensions se soient chargés, NinjaFirewall est la seule extension en mesure "
+"de protéger un blog contre de très grosses attaques par force brute, y "
+"compris les attaques distribuées provenant de plusieurs milliers d'adresses "
+"IP différentes."
+
+#: help.php:343
+msgid ""
+"The protection applies to the <code>wp-login.php</code> script but can be "
+"extended to the <code>xmlrpc.php</code> one."
+msgstr ""
+"La protection s'applique à la page de connexion (<code>wp-login.php</code>), "
+"mais peut aussi être étendue au script <code>xmlrpc.php</code>."
+
+#: help.php:345
+msgid ""
+"You can select to enable the protection only if an attack is detected or to "
+"keep it always activated:"
+msgstr ""
+"Vous pouvez choisir d'activer la protection uniquement lorsqu'une attaque "
+"est détectée ou bien l'activer en permanence&nbsp;:"
+
+#: help.php:347
+msgid "Yes, if under attack :"
+msgstr "Oui, si attaque en cours :"
+
+#: help.php:349
+msgid ""
+"When too many login attempts are detected, it password-protects the login "
+"page immediately, regardless of the offending IP. It blocks the attack "
+"instantly and prevents it from reaching WordPress, but still allows you to "
+"access your administration console using a predefined username/password "
+"combination. NinjaFirewall uses its own very fast authentication scheme and "
+"it is compatible with any HTTP server (Apache, Nginx, Lighttpd etc)."
+msgstr ""
+"Lorsque trop de tentatives de connexion sont détectées, NinjaFirewall "
+"protège immédiatement la page de connexion par mot de passe, quelle que soit "
+"l'adresse IP incriminée. Il bloque l'attaque instantanément et l'empêche "
+"d'atteindre WordPress, tout en vous permettant d'accéder à votre Tableau de "
+"bord en utilisant une combinaison nom d'utilisateur / mot de passe "
+"prédéfinie. NinjaFirewall utilise son propre système d'authentification, "
+"rapide et compatible avec n'importe quel serveur HTTP (Apache, Nginx, "
+"Lighttpd etc)."
+
+#: help.php:352
+msgid "Protect the login page against:"
+msgstr "Protéger la page de connexion contre&nbsp;:"
+
+#: help.php:352
+msgid ""
+"select the type of requests (<code>GET</code> and/or <code>POST</code>) to "
+"monitor."
+msgstr ""
+"sélectionnez le type de requêtes  (<code>GET</code> et/ou <code>POST</code>) "
+"à surveiller."
+
+#: help.php:353
+msgid "Password-protect the login page:"
+msgstr "Protéger par mot de passe&nbsp;:"
+
+#: help.php:353
+msgid "enter the suitable threshold that will trigger the protection."
+msgstr "entrez les paramètres appropriés qui déclencheront la protection."
+
+#: help.php:354 help.php:363
+msgid "HTTP authentication:"
+msgstr "Authentification HTTP&nbsp;:"
+
+#: help.php:354
+msgid ""
+"enter the user name and password that you want to use to bypass the "
+"protection during an attack."
+msgstr ""
+"entrez le nom d'utilisateur et le mot de passe que vous souhaitez utiliser "
+"pour contourner la protection lorsqu'une attaque est en cours."
+
+#: help.php:355 help.php:364
+msgid "Message:"
+msgstr "Message :"
+
+#: help.php:355 help.php:364
+msgid "enter the message to display during the authentication process."
+msgstr "entrez le message à afficher sur la page d'authentification."
+
+#: help.php:358
+msgid "Always ON :"
+msgstr "Toujours activée"
+
+#: help.php:360
+msgid ""
+"NinjaFirewall will always enforce HTTP authentication implementation and you "
+"will be prompted to enter your chosen username/password each time you will "
+"access the login page."
+msgstr ""
+"Vous serez toujours invité à saisir votre nom d'utilisateur / mot de passe "
+"chaque fois que vous accéderez à la page de connexion."
+
+#: help.php:363
+msgid ""
+"enter the user name and password that you want to use to access the login "
+"page."
+msgstr ""
+"entrez le nom d'utilisateur et mot de passe que vous souhaitez utiliser pour "
+"accéder à la page de connexion."
+
+#: help.php:373 ninjafirewall.php:3038
+msgid "AUTH log"
+msgstr "Journaliser"
+
+#: help.php:376
+msgid ""
+"NinjaFirewall can write to the server <code>AUTH</code> log when the brute-"
+"force protection is triggered. This can be useful to the system "
+"administrator for monitoring purposes or banning IPs at the server level."
+msgstr ""
+"Lorsqu'il détecte une attaque par force brute, NinjaFirewall peut "
+"enregistrer les détails de celle-ci dans le journal des authentifications du "
+"serveur. Cela peut être utile à l'administrateur du système à des fins de "
+"surveillance ou pour bloquer l'IP incriminée au niveau du pare-feu du "
+"serveur."
+
+#: help.php:378
+msgid ""
+"If you have a shared hosting account, <strong>keep this option disabled</"
+"strong> as you do not have any access to the server's logs."
+msgstr ""
+"Si vous avez un hébergement mutualisé, <strong>laissez cette option "
+"désactivée</strong> car vous n'avez pas accès aux journaux du serveur."
+
+#: help.php:380
+msgid ""
+"On Debian-based systems, the log is located in <code>/var/log/auth.log</"
+"code>, and on Red Hat-based systems in <code>/var/log/secure</code>. The "
+"logline uses the following format:"
+msgstr ""
+"Sous Debian le journal se trouve dans <code>/var/log/auth.log</code>, et sur "
+"les systèmes Red Hat, dans <code>/var/log/secure</code>. Le format utilisé "
+"est le suivant&nbsp;:"
+
+#: help.php:383
+msgid "AA: the process ID (PID)."
+msgstr "AA : l'identifiant de processus (PID)."
+
+#: help.php:384
+msgid "BB: the offending IPv4 or IPv6 address."
+msgstr "BB : L'adresse IPv4 ou IPv6 incriminée."
+
+#: help.php:385
+msgid "CC: the blog (sub-)domain name."
+msgstr "CC : le nom de (sous-)domaine du blog."
+
+#: help.php:386
+msgid ""
+"DD: the target: it can be either <code>wp-login.php</code> or <code>XML-RPC "
+"API</code>."
+msgstr ""
+"DD : la cible; il peut s'agir soit de <code>wp-login.php</code>, soit de "
+"<code>XML-RPC API</code>."
+
+#: help.php:387
+msgid "EE: the time, in minutes, the protection will remain active."
+msgstr ""
+"EE : le temps, en minutes, pendant lequel la protection restera active."
+
+#: help.php:389
+msgid "Sample loglines:"
+msgstr "Exemple :"
+
+#: help.php:392
+#, php-format
+msgid ""
+"Be careful if you are behind a load balancer, reverse-proxy or CDN because "
+"the Login Protection feature will always record the <code>REMOTE_ADDR</code> "
+"IP. If you have an application parsing the AUTH log in order to ban IPs (e."
+"g. Fail2ban), you <strong>must</strong> setup your HTTP server to forward "
+"the correct IP (or use the <code><a href=\"%s\">.htninja</a></code> file), "
+"otherwise you will likely block legitimate users."
+msgstr ""
+"Faites attention si votre blog se trouve derrière un load-balancer, reverse-"
+"proxy ou CDN parce que la protection de la Page de Connexion se base "
+"toujours sur l'IP trouvée dans <code>REMOTE_ADDR</code>. Si vous utilisez "
+"une application d'analyse du journal des authentifications du serveur afin "
+"de bloquer les adresses IP (par ex. Fail2ban), vous <strong>devez</strong> "
+"configurer votre serveur HTTP afin qu'il transmette la véritable adresse IP "
+"de vos visiteurs, sinon vous risquez de bloquer des utilisateurs légitimes. "
+"Alternativement, vous pouvez utiliser le fichier <code><a href=\"%s\">."
+"htninja</a></code>."
+
+#: help.php:406 lib/nf_sub_log.php:74 ninjafirewall.php:834
+msgid "Firewall Log"
+msgstr "Journal du Pare-feu"
+
+#: help.php:408
+msgid ""
+"The firewall log displays blocked and sanitised requests as well as some "
+"useful information. It has 6  columns:"
+msgstr ""
+"Le journal du pare-feu affiche les requêtes HTTP qui ont été bloquées ou "
+"nettoyées ainsi que d'autres informations utiles. Il a six colonnes&nbsp;:"
+
+#: help.php:409
+msgid "DATE : date and time of the incident."
+msgstr "DATE : date et heure de l'incident."
+
+#: help.php:410
+msgid ""
+"INCIDENT : unique incident number/ID as it was displayed to the blocked user."
+msgstr ""
+"INCIDENT : le numéro d'incident (ID) unique. Par défaut, il sera aussi "
+"affiché à l'utilisateur dont la requête aura été bloquée par le pare-feu."
+
+#: help.php:411
+msgid ""
+"LEVEL : level of severity (<code>critical</code>, <code>high</code> or "
+"<code>medium</code>), information (<code>info</code>, <code>upload</code>) "
+"and debugging mode (<code>DEBUG_ON</code>)."
+msgstr ""
+"LEVEL : sévérité des attaques (moyen, élevé ou critique), information (info, "
+"erreur, téléchargement) et mode débogage (<code>DEBUG_ON</code>)."
+
+#: help.php:412
+msgid ""
+"RULE : reference of the NinjaFirewall built-in security rule that triggered "
+"the action. A hyphen (<code>-</code>) instead of a number means it was a "
+"rule from the \"Firewall Policies\" page."
+msgstr ""
+"RULE : le numéro de référence de la règle de sécurité qui a été utilisée "
+"pour bloquer la requête HTTP. Un trait d'union (<code>-</code>) à la place "
+"d'un numéro signifie que la règle provient de votre configuration "
+"personnelle de la page \"Politiques du Pare-feu\"."
+
+#: help.php:413
+msgid "IP : the blocked user remote address."
+msgstr "IP : l'adresse IP de l'utilisateur bloqué."
+
+#: help.php:414
+msgid ""
+"REQUEST : the HTTP request including offending variables and values as well "
+"as the reason the action was logged."
+msgstr ""
+"REQUEST : la requête HTTP avec ses variables et valeurs, ainsi que la raison "
+"qui a déclenché l'incident."
+
+#: help.php:427
+msgid ""
+"Live Log lets you watch your website traffic in real time. It displays "
+"connections in a format similar to the one used by most HTTP server logs. "
+"Note that requests sent to static elements like JS/CSS files and images are "
+"not managed by NinjaFirewall."
+msgstr ""
+"Cette fonctionnalité vous permet de voir, en direct, les connexions en cours "
+"en vous les affichant dans un format similaire à celui des journaux des "
+"serveurs HTTP (Apache, Nginx etc). Notez que les requêtes concernant les "
+"éléments statiques comme les fichiers JS/CSS ou les images ne sont pas "
+"traitées par NinjaFirewall."
+
+#: help.php:429
+msgid ""
+"You can enable/disable the monitoring process, change the refresh rate, "
+"clear the screen, enable automatic vertical scrolling, change the log "
+"format, select which traffic you want to view (HTTP/HTTPS) and the timezone "
+"as well."
+msgstr ""
+"Vous pouvez activer/stopper le processus, régler l'intervalle de "
+"rafraîchissement de la page, activer le défilement vertical automatique, "
+"effacer l'écran, changer le format d'affichage, le fuseau horaire et choisir "
+"le type de trafic à visualiser (HTTP/HTTPS)."
+
+#: help.php:432
+msgid ""
+"Live Log does not make use of any WordPress core file (e.g., <code>admin-"
+"ajax.php</code>). It communicates directly with the firewall without loading "
+"WordPress bootstrap. Consequently, it is fast, light and it should not "
+"affect your server load, even if you set its refresh rate to the lowest "
+"value."
+msgstr ""
+"Pour son fonctionnement, Live Log n'utilise aucun Fichier WordPress (par ex. "
+"<code>admin-ajax.php</code>). Il communique directement et uniquement avec "
+"le pare-feu. De ce fait, il est léger, rapide et n'affecte pas la charge du "
+"serveur, même si vous ajustez son intervalle de rafraîchissement de la page "
+"sur la fréquence la plus rapide (5 secondes)."
+
+#: help.php:434
+msgid ""
+"If you are using the optional <code>.htninja</code> configuration file to "
+"whitelist your IP, the Live Log feature will not work."
+msgstr ""
+"Si vous utilisez le fichier optionnel de configuration <code>.htninja</code> "
+"pour toujours accepter les requêtes provenant de votre adresse IP, Live Log "
+"ne fonctionnera pas."
+
+#: help.php:439
+msgid "Log Format"
+msgstr "Format d'affichage"
+
+#: help.php:440
+msgid "You can easily customize the log format. Possible values are:"
+msgstr ""
+"Vous pouvez facilement changer le format d'affichage en combinant une ou "
+"plusieurs des valeurs suivantes&nbsp;:"
+
+#: help.php:441
+msgid "<code>%time</code>: the server date, time and timezone."
+msgstr "<code>%time</code> : la date, heure et fuseau horaire du serveur."
+
+#: help.php:442
+msgid "<code>%name</code>: authenticated user (HTTP basic auth), if any."
+msgstr ""
+"<code>%name</code> : le nom de l'utilisateur (Authentification HTTP), s'il "
+"existe."
+
+#: help.php:443
+#, php-format
+msgid ""
+"<code>%client</code>: the client REMOTE_ADDR. If you are behind a load "
+"balancer or CDN, this will be its IP."
+msgstr ""
+"<code>%client</code> : l'adresse IP du client (REMOTE_ADDR). Si votre "
+"serveur est derrière un CDN ou un proxy, cette variable retournera l'adresse "
+"IP de celui-ci."
+
+#: help.php:444
+msgid "<code>%method</code>: HTTP method (i.e., GET, POST)."
+msgstr "<code>%method</code> : la méthode HTTP (i.e., GET, POST)."
+
+#: help.php:445
+#, php-format
+msgid ""
+"<code>%uri</code>: the URI which was given in order to access the page "
+"(REQUEST_URI)."
+msgstr "<code>%uri</code> : l'URI donnée pour accéder à la page (REQUEST_URI)."
+
+#: help.php:446
+msgid "<code>%referrer</code>: the referrer (HTTP_REFERER), if any."
+msgstr "<code>%referrer</code> : le referrer (HTTP_REFERER), s'il existe."
+
+#: help.php:447
+#, php-format
+msgid "<code>%ua</code>: the user-agent (HTTP_USER_AGENT), if any."
+msgstr ""
+"<code>%ua</code> : l'en-tête User-Agent (HTTP_USER_AGENT), s'il existe."
+
+#: help.php:448
+#, php-format
+msgid ""
+"<code>%forward</code>: HTTP_X_FORWARDED_FOR, if any. If you are behind a "
+"load balancer or CDN, this will likely be the visitor true IP."
+msgstr ""
+"<code>%forward</code> : l'en-tête HTTP_X_FORWARDED_FOR, s'il existe. Si "
+"votre serveur est derrière un CDN ou un proxy, cette variable retournera "
+"l'adresse réelle du client."
+
+#: help.php:449
+msgid "<code>%host</code>: the requested host (HTTP_HOST), if any."
+msgstr ""
+"<code>%host</code> : l'en-tête Host de la requête courante (HTTP_HOST), si "
+"elle existe."
+
+#: help.php:450
+msgid ""
+"Additionally, you can include any of the following characters: <code>\"</"
+"code>, <code>%</code>, <code>[</code>, <code>]</code>, <code>space</code> "
+"and lowercase letters <code>a-z</code>."
+msgstr ""
+"Vous pouvez aussi utiliser les caractères suivants :<code>\"</code>, <code>"
+"%</code>, <code>[</code>, <code>]</code>, <code>espace</code> et toute "
+"lettre minuscule <code>a-z</code>."
+
+#: help.php:462 ninjafirewall.php:844 ninjafirewall.php:3297
+msgid "Rules Editor"
+msgstr "Éditeur de Règles"
+
+#: help.php:464
+msgid ""
+"Besides the \"Firewall Policies\", NinjaFirewall includes also a large set "
+"of built-in rules used to protect your blog against the most common "
+"vulnerabilities and hacking attempts. They are always enabled and you cannot "
+"edit them, but if you notice that your visitors are wrongly blocked by some "
+"of those rules, you can use the Rules Editor below to disable them "
+"individually:"
+msgstr ""
+"Outre les \"Politiques du Pare-feu\", NinjaFirewall intègre également un "
+"grand nombre de règles de sécurité utilisées pour protéger votre blog contre "
+"les vulnérabilités les plus courantes et les tentatives de piratage. Elles "
+"sont toujours activées et vous ne pouvez pas les modifier, mais si vous "
+"remarquez que vos visiteurs sont bloqués par erreur par certaines de ces "
+"règles, vous pouvez utiliser l’Éditeur de règles ci-dessous pour les "
+"désactiver individuellement&nbsp;:"
+
+#: help.php:466
+msgid ""
+"Check your firewall log and find the rule ID you want to disable (it is "
+"displayed in the <code>RULE</code> column)."
+msgstr ""
+"Consultez le journal du pare-feu afin d'y trouver l'ID de la règle que vous "
+"souhaitez désactiver (il est affiché dans la colonne <code>RULE</code>)."
+
+#: help.php:467
+msgid ""
+"Select its ID from the enabled rules list below and click the \"Disable it\" "
+"button."
+msgstr ""
+"Sélectionnez son ID dans la liste des règles ci-dessous et cliquez sur le "
+"bouton \"Désactiver\"."
+
+#: help.php:469
+msgid ""
+"Note: if the <code>RULE</code> column from your log shows a hyphen <code>-</"
+"code> instead of a number, that means that the rule can be changed in the "
+"\"Firewall Policies\" page."
+msgstr ""
+"Note: si la colonne <code>RULE</code> de votre journal affiche un trait "
+"d'union <code>-</code> à la place d'un nombre, cela signifie que la règle ne "
+"peut être modifiée quand dans la page \"Politiques du Pare-feu\"."
+
+#: help.php:481 lib/nf_sub_updates.php:42 ninjafirewall.php:849
+msgid "Updates"
+msgstr "Mises à Jour"
+
+#: help.php:483
+msgid ""
+"To get the most efficient protection, you can ask NinjaFirewall to "
+"automatically update its security rules."
+msgstr ""
+"Pour bénéficier de la protection la plus efficace, vous pouvez demander à "
+"NinjaFirewall de mettre à jour ses règles de sécurité automatiquement."
+
+#: help.php:485
+msgid ""
+"Each time a new vulnerability is found in WordPress or one of its plugins/"
+"themes, a new set of security rules will be made available to protect "
+"against such vulnerability. Updates can be checked as often as daily, twice "
+"daily or even hourly."
+msgstr ""
+"Chaque fois qu'une nouvelle vulnérabilité est découverte dans WordPress, ses "
+"extensions ou ses thèmes, un nouvel ensemble de règles de sécurité est "
+"disponible pour protéger contre cette vulnérabilité. Les mises à jour "
+"peuvent être effectuées chaque jour, deux fois par jour ou même une fois par "
+"heure."
+
+#: help.php:487
+msgid ""
+"Only security rules will be downloaded. If a new version of NinjaFirewall "
+"(including new files, options and features) was available, it would have to "
+"be updated from the dashboard plugins menu as usual."
+msgstr ""
+"Seules les règles de sécurité seront téléchargées. Si une nouvelle version "
+"de NinjaFirewall (WP Edition) était disponible, elle devrait être mise à "
+"jour depuis la page des \"Extensions\" de votre tableau de bord, comme "
+"d'habitude."
+
+#: help.php:489
+msgid ""
+"We recommend to enable this feature, as it is the <strong>only way to keep "
+"your WordPress secure</strong> against new vulnerabilities."
+msgstr ""
+"Nous vous recommandons d'activer cette fonctionnalité, car c'est la "
+"<strong>meilleure façon de garder votre WordPress protégé</strong> contre "
+"les dernières vulnérabilités."
+
+#: help.php:491
+msgid ""
+"Updates are downloaded from wordpress.org repo only. There is no connection "
+"to NinTechNet's servers (A.K.A \"phoning home\") during the update process."
+msgstr ""
+"Les mises à jour des règles sont téléchargées à partir de wordpress.org. Il "
+"n'y a aucune connexion aux serveurs de NinTechNet (alias \"phoning home\") "
+"pendant le processus de mise à jour."
+
+#: install.php:88
+#, php-format
+msgid ""
+"Error: You have a copy of NinjaFirewall (%s) installed.<br />Please "
+"uninstall it completely before attempting to install NinjaFirewall (WP "
+"Edition)."
+msgstr ""
+"Erreur : Vous avez déjà une copie de NinjaFirewall (%s) installée<br /"
+">Veuillez la désinstaller complètement avant d'installer NinjaFirewall (WP "
+"Edition)."
+
+#: install.php:92
+msgid "Thank you for using NinjaFirewall (WP Edition)!"
+msgstr "Merci d'utiliser NinjaFirewall (WP Edition)&nbsp;!"
+
+#: install.php:93
+msgid ""
+"This installer will help you to make the setup process as quick and easy as "
+"possible. But before doing so, please read carefully the following lines:"
+msgstr ""
+"Cet installateur va vous aider afin de rendre le processus d'installation "
+"aussi rapide et facile que possible. Mais avant de commencer, veuillez lire "
+"attentivement les lignes suivantes&nbsp;:"
+
+#: install.php:94
+msgid ""
+"Although NinjaFirewall looks like a regular plugin, it is not. It can be "
+"installed and configured from WordPress admin console, but it is a stand-"
+"alone Web Application Firewall that sits in front of WordPress. That means "
+"that it will hook, scan, reject and/or sanitise any HTTP/HTTPS request sent "
+"to a PHP script before it reaches WordPress and any of its plugins. All "
+"scripts located inside the blog installation directories and sub-directories "
+"will be protected, including those that aren't part of the WordPress "
+"package. Even encoded PHP scripts (e.g., ionCube) or any potential backdoor/"
+"shell script (e.g., c99, r57) will be filtered by NinjaFirewall."
+msgstr ""
+"Bien que NinjaFirewall ressemble à toute autre extension pour WordPress, il "
+"est très différent. Il peut certes être installé et configuré à partir de "
+"votre Tableau de Bord, mais c'est un pare-feu applicatif autonome qui agit "
+"en amont de WordPress. Cela signifie qu'il peut intercepter, analyser, "
+"nettoyer ou rejeter toute requête HTTP / HTTPS envoyée à un script PHP avant "
+"même que celle-ci n'atteigne WordPress ou l'une de ses extensions. Tous les "
+"scripts situés dans le répertoire  et sous-répertoires d'installation de "
+"votre blog seront protégés, y compris ceux qui ne font pas partie de "
+"WordPress. Même un script PHP encodé (par ex. ionCube) ou une éventuelle "
+"porte dérobée/script shell (par ex. c99, r57 ) installés par un pirate "
+"seront filtrés par NinjaFirewall."
+
+#: install.php:95
+msgid ""
+"That's cool and makes NinjaFirewall a true firewall. And probably the most "
+"powerful security applications for WordPress. But just like any firewall, if "
+"you misuse it, you can get into serious problems and crash your site."
+msgstr ""
+"C'est super et cela fait de NinjaFirewall un véritable pare-feu applicatif. "
+"Et sans doute l'une des applications de sécurité pour WordPress les plus "
+"puissantes. Mais comme avec tout pare-feu, vous devez faire très attention "
+"afin d’éviter les problèmes qui pourraient planter totalement votre site ou "
+"PHP."
+
+#: install.php:98
+msgid ""
+"Use ONLY your WordPress administration dashboard (\"Plugins\" page) to "
+"activate, deactivate, install, update, upgrade, uninstall or even delete "
+"NinjaFirewall."
+msgstr ""
+"Utilisez UNIQUEMENT les menus de la page \"Extensions\" de votre Tableau de "
+"bord pour activer, désactiver, installer, mettre à jour, désinstaller ou "
+"supprimer NinjaFirewall."
+
+#: install.php:100
+msgid ""
+"Do NOT attempt to perform any of the above operations using another "
+"application ( FTP, cPanel, Plesk etc), or to modify, rename, move, edit, or "
+"overwrite its files, EVEN when it is disabled."
+msgstr ""
+"N'essayer JAMAIS d'effectuer ces opérations en utilisant une autre interface "
+"ou application (FTP, cPanel, Plesk etc), ni de renommer, modifier, déplacer, "
+"éditer ou écraser ses fichier, MÊME s'il est désactivé."
+
+#: install.php:102
+msgid ""
+"Do NOT attempt to migrate your site with NinjaFirewall installed. Uninstall "
+"it, migrate your site and reinstall it."
+msgstr ""
+"N'essayez PAS de migrer votre site avec NinjaFirewall installé. Désinstallez-"
+"le, migrez votre site, puis réinstallez-le."
+
+#: install.php:105
+msgid ""
+"Failure to do so will almost always cause you to be locked out of your own "
+"site and/or to crash it."
+msgstr ""
+"Si vous ne suivez pas ces règles, vous avez toutes les chances de planter "
+"votre site ou de ne plus pouvoir y accéder."
+
+#: install.php:107 lib/nf_sub_about.php:102
+msgid "Privacy Policy"
+msgstr "Politique de confidentialité"
+
+#: install.php:108
+#, php-format
+msgid ""
+"<a href=\"%s\">NinTechNet</a> strictly follows the WordPress <a href=\"%s"
+"\">Plugin Developer Guidelines</a>: our software, NinjaFirewall (WP "
+"edition), is free, open source and fully functional, no \"trialware\", no "
+"\"obfuscated code\", no \"crippleware\", no \"phoning home\". It does not "
+"require a registration process or an activation key to be installed or used."
+msgstr ""
+"<a href=\"%s\">NinTechNet</a> se conforme strictement aux <a href=\"%s"
+"\">directives établies pour les développeurs d'extensions</a> pour "
+"WordPress&nbsp;: NinjaFirewall (WP edition) est totalement gratuit, open "
+"source et fonctionnel. Ce n'est pas un \"trialware\" ou \"crippleware\", il "
+"ne nécessite aucun processus d'enregistrement ni de clé d'activation pour "
+"être installé ou utilisé."
+
+#: install.php:110
+msgid ""
+"Because we do not collect any user data, we do not even know that you are "
+"using (and hopefully enjoying!) our product."
+msgstr ""
+"Parce que nous ne recueillons pas les données de nos utilisateurs, nous ne "
+"savons même pas que vous utilisez (et, nous l'espérons, appréciez&nbsp;!) "
+"notre logiciel."
+
+#: install.php:112
+msgid "License"
+msgstr "Licence"
+
+#: install.php:113
+msgid ""
+"This program is free software: you can redistribute it and/or modify it "
+"under the terms of the GNU General Public License as published by the Free "
+"Software Foundation, either version 3 of the License, or (at your option) "
+"any later version."
+msgstr ""
+"Ce programme est libre, vous pouvez le redistribuer et/ou le modifier selon "
+"les termes de la Licence Publique Générale GNU publiée par la Free Software "
+"Foundation (version 3 ou bien toute autre version ultérieure choisie par "
+"vous)."
+
+#: install.php:115
+msgid ""
+"This program is distributed in the hope that it will be useful, but WITHOUT "
+"ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or "
+"FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for "
+"more details (LICENSE.TXT)."
+msgstr ""
+"Ce programme est distribué car potentiellement utile, mais SANS AUCUNE "
+"GARANTIE, ni explicite ni implicite, y compris les garanties de "
+"commercialisation ou d'adaptation dans un but spécifique. Reportez-vous à la "
+"Licence Publique Générale GNU pour plus de détails (LICENSE.TXT)."
+
+#: install.php:117
+msgid "Installation help and troubleshooting"
+msgstr "Installation, aide et problèmes"
+
+#: install.php:118
+#, php-format
+msgid ""
+"If you need technical support, please use our <a href=\"%s\">support forum</"
+"a> at WordPress.org site."
+msgstr ""
+"Si vous avez besoin d'aide, veuillez utiliser <a href=\"%s\">notre forum</a> "
+"sur le site WordPress.org."
+
+#: install.php:120
+#, php-format
+msgid ""
+"If you need some help regarding the installation, please consult our <a href="
+"\"%s\">site</a>."
+msgstr ""
+"Si vous avez besoin d'aide concernant l'installation, veuillez consulter <a "
+"href=\"%s\">notre site</a>."
+
+#: install.php:122
+msgid "Updates info are available via Twitter:"
+msgstr "Info sur les mises à jour via Twitter&nbsp;:"
+
+#: install.php:123
+msgid ""
+"Ensure that you have an FTP access to your website so that, if there was a "
+"problem during the installation of the firewall, you could undo the changes."
+msgstr ""
+"Assurez-vous d'avoir un accès FTP à votre site de sorte que, s'il y avait un "
+"problème pendant l'installation du pare-feu, vous pourriez annuler les "
+"modifications."
+
+#: install.php:125
+msgid "Enough chitchat, let's go!"
+msgstr "Démarrer l'installation"
+
+#: install.php:141
+#, php-format
+msgid ""
+"NinjaFirewall cannot create its <code>nfwlog/</code>log and cache folder; "
+"please make sure that the <code>%s</code> directory is writable"
+msgstr ""
+"NinjaFirewall ne peut pas créer le répertoire <code>nfwlog/</code>; veuillez "
+"vous assurer que le répertoire <code>%s</code> est accessible en écriture"
+
+#: install.php:177
+msgid "This is NinjaFirewall's logs and cache directory."
+msgstr "Ceci est le répertoire du cache et des journaux de NinjaFirewall."
+
+#: install.php:186 ninjafirewall.php:956
+msgid "NinjaFirewall (WP edition)"
+msgstr "NinjaFirewall (WP edition)"
+
+#: install.php:194
+msgid "Try again"
+msgstr "Essayer à nouveau"
+
+#: install.php:219 install.php:342 install.php:508
+msgid "Error:"
+msgstr "Erreur :"
+
+#: install.php:223
+#, php-format
+msgid ""
+"Your WordPress directory (%s) is different from your website document root "
+"(%s). Because it is possible to install WordPress into a subdirectory, but "
+"have the blog exist in the site root, NinjaFirewall needs to know the exact "
+"location of the blog site root."
+msgstr ""
+"Le répertoire de WordPress (%s) est différent du répertoire racine de votre "
+"site Web (%s). Parce qu'il est possible d'installer WordPress dans un sous-"
+"répertoire, tout en ayant le blog à la racine du site, NinjaFirewall a "
+"besoin de connaître l'emplacement du répertoire racine du blog."
+
+#: install.php:224
+#, php-format
+msgid ""
+"Please edit the path below only if you have manually modified your WordPress "
+"root directory as described in the <a href=\"%s\">Giving WordPress Its Own "
+"Directory</a> article."
+msgstr ""
+"Veuillez corriger le chemin ci-dessous uniquement si vous avez modifié "
+"manuellement votre répertoire racine de WordPress comme décrit dans "
+"l'article <a href=\"%s\">Giving WordPress Its Own Directory</a>."
+
+#: install.php:225
+msgid "Most users should not change this value."
+msgstr "La plupart des utilisateurs ne devront pas changer cette valeur."
+
+#: install.php:226
+msgid "Path to WordPress site root directory:"
+msgstr "Chemin vers le répertoire racine de WordPress :"
+
+#: install.php:229 install.php:419 install.php:705
+msgid "Next Step"
+msgstr "Étape suivante"
+
+#: install.php:240 install.php:432
+msgid "please enter the full path to WordPress folder."
+msgstr "veuillez entrer le chemin complet vers le répertoire de WordPress."
+
+#: install.php:245
+#, php-format
+msgid ""
+"cannot find the %s directory! Please correct the full path to WordPress site "
+"root directory."
+msgstr ""
+"impossible de trouver le répertoire %s&nbsp;! Veuillez corriger le chemin "
+"complet vers le répertoire racine de WordPress."
+
+#: install.php:256
+msgid "(recommended)"
+msgstr "(recommandé)"
+
+#: install.php:307
+msgid "Please select the PHP initialization file supported by your server."
+msgstr ""
+"Sélectionnez le type de fichier de configuration PHP utilisé par votre "
+"serveur."
+
+#: install.php:336
+#, php-format
+msgid ""
+"Error: NinjaFirewall log directory is not writable (%s). Please chmod it to "
+"0777 and reload this page."
+msgstr ""
+"Erreur : le répertoire du journal et cache de NinjaFirewall (%s) n'est pas "
+"accessible en écriture. Veuillez changer ses permissions (par ex. 0777) et "
+"recharger cette page."
+
+#: install.php:346
+msgid "System configuration"
+msgstr "Configuration du système"
+
+#: install.php:350
+msgid "Multisite network detected:"
+msgstr "Réseau multi-site détecté&nbsp;:"
+
+#: install.php:350
+msgid ""
+"NinjaFirewall will protect all sites from your network and its configuration "
+"interface will be accessible only to the Super Admin from the network main "
+"site."
+msgstr ""
+"NinjaFirewall protégera tous les sites de votre réseau; son interface de "
+"configuration ne sera accessible qu'au Super Administrateur à partir du site "
+"principal du réseau."
+
+#: install.php:357
+msgid "Select your HTTP server and your PHP server API"
+msgstr "Sélectionnez votre serveur HTTP et PHP SAPI"
+
+#: install.php:366
+msgid "Other webserver + CGI/FastCGI"
+msgstr "Autre serveur + CGI/FastCGI"
+
+#: install.php:367
+msgid "Other webserver + HHVM"
+msgstr "Autre serveur + HHVM"
+
+#: install.php:368
+msgid "view PHPINFO"
+msgstr "voir PHPINFO"
+
+#: install.php:376
+#, php-format
+msgid ""
+"Please <a href=\"%s\">check our blog</a> if you want to install "
+"NinjaFirewall on HHVM."
+msgstr ""
+"Veuillez consulter <a href=\"%s\">notre blog</a> afin d'installer "
+"NinjaFirewall avec HHVM."
+
+#: install.php:407
+msgid "Select the PHP initialization file supported by your server"
+msgstr ""
+"Sélectionnez le type de fichier de configuration PHP utilisé par votre "
+"serveur"
+
+#: install.php:410
+msgid "Used by most shared hosting accounts."
+msgstr "Utilisé par la plupart des hébergements mutualisés"
+
+#: install.php:412
+msgid ""
+"Used by most dedicated/VPS servers, as well as shared hosting accounts that "
+"do not support php.ini"
+msgstr ""
+"Utilisé par la plupart des serveurs dédiés et VPS, ainsi que de nombreux "
+"hébergements mutualisés n'utilisant pas les fichiers php.ini"
+
+#: install.php:412
+msgid "more info"
+msgstr "plus d'info"
+
+#: install.php:414
+#, php-format
+msgid ""
+"A few shared hosting accounts (some <a href=\"%s\">Godaddy hosting plans</"
+"a>). Seldom used."
+msgstr ""
+"Quelques hébergements mutualisés (certains comptes chez <a href=\"%s"
+"\">Godaddy</a>), mais rarement utilisé."
+
+#: install.php:445 install.php:730
+msgid "select your HTTP server and PHP SAPI."
+msgstr "sélectionnez votre serveur HTTP et PHP SAPI."
+
+#: install.php:452 install.php:736
+msgid "select the PHP initialization file supported by your server."
+msgstr ""
+"sélectionnez le type de fichier de configuration PHP utilisé par votre "
+"serveur."
+
+#: install.php:483
+msgid ""
+"In order to hook and protect all PHP files, NinjaFirewall needs to add some "
+"specific directives to your <code>.htaccess</code> located inside WordPress "
+"root directory. That file will have to be created or, if it exists, to be "
+"edited."
+msgstr ""
+"Afin de protéger tous les fichiers PHP, NinjaFirewall a besoin d'ajouter "
+"certaines directives à votre fichier <code>.htaccess</code> situé dans le "
+"répertoire racine (root) de WordPress. Ce fichier devra être créé ou, s'il "
+"existe déjà, devra être modifié."
+
+#: install.php:485
+#, php-format
+msgid ""
+"In order to hook and protect all PHP files, NinjaFirewall needs to add some "
+"specific directives to your <code>.htaccess</code> and <code>%s</code> files "
+"located inside WordPress root directory. Those files will have to be created "
+"or, if they exist, to be edited."
+msgstr ""
+"Afin de protéger tous les fichiers PHP, NinjaFirewall a besoin d'ajouter "
+"certaines directives à vos fichiers <code>.htaccess</code> et <code>%s</"
+"code> situés dans le répertoire racine (root) de WordPress. Ces fichiers "
+"devront être créés ou, s'ils existent déjà, devront être modifiés."
+
+#: install.php:487
+#, php-format
+msgid ""
+"In order to hook and protect all PHP files, NinjaFirewall needs to add some "
+"specific directives to your %s file located inside WordPress root directory. "
+"That file will have to be created or, if it exists, to be edited."
+msgstr ""
+"Afin de protéger tous les fichiers PHP, NinjaFirewall a besoin d'ajouter "
+"certaines directives à votre fichier %s situé dans le répertoire racine "
+"(root) de WordPress. Ce fichier devra être créé ou, s'il existe déjà, devra "
+"être modifié."
+
+#: install.php:511
+msgid "Firewall Integration"
+msgstr "Intégration du Pare-feu"
+
+#: install.php:516
+msgid ""
+"If your WordPress root directory is writable, the installer can make those "
+"changes for you."
+msgstr ""
+"Si le répertoire racine de WordPress est accessible en écriture, "
+"l'installateur pourra faire ces changements pour vous."
+
+#: install.php:518
+msgid "Checking if WordPress root directory is writable:"
+msgstr ""
+"Vérification de l’accès en écriture du répertoire racine de WordPress&nbsp;:"
+
+#: install.php:520
+msgid "YES"
+msgstr "OUI"
+
+#: install.php:522
+msgid "NO"
+msgstr "NON"
+
+#: install.php:529
+#, php-format
+msgid ""
+"The <code>%s</code> file must be created, and the following lines of code "
+"added to it:"
+msgstr ""
+"Le fichier <code>%s</code> doit être créé, et les lignes suivantes doivent y "
+"être ajoutées&nbsp;:"
+
+#: install.php:530
+#, php-format
+msgid ""
+"The following <font color=\"red\">red lines</font> of code must be added to "
+"your <code>%s</code> file."
+msgstr ""
+"Les lignes de code de <font color=\"red\">couleur rouge</font> doivent être "
+"ajoutées à votre fichier <code>%s</code>."
+
+#: install.php:532
+msgid "All other lines, if any, are the actual content of the file:"
+msgstr ""
+"Toutes les autres lignes, le cas échéant, sont le contenu actuel du fichier "
+"et ne doivent pas être modifiées&nbsp;:"
+
+#: install.php:533
+msgid "The file is not writable, I cannot make those changes for you."
+msgstr ""
+"Le fichier est protégé en écriture, je ne peux pas faire ces changements "
+"pour vous."
+
+#: install.php:614
+msgid ""
+"Add the following code to your <code>/etc/hhvm/php.ini</code> file, and "
+"restart HHVM afterwards:"
+msgstr ""
+"Veuillez ajouter le code suivant au fichier <code>/etc/hhvm/php.ini</code>, "
+"puis veuillez redémarrer HHVM&nbsp;:"
+
+#: install.php:682
+msgid "Please make those changes, then click on button below."
+msgstr ""
+"Veuillez faire ces modifications, puis cliquez sur le bouton ci-dessous pour "
+"continuer."
+
+#: install.php:687
+msgid "Let NinjaFirewall make the above changes (recommended)."
+msgstr "Laissez NinjaFirewall faire les changements ci-dessus (recommandé)."
+
+#: install.php:689
+msgid ""
+"Ensure that you have an FTP access to your website so that, if there was a "
+"problem, you could undo the above changes."
+msgstr ""
+"Assurez-vous d'avoir un accès FTP à votre site de sorte que, s'il y avait un "
+"problème, vous pourriez annuler les modifications ci-dessus."
+
+#: install.php:691
+msgid "I want to make the changes myself."
+msgstr "Je veux faire les changements moi-même."
+
+#: install.php:700
+msgid "Please check our blog if you want to install NinjaFirewall on HHVM."
+msgstr ""
+"Veuillez consulter notre blog si vous souhaitez installer NinjaFirewall avec "
+"HHVM."
+
+#: install.php:720
+msgid "you must select how to make changes to your files."
+msgstr ""
+"vous devez sélectionner la façon dont vous souhaitez modifier vos fichiers."
+
+#: install.php:747
+msgid ""
+"your WordPress root directory is not writable, I cannot make those changes "
+"for you."
+msgstr ""
+"le répertoire racine de WordPress n'est pas accessible en écriture, je ne "
+"peux pas faire ces changements pour vous."
+
+#: install.php:759
+msgid "Installation & Troubleshooting Guide"
+msgstr "Guide d'Installation et de Dépannage"
+
+#: install.php:760
+msgid "Hi,"
+msgstr "Bonjour,"
+
+#: install.php:761
+msgid ""
+"This is NinjaFirewall's installer. Below are some info and links that can be "
+"helpful:"
+msgstr ""
+"Je suis l'installateur de NinjaFirewall. Voici quelques informations et "
+"liens qui pourraient vous être utiles (en langue anglaise) :"
+
+#: install.php:763
+msgid ""
+"You are locked out of your site, blocked by NinjaFirewall or WordPress "
+"crashed right after installing NinjaFirewall? Follow this link:"
+msgstr ""
+"Vous êtes bloqué par NinjaFirewall et ne pouvez plus accéder à votre site, "
+"ou WordPress plante juste après l'installation NinjaFirewall ? Suivez ce "
+"lien :"
+
+#: install.php:765
+msgid ""
+"NinjaFirewall returns a \"firewall is not loaded\" error message? Follow "
+"this link:"
+msgstr ""
+"NinjaFirewall affiche le message d'erreur \"le pare-feu n'est pas activé\" ? "
+"Suivez ce lien :"
+
+#: install.php:767
+msgid "Testing NinjaFirewall without blocking your visitors:"
+msgstr "Tester NinjaFirewall sans bloquer vos visiteurs :"
+
+#: install.php:769
+msgid ""
+"Keep your blog protected against the latest vulnerabilities with "
+"NinjaFirewall automatic updates for security rules:"
+msgstr ""
+"Gardez votre blog protégé contre les dernières vulnérabilités avec la mise à "
+"jour automatique des règles de sécurité de NinjaFirewall :"
+
+#: install.php:771
+msgid "You can also check our FAQ and Installation Help:"
+msgstr "Vous pouvez aussi consulter notre FAQ et Aide à l'installation :"
+
+#: install.php:772
+msgid "The WordPress support forum:"
+msgstr "Le forum de WordPress :"
+
+#: install.php:790 install.php:832
+#, php-format
+msgid "cannot write to <code>%s</code>, it is read-only."
+msgstr ""
+"impossible d’écrire dans <code>%s</code>, le fichier est en lecture seule."
+
+#: install.php:869
+msgid "Your configuration was saved."
+msgstr "Les modifications ont été enregistrées."
+
+#. translators: ...email was sent to [admin_email_address]
+#: install.php:876
+msgid "A \"Installation & Troubleshooting Guide\" email was sent to"
+msgstr ""
+"Un e-mail \"Guide d'Installation et de Dépannage\" a été envoyé à l'adresse"
+
+#: install.php:881
+msgid ""
+"Please click the button below to test if the firewall integration was "
+"successful."
+msgstr ""
+"Veuillez cliquer sur le bouton ci-dessous pour vérifier le bon "
+"fonctionnement du pare-feu."
+
+#: install.php:883
+msgid "Test Firewall"
+msgstr "Tester le pare-feu"
+
+#: install.php:912
+msgid "Error: the firewall is not loaded."
+msgstr "Erreur&nbsp;: le pare-feu n'est pas activé."
+
+#: install.php:913
+msgid "Suggestions:"
+msgstr "Suggestions&nbsp;:"
+
+#: install.php:917
+msgid ""
+"You selected <code>Apache + PHP5 module</code> as your HTTP server and PHP "
+"SAPI. Maybe your HTTP server is <code>Apache + CGI/FastCGI</code>?"
+msgstr ""
+"Vous avez sélectionné <code>Apache + PHP5 module</code> comme serveur HTTP "
+"et PHP SAPI. Peut-être que votre serveur utilise <code>Apache + CGI/FastCGI</"
+"code>&nbsp;?"
+
+#: install.php:919 install.php:936
+msgid ""
+"You can click the \"Go Back\" button and try to select another HTTP server "
+"type."
+msgstr ""
+"Vous pouvez cliquer sur le bouton \"Retour\" et essayer de sélectionner un "
+"autre type de serveur HTTP."
+
+#: install.php:923
+msgid ""
+"You have selected <code>.user.ini</code> as your PHP initialization file. "
+"Unlike <code>php.ini</code>, <code>.user.ini</code> files are not reloaded "
+"immediately by PHP, but every five minutes. If this is your own server, "
+"restart Apache (or PHP-FPM if applicable) to force PHP to reload it, "
+"otherwise please <strong>wait up to five minutes</strong> and then, click "
+"the \"Test Again\" button below."
+msgstr ""
+"Vous avez sélectionné <code>.user.ini</code> comme fichier d'initialisation "
+"de PHP. Contrairement aux fichiers <code>php.ini</code>, après leur "
+"modification les fichiers <code>.user.ini</code> ne sont pas rechargés "
+"immédiatement par PHP, mais environ toutes les cinq minutes. Si ceci est "
+"votre serveur, redémarrez Apache (ou PHP-FPM le cas échéant) afin de forcer "
+"PHP à le recharger, sinon veuillez <strong>patienter jusqu'à cinq minutes</"
+"strong> avant de cliquer sur le bouton \"Tester à nouveau\" ci-dessous."
+
+#: install.php:925
+msgid "Test Again"
+msgstr "Tester à nouveau"
+
+#: install.php:934
+msgid ""
+"You selected <code>Apache + CGI/FastCGI</code> as your HTTP server and PHP "
+"SAPI. Maybe your HTTP server is <code>Apache + mod_php5</code>?"
+msgstr ""
+"Vous avez sélectionné <code>Apache + CGI/FastCGI</code> comme serveur HTTP "
+"et PHP SAPI. Peut-être que votre serveur utilise <code>Apache + mod_php5</"
+"code>&nbsp;?"
+
+#: install.php:939
+msgid "Maybe you did not select the correct PHP INI ?"
+msgstr ""
+"Peut-être que vous n'avez pas sélectionné le bon fichier PHP INI&nbsp;?"
+
+#: install.php:941
+msgid "You can click the \"Go Back\" button and try to select another one."
+msgstr ""
+"Vous pouvez cliquer sur le bouton \"Retour\" et essayer d'en sélectionner un "
+"autre."
+
+#: install.php:945
+msgid "Go Back"
+msgstr "Retour"
+
+#: install.php:951
+msgid "Need help ? Check our blog:"
+msgstr "Besoin d'aide ? Consultez notre blog :"
+
+#: lib/nf_sub_about.php:33
+msgid "Error : cannot find changelog :("
+msgstr "Erreur: impossible de trouver le fichier changelog :("
+
+#: lib/nf_sub_about.php:56
+msgid "About"
+msgstr "À Propos"
+
+#: lib/nf_sub_about.php:79
+msgid "Monitor your website for just $4.99 per month."
+msgstr "Surveillance de votre site web 24/24h à partir de $4.99/mois"
+
+#: lib/nf_sub_about.php:86
+msgid "Advanced firewall software for all your PHP applications."
+msgstr "Pare-feu applicatif pour toutes vos applications PHP."
+
+#: lib/nf_sub_about.php:93
+msgid "Malware removal and hacking recovery for just $89."
+msgstr "Votre site est piraté ? Nous le nettoyons et sécurisons pour $89."
+
+#: lib/nf_sub_about.php:102
+msgid "Changelog"
+msgstr "Changelog"
+
+#: lib/nf_sub_about.php:102
+msgid "Spread the word about the Ninja !"
+msgstr "Partagez avec vos amis !"
+
+#: lib/nf_sub_about.php:102
+msgid "System Info"
+msgstr "Informations Système"
+
+#: lib/nf_sub_about.php:127
+msgid "PHP version"
+msgstr "Version PHP"
+
+#: lib/nf_sub_about.php:136
+msgid "HTTP server"
+msgstr "Serveur HTTP"
+
+#: lib/nf_sub_about.php:139
+msgid "Operating System"
+msgstr "Système d'exploitation"
+
+#: lib/nf_sub_about.php:142
+msgid "Load Average"
+msgstr "Charge moyenne"
+
+#: lib/nf_sub_about.php:160
+msgid "RAM"
+msgstr "RAM"
+
+#: lib/nf_sub_about.php:160
+msgid "MB free"
+msgstr "Mo libres"
+
+#: lib/nf_sub_about.php:160
+msgid "MB total"
+msgstr "Mo total"
+
+#: lib/nf_sub_about.php:166
+msgid "Processor(s)"
+msgstr "Processeur(s)"
+
+#: lib/nf_sub_about.php:167
+msgid "CPU model"
+msgstr "Modèle CPU"
+
+#: lib/nf_sub_about.php:176
+msgid "NinTechNet strictly follows the WordPress Plugin Developer guidelines"
+msgstr ""
+"NinTechNet se conforme strictement aux directives établies pour les "
+"développeurs d'extensions pour WordPress"
+
+#: lib/nf_sub_about.php:176
+msgid ""
+"NinjaFirewall (WP edition) is free, open source and fully functional, no "
+"\"trialware\", no \"obfuscated code\", no \"crippleware\", no \"phoning home"
+"\". It does not require a registration process or an activation key to be "
+"installed or used."
+msgstr ""
+"NinjaFirewall (WP edition) est totalement gratuit, open source et "
+"fonctionnel. Ce n'est pas un \"trialware\" ou \"crippleware\", il ne "
+"nécessite aucun processus d'enregistrement ni de clé d'activation pour être "
+"installé ou utilisé."
+
+#: lib/nf_sub_about.php:176
+msgid ""
+"Because we do not collect any user data, we do not even know that you are "
+"using (and hopefully enjoying !) our product."
+msgstr ""
+"Parce que nous ne recueillons pas les données de nos utilisateurs, nous ne "
+"savons même pas que vous utilisez (et, nous l'espérons, appréciez !) notre "
+"logiciel."
+
+#: lib/nf_sub_event.php:51 lib/nf_sub_filecheck.php:115
+#: lib/nf_sub_livelog.php:242 lib/nf_sub_options.php:59
+#: lib/nf_sub_updates.php:55 ninjafirewall.php:1277 ninjafirewall.php:2626
+#: ninjafirewall.php:2749 ninjafirewall.php:2842
+msgid "Your changes have been saved."
+msgstr "Les modifications ont été enregistrées."
+
+#: lib/nf_sub_event.php:61
+msgid "WordPress admin dashboard"
+msgstr "Connexion"
+
+#: lib/nf_sub_event.php:64 lib/nf_sub_event.php:127
+msgid "Send me an alert whenever"
+msgstr "Envoyer une alerte quand"
+
+#: lib/nf_sub_event.php:66
+msgid "An administrator logs in (default)"
+msgstr "Un Administrateur se connecte (défaut)"
+
+#: lib/nf_sub_event.php:67
+msgid "Someone - user, admin, editor, etc - logs in"
+msgstr "Quelqu'un - utilisateur, admin, éditeur etc - se connecte"
+
+#: lib/nf_sub_event.php:68
+msgid "No, thanks (not recommended)"
+msgstr "Non, merci"
+
+#: lib/nf_sub_event.php:75
+msgid "Plugins"
+msgstr "Extensions"
+
+#: lib/nf_sub_event.php:78 lib/nf_sub_event.php:95 lib/nf_sub_event.php:110
+msgid "Send me an alert whenever someone"
+msgstr "Envoyer une alerte quand quelqu'un"
+
+#: lib/nf_sub_event.php:80
+msgid "Uploads a plugin (default)"
+msgstr "Télécharge une extension (défaut)"
+
+#: lib/nf_sub_event.php:81
+msgid "Installs a plugin (default)"
+msgstr "Installe une extension (défaut)"
+
+#: lib/nf_sub_event.php:82
+msgid "Activates a plugin"
+msgstr "Active une extension"
+
+#: lib/nf_sub_event.php:83
+msgid "Updates a plugin"
+msgstr "Met à jour une extension"
+
+#: lib/nf_sub_event.php:84
+msgid "Deactivates a plugin (default)"
+msgstr "Désactive une extension (défaut)"
+
+#: lib/nf_sub_event.php:85
+msgid "Deletes a plugin"
+msgstr "Supprime une extension"
+
+#: lib/nf_sub_event.php:92
+msgid "Themes"
+msgstr "Thèmes"
+
+#: lib/nf_sub_event.php:97
+msgid "Uploads a theme (default)"
+msgstr "Télécharge un thème (défaut)"
+
+#: lib/nf_sub_event.php:98
+msgid "Installs a theme (default)"
+msgstr "Installe un thème (défaut)"
+
+#: lib/nf_sub_event.php:99
+msgid "Activates a theme"
+msgstr "Active un thème"
+
+#: lib/nf_sub_event.php:100
+msgid "Deletes a theme"
+msgstr "Supprime un thème"
+
+#: lib/nf_sub_event.php:107
+msgid "Core"
+msgstr "WordPress"
+
+#: lib/nf_sub_event.php:112
+msgid "Updates WordPress (default)"
+msgstr "Met à jour WordPress (défaut)"
+
+#: lib/nf_sub_event.php:124
+msgid "Database"
+msgstr "Base de données"
+
+#: lib/nf_sub_event.php:129
+msgid ""
+"An administrator account is created, modified or deleted in the database "
+"(default)"
+msgstr ""
+"Un compte Administrateur est crée, modifié ou supprimé dans la base de "
+"données (défaut)"
+
+#: lib/nf_sub_event.php:136
+msgid "Log"
+msgstr "Journal"
+
+#: lib/nf_sub_event.php:139
+msgid "Write all events to the firewall log"
+msgstr "Enregistrer les événements dans le journal du pare-feu"
+
+#: lib/nf_sub_event.php:141 ninjafirewall.php:1358 ninjafirewall.php:1401
+#: ninjafirewall.php:1421 ninjafirewall.php:1472 ninjafirewall.php:1517
+#: ninjafirewall.php:1527 ninjafirewall.php:1537 ninjafirewall.php:1580
+#: ninjafirewall.php:1713 ninjafirewall.php:1733 ninjafirewall.php:1776
+#: ninjafirewall.php:1786 ninjafirewall.php:1796 ninjafirewall.php:1806
+#: ninjafirewall.php:1816 ninjafirewall.php:1864 ninjafirewall.php:1874
+#: ninjafirewall.php:1884 ninjafirewall.php:2763
+msgid "Yes (default)"
+msgstr "Oui (défaut)"
+
+#: lib/nf_sub_event.php:151 lib/nf_sub_event.php:181
+msgid "Contact email"
+msgstr "Adresse e-mail du contact"
+
+#: lib/nf_sub_event.php:154 lib/nf_sub_event.php:184
+msgid "Alerts should be sent to"
+msgstr "Envoyer les alertes à"
+
+#: lib/nf_sub_event.php:163 lib/nf_sub_event.php:189
+msgid ""
+"Multiple recipients must be comma-separated (e.g., <code>joe@example.org,"
+"alice@example.org</code>)."
+msgstr ""
+"Plusieurs destinataires doivent être séparés par des virgules (par ex. "
+"<code>joe@example.org,alice@example.org</code>)."
+
+#: lib/nf_sub_event.php:186
+msgid "Only to me, the Super Admin"
+msgstr "Moi uniquement, le Super Admin"
+
+#: lib/nf_sub_event.php:187
+msgid "To the administrator of the site where originated the alert (default)"
+msgstr "L'Administrateur du site d’où provient l'alerte (défaut)"
+
+#: lib/nf_sub_event.php:188
+msgid "Other(s)"
+msgstr "Autre(s)"
+
+#: lib/nf_sub_event.php:200
+msgid "Save Event Notifications"
+msgstr "Sauvegarder les Options"
+
+#: lib/nf_sub_filecheck.php:57 lib/nf_sub_filecheck.php:90
+msgid "You did not create any snapshot yet."
+msgstr "Vous n'avez pas encore créé d'instantané."
+
+#: lib/nf_sub_filecheck.php:66
+msgid "Snapshot successfully created."
+msgstr "L'instantané a bien été créé."
+
+#: lib/nf_sub_filecheck.php:75
+msgid "Snapshot file successfully deleted."
+msgstr "L'instantané a bien été supprimé."
+
+#: lib/nf_sub_filecheck.php:95
+msgid "You must create a snapshot first."
+msgstr "Vous devez d'abord créer un instantané."
+
+#: lib/nf_sub_filecheck.php:106 lib/nf_sub_filecheck.php:824
+msgid "NinjaFirewall detected that changes were made to your files."
+msgstr "NinjaFirewall a détecté des changements dans vos fichiers."
+
+#: lib/nf_sub_filecheck.php:109
+msgid "No changes detected."
+msgstr "Aucun changement n'a été détecté."
+
+#: lib/nf_sub_filecheck.php:132
+msgid "File Check"
+msgstr "File Check"
+
+#: lib/nf_sub_filecheck.php:149
+msgid "Create a snapshot of all files stored in that directory"
+msgstr ""
+"Créer un instantané de tous les fichiers se trouvant dans ce répertoire"
+
+#: lib/nf_sub_filecheck.php:160
+msgid "Exclude the following files/folders"
+msgstr "Exclure les fichiers / dossiers suivants"
+
+#: lib/nf_sub_filecheck.php:161 ninjafirewall.php:2670
+msgid "e.g.,"
+msgstr "par ex."
+
+#: lib/nf_sub_filecheck.php:161
+msgid ""
+"Full or partial case-sensitive string(s). Multiple values must be comma-"
+"separated"
+msgstr ""
+"Chaîne de caractères complète ou partielle, sensible à la casse. Plusieurs "
+"valeurs doivent être séparées par des virgules"
+
+#: lib/nf_sub_filecheck.php:166
+msgid "Do not follow symbolic links (default)"
+msgstr "Ne pas suivre les liens symboliques (défaut)"
+
+#: lib/nf_sub_filecheck.php:171
+msgid "Create Snapshot"
+msgstr "Créer un Instantané"
+
+#: lib/nf_sub_filecheck.php:291
+msgid "Delete the current snapshot ?"
+msgstr "Supprimer l'instantané actuel ?"
+
+#: lib/nf_sub_filecheck.php:305
+msgid "Last snapshot"
+msgstr "Dernier instantané"
+
+#: lib/nf_sub_filecheck.php:307
+#, php-format
+msgid "Created on: %s"
+msgstr "Créé le : %s"
+
+#: lib/nf_sub_filecheck.php:308
+#, php-format
+msgid "Total files: %s "
+msgstr "Nombre de fichiers : %s "
+
+#: lib/nf_sub_filecheck.php:310
+msgid "Directory:"
+msgstr "Répertoire&nbsp;:"
+
+#: lib/nf_sub_filecheck.php:314
+msgid "Exclusion:"
+msgstr "Exclusion&nbsp;:"
+
+#: lib/nf_sub_filecheck.php:319
+msgid "Symlinks:"
+msgstr "Lien symboliques :"
+
+#: lib/nf_sub_filecheck.php:321
+msgid "follow"
+msgstr "suivre"
+
+#: lib/nf_sub_filecheck.php:323
+msgid "do not follow"
+msgstr "ne pas suivre"
+
+#: lib/nf_sub_filecheck.php:328
+#, php-format
+msgid "Processing time: %s seconds"
+msgstr "Temps de traitement : %s secondes"
+
+#: lib/nf_sub_filecheck.php:333
+msgid "Download Snapshot"
+msgstr "Télécharger l'instantané"
+
+#: lib/nf_sub_filecheck.php:333
+msgid "Delete Snapshot"
+msgstr "Supprimer l'instantané"
+
+#: lib/nf_sub_filecheck.php:338
+msgid "Last changes"
+msgstr "Dernières modifications"
+
+#: lib/nf_sub_filecheck.php:345
+#, php-format
+msgid "New files: %s"
+msgstr "Nouveaux fichiers : %s"
+
+#: lib/nf_sub_filecheck.php:346
+#, php-format
+msgid "Deleted files: %s"
+msgstr "Fichiers supprimés : %s"
+
+#: lib/nf_sub_filecheck.php:347
+#, php-format
+msgid "Modified files: %s"
+msgstr "Fichiers modifiés : %s"
+
+#: lib/nf_sub_filecheck.php:351
+msgid "View Changes"
+msgstr "Voir les Modifications"
+
+#: lib/nf_sub_filecheck.php:355
+msgid "Download Changes"
+msgstr "Télécharger les Modifications"
+
+#: lib/nf_sub_filecheck.php:365
+msgid "Click a file to get more info about it."
+msgstr "Cliquez sur un fichier pour obtenir plus d'informations à son sujet."
+
+#: lib/nf_sub_filecheck.php:368
+msgid "New files:"
+msgstr "Nouveaux fichiers :"
+
+#: lib/nf_sub_filecheck.php:377 lib/nf_sub_filecheck.php:430
+msgid "Size"
+msgstr "Taille"
+
+#: lib/nf_sub_filecheck.php:381 lib/nf_sub_filecheck.php:435
+msgid "Access"
+msgstr "Accès"
+
+#: lib/nf_sub_filecheck.php:385 lib/nf_sub_filecheck.php:440
+msgid "Uid / Gid"
+msgstr "Uid / Gid"
+
+#: lib/nf_sub_filecheck.php:389 lib/nf_sub_filecheck.php:445
+msgid "Modify (mtime)"
+msgstr "Modification (mtime)"
+
+#: lib/nf_sub_filecheck.php:393 lib/nf_sub_filecheck.php:450
+msgid "Change"
+msgstr "Changement"
+
+#: lib/nf_sub_filecheck.php:403
+msgid "Deleted files:"
+msgstr "Fichiers supprimés :"
+
+#: lib/nf_sub_filecheck.php:416
+msgid "Modified files:"
+msgstr "Fichiers modifiés :"
+
+#: lib/nf_sub_filecheck.php:426
+msgid "Old"
+msgstr "Ancien"
+
+#: lib/nf_sub_filecheck.php:427
+msgid "New"
+msgstr "Nouveau"
+
+#: lib/nf_sub_filecheck.php:464
+msgid "None"
+msgstr "Aucune"
+
+#: lib/nf_sub_filecheck.php:474
+msgid "Scan System For File Changes"
+msgstr "Lancer l'analyse des fichiers"
+
+#: lib/nf_sub_filecheck.php:491
+msgid "Options"
+msgstr "Options"
+
+#: lib/nf_sub_filecheck.php:498
+#, php-format
+msgid ""
+"It seems that %s is enabled. Ensure you have another way to run WP-Cron, "
+"otherwise NinjaFirewall scheduled scans will not work."
+msgstr ""
+"Il semble que %s est activé. Assurez vous de pouvoir exécuter WP-Cron, sinon "
+"File Check ne pourra pas se lancer automatiquement."
+
+#: lib/nf_sub_filecheck.php:504
+msgid "Enable scheduled scans"
+msgstr "Lancer File Check automatiquement"
+
+#: lib/nf_sub_filecheck.php:506 lib/nf_sub_updates.php:98
+#: ninjafirewall.php:1371 ninjafirewall.php:1414 ninjafirewall.php:1447
+#: ninjafirewall.php:1485 ninjafirewall.php:1573 ninjafirewall.php:1593
+#: ninjafirewall.php:1726 ninjafirewall.php:2026 ninjafirewall.php:2036
+#: ninjafirewall.php:2046 ninjafirewall.php:2056 ninjafirewall.php:2066
+#: ninjafirewall.php:2982
+msgid "No (default)"
+msgstr "Non (défaut)"
+
+#: lib/nf_sub_filecheck.php:507 lib/nf_sub_updates.php:116
+msgid "Hourly"
+msgstr "Une fois par heure"
+
+#: lib/nf_sub_filecheck.php:508 lib/nf_sub_updates.php:117
+msgid "Twicedaily"
+msgstr "Deux fois par jour"
+
+#: lib/nf_sub_filecheck.php:509 lib/nf_sub_updates.php:118
+msgid "Daily"
+msgstr "Tous les jours"
+
+#: lib/nf_sub_filecheck.php:516
+#, php-format
+msgid ""
+"Next scan will start in approximately %s day(s), %s hour(s), %s minute(s) "
+"and %s second(s)."
+msgstr ""
+"La prochaine analyse commencera dans %s jour(s), %s heure(s), %s minute(s) "
+"et %s seconde(s)."
+
+#: lib/nf_sub_filecheck.php:523
+msgid ""
+"The next scheduled scan date is in the past! WordPress wp-cron may not be "
+"working or may have been disabled."
+msgstr ""
+"La date de la prochaine analyse est dans le passé&nbsp;! Essayez de "
+"recharger cette page, sinon vérifiez que WP-Cron n'a pas été désactivé."
+
+#: lib/nf_sub_filecheck.php:531
+msgid "Scheduled scan report"
+msgstr "Rapport d'analyse"
+
+#: lib/nf_sub_filecheck.php:533
+msgid "Send me a report by email only if changes are detected (default)"
+msgstr ""
+"Envoyez-moi un rapport uniquement si des changements ont été détectés "
+"(défaut)"
+
+#: lib/nf_sub_filecheck.php:534
+msgid "Always send me a report by email after a scheduled scan"
+msgstr "Envoyez-moi toujours un rapport après une analyse automatique"
+
+#: lib/nf_sub_filecheck.php:539
+msgid "Save Scan Options"
+msgstr "Sauvegarder les Options"
+
+#: lib/nf_sub_filecheck.php:551
+msgid "Enter the full path to the directory to be scanned."
+msgstr "Entrez le chemin complet vers le répertoire à scanner."
+
+#: lib/nf_sub_filecheck.php:557
+#, php-format
+msgid "The directory %s does not exist."
+msgstr "Le répertoire %s n'existe pas."
+
+#: lib/nf_sub_filecheck.php:560
+#, php-format
+msgid "The directory %s is not readable."
+msgstr "Le répertoire %s n'est pas lisible."
+
+#: lib/nf_sub_filecheck.php:590
+#, php-format
+msgid "Unable to create %s."
+msgstr "Impossible de créer %s."
+
+#: lib/nf_sub_filecheck.php:601
+#, php-format
+msgid "Cannot write to %s."
+msgstr "Impossible d'écrire dans %s."
+
+#: lib/nf_sub_filecheck.php:631
+#, php-format
+msgid "Error : cannot open %s directory."
+msgstr "Erreur : impossible d'ouvrir le répertoire %s."
+
+#: lib/nf_sub_filecheck.php:634
+#, php-format
+msgid "Error : %s directory is not readable."
+msgstr "Erreur : le répertoire %s n'est pas lisible."
+
+#: lib/nf_sub_filecheck.php:647
+#, php-format
+msgid "Missing options line %s, please try again."
+msgstr "Option manquante (ligne %s). Veuillez essayer à nouveau."
+
+#: lib/nf_sub_filecheck.php:657
+#, php-format
+msgid "Cannot create %s."
+msgstr "Impossible de créer %s."
+
+#: lib/nf_sub_filecheck.php:674
+msgid "Error reading old snapshot file."
+msgstr "Erreur lors de la lecture du fichier de l'ancien instantané."
+
+#: lib/nf_sub_filecheck.php:685
+msgid "Error reading new snapshot file."
+msgstr "Erreur lors de la lecture du fichier du nouvel instantané."
+
+#: lib/nf_sub_filecheck.php:801 ninjafirewall.php:269
+msgid "New file"
+msgstr "Nouveau fichier"
+
+#: lib/nf_sub_filecheck.php:802 ninjafirewall.php:270
+msgid "Deleted file"
+msgstr "Fichier supprimé"
+
+#: lib/nf_sub_filecheck.php:803 ninjafirewall.php:271
+msgid "Modified file"
+msgstr "Fichier modifié"
+
+#: lib/nf_sub_filecheck.php:823
+msgid "[NinjaFirewall] Alert: File Check detection"
+msgstr "[NinjaFirewall] Alerte: Détection File Check"
+
+#: lib/nf_sub_filecheck.php:826 lib/nf_sub_filecheck.php:828
+#: lib/nf_sub_filecheck.php:844 lib/nf_sub_filecheck.php:846
+#: lib/nf_sub_updates.php:449 lib/nf_sub_updates.php:451 lib/nfw_misc.php:205
+#: lib/nfw_misc.php:207
+msgid "Blog:"
+msgstr "Blog :"
+
+#: lib/nf_sub_filecheck.php:830 lib/nf_sub_filecheck.php:848
+#: lib/nf_sub_updates.php:454
+#, php-format
+msgid "Date: %s"
+msgstr "Date : %s"
+
+#: lib/nf_sub_filecheck.php:831
+msgid "See attached file for details."
+msgstr "Voir le fichier joint pour plus de détails."
+
+#: lib/nf_sub_filecheck.php:833 lib/nf_sub_filecheck.php:850
+#: lib/nf_sub_updates.php:456 ninjafirewall.php:3549
+msgid "Support forum:"
+msgstr "Forum :"
+
+#: lib/nf_sub_filecheck.php:841
+msgid "[NinjaFirewall] File Check report"
+msgstr "[NinjaFirewall] Rapport de File Check"
+
+#: lib/nf_sub_filecheck.php:842
+msgid "NinjaFirewall did not detect changes in your files."
+msgstr "NinjaFirewall n'a pas détecté de changements dans vos fichiers."
+
+#: lib/nf_sub_livelog.php:31
+msgid ""
+"Error: NinjaFirewall must be enabled and working in order to use the Live "
+"Log feature."
+msgstr ""
+"Erreur : NinjaFirewall doit être activé pour pouvoir utiliser Live Log."
+
+#: lib/nf_sub_livelog.php:34
+msgid ""
+"Error: You must be whitelisted in order to use that feature: click on the <a "
+"href=\"?page=nfsubpolicies\">Firewall Policies</a> menu and ensure that the "
+"\"Do not block WordPress administrator\" option is enabled."
+msgstr ""
+"Erreur: Vous devez être dans la liste blanche afin de pouvoir utiliser Live "
+"Log. Cliquez sur le menu <a href=\"?page=nfsubpolicies\">Politiques du Pare-"
+"feu</a> et assurez vous que l'option \"Ne pas bloquer l'Administrateur\" est "
+"activée."
+
+#: lib/nf_sub_livelog.php:40 lib/nf_sub_livelog.php:234
+msgid "Live Log"
+msgstr "Live Log"
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:99
+msgid "Loading..."
+msgstr "Chargement..."
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:119 lib/nf_sub_livelog.php:158
+#: lib/nf_sub_livelog.php:252
+msgid "No traffic yet, please wait..."
+msgstr "Aucun visiteur actuellement, veuillez patienter..."
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:124
+msgid "Error: Live Log did not receive the expected response from your server:"
+msgstr "Erreur : le serveur distant n\\'a pas retourné la réponse attendue :"
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:145
+msgid "Error: URL does not seem to exist:"
+msgstr "Erreur : l\\'URL ne semble pas valide :"
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:149
+msgid "Error: cannot find your log file. Try to reload this page."
+msgstr ""
+"Erreur : impossible de trouver le fichier log. Essayez de recharger cette "
+"page."
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:153
+msgid "Error: the HTTP server returned the following error code:"
+msgstr "Erreur : le serveur HTTP a retourné le code d\\'erreur suivant :"
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:160 lib/nf_sub_livelog.php:175
+#: lib/nf_sub_livelog.php:199
+msgid "Sleeping"
+msgstr "Rafraîchissement dans"
+
+#. translators: quotes ('") must be escaped
+#: lib/nf_sub_livelog.php:160 lib/nf_sub_livelog.php:177
+#: lib/nf_sub_livelog.php:201
+msgid "seconds"
+msgstr "secondes"
+
+#: lib/nf_sub_livelog.php:256
+msgid "On"
+msgstr "Activer"
+
+#: lib/nf_sub_livelog.php:256
+msgid "Off"
+msgstr "Stopper"
+
+#: lib/nf_sub_livelog.php:256
+msgid "Refresh rate:"
+msgstr "Intervalle :"
+
+#: lib/nf_sub_livelog.php:258
+msgid "5 seconds"
+msgstr "5 secondes"
+
+#: lib/nf_sub_livelog.php:259
+msgid "10 seconds"
+msgstr "10 secondes"
+
+#: lib/nf_sub_livelog.php:260
+msgid "20 seconds"
+msgstr "20 secondes"
+
+#: lib/nf_sub_livelog.php:261
+msgid "45 seconds"
+msgstr "45 secondes"
+
+#: lib/nf_sub_livelog.php:262
+msgid "Autoscrolling"
+msgstr "Défilement auto."
+
+#: lib/nf_sub_livelog.php:268
+msgid "Live Log will not include yourself or any other whitelisted users."
+msgstr "Live Log n'affiche pas les connexions de l'administrateur."
+
+#: lib/nf_sub_livelog.php:291
+msgid "Live Log options"
+msgstr "Options"
+
+#: lib/nf_sub_livelog.php:294
+msgid "Format"
+msgstr "Format d'affichage"
+
+#: lib/nf_sub_livelog.php:297
+msgid "Custom"
+msgstr "Autre"
+
+#: lib/nf_sub_livelog.php:298
+msgid "See contextual help for available log format."
+msgstr ""
+"Consultez l'aide contextuelle pour avoir plus d'information sur les formats "
+"disponibles."
+
+#: lib/nf_sub_livelog.php:302
+msgid "Display"
+msgstr "Afficher"
+
+#: lib/nf_sub_livelog.php:305
+msgid "HTTP and HTTPS traffic (default)"
+msgstr "Trafic HTTP et HTTPS (défaut)"
+
+#: lib/nf_sub_livelog.php:306
+msgid "HTTP traffic only"
+msgstr "Trafic HTTP uniquement"
+
+#: lib/nf_sub_livelog.php:307
+msgid "HTTPS traffic only"
+msgstr "Trafic HTTPS uniquement"
+
+#: lib/nf_sub_livelog.php:312
+msgid "Timezone"
+msgstr "Fuseau horaire"
+
+#: lib/nf_sub_livelog.php:327
+msgid "Save Live Log Options"
+msgstr "Sauvegarder les Options"
+
+#: lib/nf_sub_livelog.php:351
+msgid "Error: please enter the custom log format."
+msgstr "Erreur : veuillez entrer le format d'affichage."
+
+#: lib/nf_sub_log.php:64
+msgid ""
+"logfile is not writable. Please chmod it and its parent directory to 0777"
+msgstr ""
+"le fichier du journal est en lecture seule. Veuillez changer ses permissions "
+"ainsi que celles du répertoire parent (par ex. 0777)."
+
+#: lib/nf_sub_log.php:68
+msgid "log directory is not writable. Please chmod it to 0777"
+msgstr ""
+"le répertoire du journal est en lecture seule. Veuillez changer ses "
+"permissions (par ex. 0777)"
+
+#: lib/nf_sub_log.php:78
+msgid "Error"
+msgstr "Erreur"
+
+#: lib/nf_sub_log.php:83
+msgid "You do not have any log for the current month yet."
+msgstr "Vous n'avez pas encore de journal pour le mois en cours."
+
+#: lib/nf_sub_log.php:88
+msgid "Fatal error"
+msgstr "Erreur fatale"
+
+#: lib/nf_sub_log.php:88
+msgid "cannot open the log"
+msgstr "Impossible d'ouvrir le fichier journal"
+
+#: lib/nf_sub_log.php:105
+msgid "Warning"
+msgstr "Attention"
+
+#: lib/nf_sub_log.php:106
+#, php-format
+msgid "your log has %s lines. I will display the last 500 lines only."
+msgstr ""
+"votre journal contient %s lignes. Seules les 500 dernières lignes vont être "
+"affichées."
+
+#: lib/nf_sub_log.php:112
+msgid "Viewing :"
+msgstr "Visualisation du journal :"
+
+#: lib/nf_sub_log.php:119
+msgid " bytes"
+msgstr "octets"
+
+#: lib/nf_sub_log.php:161
+msgid "The log is rotated monthly"
+msgstr ""
+"NinjaFirewall effectue une rotation automatique du journal le premier jour "
+"de chaque mois."
+
+#: lib/nf_sub_options.php:37
+msgid "Refresh preview"
+msgstr "Réactualiser"
+
+#: lib/nf_sub_options.php:46 ninjafirewall.php:799
+msgid "Firewall Options"
+msgstr "Options du Pare-feu"
+
+#: lib/nf_sub_options.php:76 lib/nf_sub_options.php:85
+#: lib/nf_sub_options.php:100 lib/nf_sub_options.php:110 ninjafirewall.php:993
+msgid "Enabled"
+msgstr "Activé"
+
+#: lib/nf_sub_options.php:77 lib/nf_sub_options.php:86
+msgid "Disabled"
+msgstr "Désactivé"
+
+#: lib/nf_sub_options.php:87 lib/nf_sub_options.php:102
+msgid "Warning: your site is not protected !"
+msgstr "Attention, votre site n'est pas protégé&nbsp;!"
+
+#: lib/nf_sub_options.php:101 lib/nf_sub_options.php:111
+msgid "Disabled (default)"
+msgstr "Désactivé (défaut)"
+
+#: lib/nf_sub_options.php:123
+msgid "HTTP error code to return"
+msgstr "Code HTTP à retourner"
+
+#: lib/nf_sub_options.php:127
+msgid "400 Bad Request"
+msgstr "400 Bad Request"
+
+#: lib/nf_sub_options.php:128
+msgid "403 Forbidden (default)"
+msgstr "403 Forbidden (défaut)"
+
+#: lib/nf_sub_options.php:129
+msgid "404 Not Found"
+msgstr "404 Not Found"
+
+#: lib/nf_sub_options.php:130
+msgid "406 Not Acceptable"
+msgstr "406 Not Acceptable"
+
+#: lib/nf_sub_options.php:131
+msgid "500 Internal Server Error"
+msgstr "500 Internal Server Error"
+
+#: lib/nf_sub_options.php:132
+msgid "503 Service Unavailable"
+msgstr "503 Service Unavailable"
+
+#: lib/nf_sub_options.php:139
+msgid "Blocked user message"
+msgstr "Message pour les utilisateurs bloqués"
+
+#: lib/nf_sub_options.php:150
+msgid "Preview message"
+msgstr "Prévisualiser"
+
+#: lib/nf_sub_options.php:150
+msgid "Default message"
+msgstr "Message par défaut"
+
+#: lib/nf_sub_options.php:161
+msgid "Export configuration"
+msgstr "Exporter la configuration"
+
+#: lib/nf_sub_options.php:163
+msgid "Download"
+msgstr "Télécharger"
+
+#: lib/nf_sub_options.php:166
+msgid "Import configuration"
+msgstr "Importer la configuration"
+
+#: lib/nf_sub_options.php:169
+#, php-format
+msgid "Imported configuration must match plugin version %s."
+msgstr "La fichier importé doit être compatible avec la version %s."
+
+#: lib/nf_sub_options.php:170
+msgid "It will override all your current firewall options and rules."
+msgstr "Il remplacera toutes vos options et règles de pare-feu en vigueur."
+
+#: lib/nf_sub_options.php:176
+msgid "Save Firewall Options"
+msgstr "Sauvegarder les Options"
+
+#: lib/nf_sub_options.php:277
+#, php-format
+msgid "Uploaded file is either corrupted or its format is not supported (#%s)"
+msgstr ""
+"Le fichier importé est illisible ou son format n'est pas supporté (#%s)"
+
+#: lib/nf_sub_options.php:295
+msgid "The imported file is not compatible with that version of NinjaFirewall"
+msgstr ""
+"Le fichier importé n'est pas compatible avec cette version de NinjaFirewall"
+
+#: lib/nf_sub_statistics.php:30 ninjafirewall.php:794
+msgid "Statistics"
+msgstr "Statistiques"
+
+#: lib/nf_sub_statistics.php:76
+msgid "Cannot open logfile"
+msgstr "Impossible d'ouvrir le fichier journal"
+
+#: lib/nf_sub_statistics.php:87
+msgid "You do not have any stats for the current month yet."
+msgstr "Vous n'avez pas encore de statistiques pour le mois en cours."
+
+#: lib/nf_sub_statistics.php:117 lib/nfw_dashboard_widgets.php:49
+msgid "Blocked hacking attempts"
+msgstr "Tentatives de piratage bloquées"
+
+#: lib/nf_sub_statistics.php:121 lib/nfw_dashboard_widgets.php:53
+msgid "Hacking attempts severity"
+msgstr "Sévérité des attaques"
+
+#: lib/nf_sub_statistics.php:123
+msgid "Critical"
+msgstr "Critique"
+
+#: lib/nf_sub_statistics.php:129
+msgid "High"
+msgstr "Elevé"
+
+#: lib/nf_sub_statistics.php:135
+msgid "Medium"
+msgstr "Moyen"
+
+#: lib/nf_sub_statistics.php:144 lib/nfw_dashboard_widgets.php:81
+msgid "Uploaded files"
+msgstr "Fichiers téléchargés (upload)"
+
+#: lib/nf_sub_statistics.php:149
+msgid "Average time per request"
+msgstr "Durée moyenne par requête"
+
+#: lib/nf_sub_statistics.php:153
+msgid "Fastest request"
+msgstr "Requête la plus rapide"
+
+#: lib/nf_sub_statistics.php:157
+msgid "Slowest request"
+msgstr "Requête la plus lente"
+
+#: lib/nf_sub_statistics.php:185
+msgid "Select monthly stats to view..."
+msgstr "Sélectionnez les statistiques à afficher"
+
+#: lib/nf_sub_updates.php:93
+msgid "Automatically update NinjaFirewall security rules"
+msgstr "Activer la mise à jour automatique des règles de sécurité"
+
+#: lib/nf_sub_updates.php:95 ninjafirewall.php:1219 ninjafirewall.php:1368
+#: ninjafirewall.php:1411 ninjafirewall.php:1444 ninjafirewall.php:1482
+#: ninjafirewall.php:1570 ninjafirewall.php:1590 ninjafirewall.php:1723
+#: ninjafirewall.php:2023 ninjafirewall.php:2033 ninjafirewall.php:2043
+#: ninjafirewall.php:2053 ninjafirewall.php:2063
+msgid "Yes"
+msgstr "Oui"
+
+#: lib/nf_sub_updates.php:107
+#, php-format
+msgid ""
+"It seems that %s is enabled. Ensure you have another way to run WP-Cron, "
+"otherwise NinjaFirewall automatic updates will not work."
+msgstr ""
+"Il semble que %s est activé. Assurez vous de pouvoir exécuter WP-Cron, sinon "
+"les mises à jour automatiques ne pourront pas être effectuées."
+
+#: lib/nf_sub_updates.php:114
+msgid "Check for updates"
+msgstr "Vérifier les mises à jour"
+
+#: lib/nf_sub_updates.php:125
+#, php-format
+msgid ""
+"Next scheduled update will start in approximately %s day, %s hour(s), %s "
+"minute(s) and %s seconds."
+msgstr ""
+"La prochaine vérification des mises à jour aura lieu dans %s jour, %s "
+"heure(s), %s minute(s) et %s secondes."
+
+#: lib/nf_sub_updates.php:132
+msgid ""
+"The next scheduled date is in the past! WordPress wp-cron may not be working "
+"or may have been disabled."
+msgstr ""
+"La date de la prochaine vérification des mises à jour est dans le "
+"passé&nbsp;! Essayez de recharger cette page, sinon vérifiez que WP-Cron n'a "
+"pas été désactivé."
+
+#: lib/nf_sub_updates.php:140
+msgid "Notification"
+msgstr "Notification"
+
+#: lib/nf_sub_updates.php:142
+msgid "Send me a report by email when security rules have been updated."
+msgstr ""
+"Envoyez-moi un rapport par e-mail lorsque les règles de sécurité ont été "
+"mises à jour."
+
+#: lib/nf_sub_updates.php:143
+msgid ""
+"Reports will be sent to the contact email address defined in the Event "
+"Notifications menu."
+msgstr ""
+"Les rapports seront envoyés à l'adresse e-mail définie dans la page "
+"\"Notifications d'Événement\"."
+
+#: lib/nf_sub_updates.php:149
+msgid "Save Updates Options"
+msgstr "Sauvegarder les Options"
+
+#: lib/nf_sub_updates.php:158
+msgid "The updates log is currently empty."
+msgstr "Le journal des mises à jour est vide."
+
+#: lib/nf_sub_updates.php:166
+msgid "Updates Log"
+msgstr "Journal des mises à jour"
+
+#: lib/nf_sub_updates.php:175
+msgid "Delete Log"
+msgstr "Supprimer le journal"
+
+#: lib/nf_sub_updates.php:181
+msgid "Log is flushed automatically."
+msgstr "Le journal est purgé automatiquement."
+
+#: lib/nf_sub_updates.php:272
+msgid "Error: Unable to unserialize the new rules."
+msgstr ""
+"Erreur : Impossible d'extraire les règles du fichier téléchargé (unable to "
+"unserialize the new rules)."
+
+#: lib/nf_sub_updates.php:280
+msgid "Error: Unserialized rules seem corrupted."
+msgstr ""
+"Erreur : Le fichier des règles téléchargé semblent corrompu (unserialized "
+"rules seem corrupted)."
+
+#: lib/nf_sub_updates.php:308
+#, php-format
+msgid "Security rules updated to version %s."
+msgstr "Les règles de sécurité ont été mises à jour vers la version %s."
+
+#: lib/nf_sub_updates.php:339
+msgid "Error: Unable to retrieve the new rules version."
+msgstr "Erreur : Impossible de récupérer la nouvelle version des règles."
+
+#: lib/nf_sub_updates.php:350
+msgid "Security rules are up-to-date."
+msgstr "Les règles de sécurité sont à jour."
+
+#: lib/nf_sub_updates.php:357
+#, php-format
+msgid "Error: Server returned a %s HTTP error code (#1)."
+msgstr "Erreur : Le serveur a retourné un code d'erreur HTTP %s (#1)."
+
+#: lib/nf_sub_updates.php:364 lib/nf_sub_updates.php:409
+msgid "Error: Unable to connect to WordPress server"
+msgstr "Erreur : Impossible de se connecter au serveur de WordPress"
+
+#: lib/nf_sub_updates.php:391
+#, php-format
+msgid "Error: The new rules versions do not match (%s != %s)."
+msgstr ""
+"Erreur : La versions des nouvelles règles ne correspond pas (%s != %s)."
+
+#: lib/nf_sub_updates.php:402
+#, php-format
+msgid "Error: Server returned a %s HTTP error code (#2)."
+msgstr "Erreur : Le serveur a retourné un code d'erreur HTTP %s (#2)."
+
+#: lib/nf_sub_updates.php:446
+msgid "[NinjaFirewall] Security rules update"
+msgstr "[NinjaFirewall] Mise à jour des règles de sécurité"
+
+#: lib/nf_sub_updates.php:447
+msgid "NinjaFirewall security rules have been updated:"
+msgstr "Les règles de sécurité de NinjaFirewall ont été mises à jour :"
+
+#: lib/nf_sub_updates.php:453
+msgid "Rules version:"
+msgstr "Version des règles :"
+
+#: lib/nf_sub_wplus.php:37
+msgid "Need more security? Check out NinjaFirewall"
+msgstr "Besoin de plus de sécurité&nbsp;? Venez découvrir NinjaFirewall"
+
+#. translators: [NinjaFirewall] is a supercharged edition...
+#: lib/nf_sub_wplus.php:41
+msgid ""
+"is a supercharged edition of our Web Application Firewall. It adds many new "
+"exciting features and blazing fast performances to make it the fastest and "
+"most advanced security plugin for WordPress."
+msgstr ""
+"est une version encore plus musclée de notre pare-feu applicatif. Elle offre "
+"de meilleures performances et contient de nouvelles fonctionnalités qui en "
+"font l'extension de sécurité pour WordPress la plus avancée et puissante sur "
+"le marché."
+
+#: lib/nf_sub_wplus.php:46
+msgid "Access Control"
+msgstr "Contrôle d'Accès"
+
+#: lib/nf_sub_wplus.php:47
+msgid ""
+"<b>Access Control</b> is a powerful set of directives that can be used to "
+"allow or restrict access to your blog, depending on the <strong>User Role</"
+"strong>, <strong>IP</strong>, <strong>Geolocation</strong>, "
+"<strong>Requested URL</strong>, <strong>User-agent</strong> and visitors "
+"behavior (<strong>Rate Limiting</strong>). Those directives will be "
+"processed before the Firewall Policies and NinjaFirewall's built-in security "
+"rules."
+msgstr ""
+"Le <b>Contrôle d'Accès</b> est un puissant ensemble de directives qui peut "
+"être utilisé pour autoriser ou restreindre l'accès à votre blog selon de "
+"nombreux critères&nbsp;: <strong>Rôle</strong> de l'utilisateur, "
+"<strong>adresse IP</strong>, <strong>Géolocalisation</strong>, <strong>URL "
+"demandée</strong>, <strong>User-agent</strong> et le comportement des "
+"visiteurs (<strong>Limitation du trafic</strong>). "
+
+#: lib/nf_sub_wplus.php:49
+msgid ""
+"Its main configuration allows you to whitelist WordPress users depending on "
+"their roles, to select the source IP (useful if your site is using a CDN or "
+"behind a reverse-proxy/load balancer), and the HTTP methods all directives "
+"should apply to:"
+msgstr ""
+"Sa configuration principale vous permet de créer une  liste blanche des "
+"utilisateurs de WordPress en fonction de leurs rôles, de sélectionner "
+"l'adresse IP source (utile si votre site utilise un CDN ou un équilibreur de "
+"charge), et les méthodes HTTP auxquelles s'appliqueront toutes les "
+"directives&nbsp;:"
+
+#: lib/nf_sub_wplus.php:54
+msgid ""
+"<b>Access Control</b> can use geolocation to block visitors from specific "
+"countries. If you have a theme or a plugin that needs to know your visitors "
+"location, you can even ask NinjaFirewall to append the country code to the "
+"PHP headers:"
+msgstr ""
+"Le <b>Contrôle d'Accès</b> peut utiliser la géolocalisation pour bloquer les "
+"visiteurs en provenance de pays spécifiques. Si vous avez un thème ou une "
+"extension qui nécessite de géolocaliser vos visiteurs, vous pouvez même "
+"demander à NinjaFirewall d’insérer le code à deux lettres du pays dans les "
+"en-têtes PHP&nbsp;:"
+
+#: lib/nf_sub_wplus.php:59
+msgid ""
+"<b>Access Control</b> can be used to whitelist/blacklist an IP or any part "
+"of it. NinjaFirewall natively supports IPv4 and IPv6 protocols, for both "
+"public and private addresses:"
+msgstr ""
+"Le <b>Contrôle d'Accès</b> peut immédiatement accepter ou bloquer une "
+"adresse IP ou une partie de celle-ci. NinjaFirewall est compatible avec "
+"l'IPv4 et l'IPv6&nbsp;:"
+
+#: lib/nf_sub_wplus.php:64
+msgid ""
+"<b>Access Control</b> can slow down aggressive bots, crawlers, web scrapers "
+"or even small HTTP DoS attacks with its <strong>Rate-Limiting</strong> "
+"feature."
+msgstr ""
+"Le <b>Contrôle d'Accès</b> vous permet de ralentir les bots, crawlers, web "
+"scrapers ou même de petites attaques HTTP avec son option <strong>Limiter le "
+"trafic</strong>."
+
+#: lib/nf_sub_wplus.php:66
+msgid ""
+"Because it can block attackers <strong>before WordPress and all its plugins "
+"are loaded</strong> and can handle thousands of HTTP requests per second, "
+"NinjaFirewall will save precious bandwidth and reduce your server load."
+msgstr ""
+"Parce qu'il peut bloquer les attaques <strong>avant que WordPress et ses "
+"extensions ne soient chargés</strong> et peut gérer un très grand nombre de "
+"requêtes HTTP par seconde, NinjaFirewall vous fera économiser de la bande "
+"passante et permettra de réduire la charge du serveur."
+
+#: lib/nf_sub_wplus.php:71
+msgid ""
+"<b>URL Access Control</b> lets you permanently allow/block any access to one "
+"or more PHP scripts based on their path or name:"
+msgstr ""
+"Le <b>Contrôle d'accès par URL</b> vous permet d'autoriser / bloquer tout "
+"accès à un ou plusieurs scripts PHP basé sur leur chemin ou leur nom&nbsp;:"
+
+#: lib/nf_sub_wplus.php:76
+msgid ""
+"<b>Bots Access Control</b> allows you block bots, scanners and various "
+"annoying crawlers:"
+msgstr ""
+"Avec le <b>Contrôle d'accès par Bot</b> vous pouvez bloquer les robots, "
+"scanners et autres robots ennuyeux&nbsp;:"
+
+#: lib/nf_sub_wplus.php:82
+msgid ""
+"If NinjaFirewall can hook and scan incoming requests, the <b><font color="
+"\"#21759B\">WP+</font> Edition</b> can also hook the response body (i.e., "
+"the output of the HTML page right before it is sent to your visitors "
+"browser) and search it for some specific keywords. Such a filter can be "
+"useful to detect hacking or malware patterns injected into your HTML page "
+"(text strings, spam links, malicious JavaScript code), hackers shell script, "
+"redirections and even errors (PHP/MySQL errors). Some suggested keywords as "
+"well as a default list are included."
+msgstr ""
+"Si NinjaFirewall peut filtrer les requêtes HTTP entrantes, la version "
+"<b><font color=\"#21759B\">WP+</font> Edition</b> peut aussi intercepter les "
+"requêtes sortantes, c'est à dire le contenu de la page HTML juste avant que "
+"celui-ci ne soit envoyé au navigateur de l'utilisateur. Ce type de filtre "
+"est particulièrement intéressant pour détecter du code malveillant injectés "
+"dans vos pages HTML (texte, liens, code JavaScript etc), des scripts "
+"utilisés par les hackers (shell, backdoor) et même des erreurs (PHP, MySQL). "
+
+#: lib/nf_sub_wplus.php:84
+msgid ""
+"In the case of a positive detection, NinjaFirewall will not block the "
+"response body but will send you an alert by email. It can even attach the "
+"whole HTML source of the page for your review:"
+msgstr ""
+"En cas de détection positive, NinjaFirewall ne bloquera pas la requête mais "
+"vous enverra immédiatement une alerte par e-mail&nbsp;:"
+
+#: lib/nf_sub_wplus.php:90
+msgid ""
+"NinjaFirewall (<font color=\"#21759B\">WP+</font> Edition) can protect your "
+"blog comment and registration forms against spam. The protection is totally "
+"transparent to your visitors and does not require any interaction: no "
+"CAPTCHA, no math puzzles or trivia questions. Extremely easy to activate, "
+"but powerful enough to make spam bots life as miserable as possible:"
+msgstr ""
+"NinjaFirewall (<font color=\"#21759B\">WP+</font> Edition) peut protéger les "
+"formulaires de commentaire et d'inscription de votre blog contre le spam. La "
+"protection est totalement transparente pour vos visiteurs et ne nécessite ni "
+"CAPTCHA ni interaction de leur part. Extrêmement facile à activer, mais "
+"assez puissante pour ne laisser aucune chance aux spammeurs&nbsp;:"
+
+#: lib/nf_sub_wplus.php:93
+msgid ""
+"NinjaFirewall antispam feature works only with WordPress built-in comment "
+"and registration forms."
+msgstr ""
+"L'option anti-spam de NinjaFirewall ne fonctionne qu'avec les formulaires "
+"intégrés à WordPress (commentaire et d'inscription)."
+
+#: lib/nf_sub_wplus.php:97
+msgid "Improved features"
+msgstr "Fonctionnalités améliorées"
+
+#: lib/nf_sub_wplus.php:98
+msgid "File uploads:"
+msgstr "Téléchargements&nbsp;:"
+
+#: lib/nf_sub_wplus.php:99
+msgid ""
+"NinjaFirewall (<font color=\"#21759B\">WP+</font> Edition) makes it possible "
+"to allow uploads while rejecting potentially dangerous files: system files (."
+"htaccess, .htpasswd. PHP INI), scripts (bash/shell, PHP, Ruby, Perl/CGI, "
+"Python), C/C++ source code and Unix/Linux binary files (ELF). You can easily "
+"limit the size of each uploaded file too, without having to modify your PHP "
+"configuration:"
+msgstr ""
+"NinjaFirewall (<font color=\"#21759B\">WP+</font> Edition) vous permet "
+"d'autoriser ou d'interdire tout téléchargement de fichiers vers votre site, "
+"ou bien de bloquer uniquement les fichiers potentiellement dangereux : "
+"scripts (PHP, CGI, Ruby, Python, bash/shell), code source C/C++, ELF "
+"(fichiers exécutables pour Unix/Linux) et certains fichiers systèmes (."
+"htaccess, .htpasswd et PHP INI). Vous pouvez aussi sélectionner la taille "
+"maximale d'un fichier téléchargé, sans avoir à modifier la configuration de "
+"PHP&nbsp;:"
+
+#: lib/nf_sub_wplus.php:104
+msgid "Firewall Log:"
+msgstr "Journal du Pare-feu&nbsp;:"
+
+#: lib/nf_sub_wplus.php:106
+msgid ""
+"The log menu has been revamped too. You can disable the firewall log, delete "
+"the current one, enable its rotation based on the size of the file and, if "
+"any, view each rotated log separately. Quick filtering options are easily "
+"accessible from checkboxes:"
+msgstr ""
+"Le <b>Journal du Pare-feu</b> a été remanié. Vous pouvez maintenant le "
+"désactiver, le supprimer et permettre sa rotation en vous basant sur la "
+"taille du fichier. Enfin, des options de filtrage rapides sont facilement "
+"accessibles à partir de cases à cocher&nbsp;:"
+
+#: lib/nf_sub_wplus.php:111
+msgid "Shared Memory use:"
+msgstr "Utilisation de la mémoire partagée&nbsp;:"
+
+#: lib/nf_sub_wplus.php:113
+#, php-format
+msgid ""
+"Although NinjaFirewall is already <a href=\"%s\">much faster than other "
+"WordPress plugins</a>, the <b><font color=\"#21759B\">WP+</font> Edition</b> "
+"brings its performance to a whole new level by using Unix shared memory in "
+"order to speed things up even more."
+msgstr ""
+"Bien que NinjaFirewall soit <a href=\"%s\">plus rapide que la plupart des "
+"autres extensions WordPress</a>, la <b><font color=\"#21759B\">WP+</font> "
+"Edition</b> améliore encore plus ses performances en utilisant la mémoire "
+"partagée."
+
+#: lib/nf_sub_wplus.php:113
+msgid ""
+"This allows easier and faster inter-process communication between the "
+"firewall and the plugin part of NinjaFirewall and, because its data and "
+"configuration are stored in shared memory segments, the firewall does not "
+"need to connect to the database any more."
+msgstr ""
+"Cela permet au pare-feu et à son extension de communiquer par segment de "
+"mémoire partagée; les données de configuration de NinjaFirewall sont "
+"stockées en mémoire et le pare-feu n'a même plus besoin de se connecter à la "
+"base de données pour y accéder."
+
+#: lib/nf_sub_wplus.php:113
+msgid ""
+"This dramatically increases the processing speed (there is nothing faster "
+"than RAM), prevents blocking I/O and MySQL slow queries. On a very busy "
+"server like a multi-site network, the firewall processing speed will "
+"increase from 25% to 30%. It can be enabled from the \"Firewall Options\" "
+"menu:"
+msgstr ""
+"Cela augmente considérablement la vitesse de traitement (il n'y a rien de "
+"plus rapide que la mémoire), empêche le blocage des E/S et les requêtes "
+"lentes MySQL. Sur un serveur très sollicité comme un réseau multi-site, la "
+"vitesse de traitement de pare-feu va augmenter de 25% à 30%. Cette option "
+"peut être activé à partir de la  page \"Options du pare-feu\"&nbsp;:"
+
+#: lib/nf_sub_wplus.php:117
+msgid ""
+"This feature requires that PHP was compiled with the <code>--enable-shmop</"
+"code> parameter."
+msgstr ""
+"Cette fonction nécessite que PHP soit compilé avec le paramètre <code>--"
+"enable-shmop</code>."
+
+#: lib/nf_sub_wplus.php:127
+msgid ""
+"Learn more</a> about the <font color=\"#21759B\">WP+</font> edition unique "
+"features."
+msgstr ""
+"En savoir plus</a> sur les caractéristiques uniques de la version <font "
+"color=\"#21759B\">WP+</font>."
+
+#: lib/nf_sub_wplus.php:128
+msgid "Compare</a> the WP and <font color=\"#21759B\">WP+</font> editions."
+msgstr "Comparez</a> les versions WP et <font color=\"#21759B\">WP+</font>."
+
+#: lib/nfw_dashboard_widgets.php:27
+msgid "NinjaFirewall Statistics"
+msgstr "Statistiques de NinjaFirewall"
+
+#: lib/nfw_dashboard_widgets.php:55
+msgid "Critical:"
+msgstr "Critique :"
+
+#: lib/nfw_dashboard_widgets.php:63
+msgid "High:"
+msgstr "Elevé :"
+
+#: lib/nfw_dashboard_widgets.php:71
+msgid "Medium:"
+msgstr "Moyen :"
+
+#: lib/nfw_dashboard_widgets.php:87
+msgid "View firewall log"
+msgstr "Voir le journal du pare-feu"
+
+#: lib/nfw_misc.php:51 lib/nfw_misc.php:55
+msgid "NinjaFirewall error"
+msgstr "Error"
+
+#: lib/nfw_misc.php:52
+#, php-format
+msgid ""
+"%s directory cannot be created. Please review your installation and ensure "
+"that %s is writable."
+msgstr ""
+"Le répertoire %s ne peut pas être créé. Vérifiez votre installation et "
+"assurez vous que %s n'est pas en lecture seule."
+
+#: lib/nfw_misc.php:56
+#, php-format
+msgid ""
+"%s directory is read-only. Please review your installation and ensure that "
+"%s is writable."
+msgstr ""
+"Le répertoire %s est en lecture seule. Vérifiez votre installation et les "
+"permissions de %s."
+
+#: lib/nfw_misc.php:82 ninjafirewall.php:977
+msgid "unknown error"
+msgstr "erreur inconnue"
+
+#: lib/nfw_misc.php:84
+msgid "NinjaFirewall fatal error :"
+msgstr "NinjaFirewall erreur fatale :"
+
+#: lib/nfw_misc.php:85
+msgid "Review your installation, your site is not protected."
+msgstr "Vérifiez votre installation, votre site n'est pas protégé."
+
+#: lib/nfw_misc.php:132
+#, php-format
+msgid ""
+"<strong>ERROR</strong>: Invalid username or password.<br /><a href=\"%s"
+"\">Lost your password</a>?"
+msgstr ""
+"<strong>ERREUR</strong>: Identifiant ou mot de passe invalide.<br /><a href="
+"\"%s\">Mot de passe perdu</a> ?"
+
+#: lib/nfw_misc.php:202
+msgid "[NinjaFirewall] Alert: Database changes detected"
+msgstr "[NinjaFirewall] Alerte: Modification dans la base de données"
+
+#: lib/nfw_misc.php:203
+msgid ""
+"NinjaFirewall has detected that one or more administrator accounts were "
+"modified in the database:"
+msgstr ""
+"NinjaFirewall a détecté que un ou plusieurs comptes d'administrateur ont été "
+"modifiés dans la base de données:"
+
+#: lib/nfw_misc.php:209
+msgid "Date:"
+msgstr "Date :"
+
+#: lib/nfw_misc.php:210
+#, php-format
+msgid "Total administrators : %s"
+msgstr "Nombre d'administrateurs : %s"
+
+#: lib/nfw_misc.php:219
+msgid ""
+"If you cannot see any modifications in the above fields, it is likely that "
+"the administrator password was changed."
+msgstr ""
+"Si vous ne voyez pas de modifications dans les données ci-dessus, il est "
+"probable que le mot de passe administrateur a été changé."
+
+#: lib/nfw_misc.php:226
+msgid "administrator account"
+msgstr "compte administrateur"
+
+#: ninjafirewall.php:61
+msgid "A true Web Application Firewall to protect and secure WordPress."
+msgstr "Un véritable pare-feu applicatif pour sécuriser et protéger WordPress."
+
+#: ninjafirewall.php:72
+msgid "Cannot find WordPress configuration file"
+msgstr "Impossible de trouver le fichier de configuration de WordPress"
+
+#: ninjafirewall.php:73
+msgid "Cannot read WordPress configuration file"
+msgstr "Impossible de lire le fichier de configuration de WordPress"
+
+#: ninjafirewall.php:74
+msgid "Cannot retrieve WordPress database credentials"
+msgstr ""
+"Impossible de récupérer les informations d'identification de base de données "
+"WordPress"
+
+#: ninjafirewall.php:75
+msgid "Cannot connect to WordPress database"
+msgstr "Impossible de se connecter à la base de données WordPress"
+
+#: ninjafirewall.php:76
+msgid "Cannot retrieve user options from database (#2)"
+msgstr ""
+"Impossible de récupérer les options de l'utilisateur dans la base de données "
+"(#2)"
+
+#: ninjafirewall.php:77
+msgid "Cannot retrieve user options from database (#3)"
+msgstr ""
+"Impossible de récupérer les options de l'utilisateur dans la base de données "
+"(#3)"
+
+#: ninjafirewall.php:78
+msgid "Cannot retrieve user rules from database (#2)"
+msgstr ""
+"Impossible de récupérer les règles de l'utilisateur dans la base de données "
+"(#2)"
+
+#: ninjafirewall.php:79
+msgid "Cannot retrieve user rules from database (#3)"
+msgstr ""
+"Impossible de récupérer les règles de l'utilisateur dans la base de données "
+"(#3)"
+
+#: ninjafirewall.php:80
+msgid ""
+"The firewall has been disabled from the <a href=\"admin.php?page=nfsubopt"
+"\">administration console</a>"
+msgstr ""
+"Le pare-feu a été désactivé depuis son  <a href=\"admin.php?page=nfsubopt"
+"\">interface d'administration</a>"
+
+#: ninjafirewall.php:81
+msgid ""
+"Unable to communicate with the firewall. Please check your PHP INI settings"
+msgstr ""
+"Impossible de communiquer avec les pare-feu. Veuillez vérifiez votre fichier "
+"PHP INI."
+
+#: ninjafirewall.php:82
+msgid "Cannot retrieve user options from database (#1)"
+msgstr ""
+"Impossible de récupérer les options de l'utilisateur dans la base de données "
+"(#1)"
+
+#: ninjafirewall.php:83
+msgid "Cannot retrieve user rules from database (#1)"
+msgstr ""
+"Impossible de récupérer les règles de l'utilisateur dans la base de données "
+"(#1)"
+
+#: ninjafirewall.php:84
+#, php-format
+msgid ""
+"The firewall cannot access its log and cache folders. If you changed the "
+"name of WordPress %s or %s folders, you must define NinjaFirewall's built-in "
+"%s constant (see %s for more info)"
+msgstr ""
+"NinjaFirewall ne peut pas accéder à son répertoire cache. Si vous avez "
+"modifié les dossiers %s ou %s, vous DEVEZ définir la constante %s afin de "
+"résoudre ce problème (consultez %s pour plus de détails)"
+
+#: ninjafirewall.php:107
+#, php-format
+msgid ""
+"NinjaFirewall requires WordPress 3.3 or greater but your current version is "
+"%s."
+msgstr ""
+"NinjaFirewall nécessite au moins WordPress 3.3 mais votre version de "
+"WordPress est %s."
+
+#: ninjafirewall.php:112
+#, php-format
+msgid ""
+"NinjaFirewall requires PHP 5.3 or greater but your current version is %s."
+msgstr ""
+"NinjaFirewall nécessite au moins PHP 5.3 mais votre version de PHP est %s."
+
+#: ninjafirewall.php:117
+#, php-format
+msgid "NinjaFirewall requires the PHP %s extension."
+msgstr "NinjaFirewall nécessite l'extension PHP %s."
+
+#: ninjafirewall.php:125
+msgid ""
+"You have SAFE_MODE enabled. Please disable it, it is deprecated as of PHP "
+"5.3.0 (see http://php.net/safe-mode)."
+msgstr ""
+"Vous avez SAFE_MODE activé. Veuillez le désactiver, cette fonctionnalité est "
+"devenue obsolète depuis PHP 5.3 et a été supprimée depuis PHP 5.4 (cf. "
+"http://php.net/safe-mode)."
+
+#: ninjafirewall.php:130
+msgid "You are not allowed to activate NinjaFirewall."
+msgstr "Vous n’êtes pas autorisé à activer NinjaFirewall."
+
+#: ninjafirewall.php:135
+msgid "NinjaFirewall is not compatible with Windows."
+msgstr "NinjaFirewall n'est pas compatible avec Windows."
+
+#: ninjafirewall.php:588
+msgid "not in users list"
+msgstr "n'est pas dans la liste des utilisateurs"
+
+#: ninjafirewall.php:663
+msgid "Alert: WordPress console login"
+msgstr "Alerte : Connexion à WordPress"
+
+#: ninjafirewall.php:665 ninjafirewall.php:667 ninjafirewall.php:3537
+#: ninjafirewall.php:3539
+msgid "- Blog :"
+msgstr "- Blog :"
+
+#: ninjafirewall.php:669
+msgid "Someone just logged in to your WordPress admin console:"
+msgstr "Quelqu'un vient de se connecter à votre Tableau de bord de WordPress:"
+
+#: ninjafirewall.php:670 ninjafirewall.php:3544
+msgid "- User :"
+msgstr "- Nom  :"
+
+#: ninjafirewall.php:671 ninjafirewall.php:3545
+msgid "- IP   :"
+msgstr "- IP   :"
+
+#: ninjafirewall.php:672 ninjafirewall.php:3546
+msgid "- Date :"
+msgstr "- Date :"
+
+#: ninjafirewall.php:675
+msgid "Support forum"
+msgstr "Forum "
+
+#: ninjafirewall.php:753
+#, php-format
+msgid "Sorry %s, your request cannot be proceeded."
+msgstr "Désolé %s, votre requête ne peut pas aboutir."
+
+#: ninjafirewall.php:754
+msgid "For security reason, it was blocked and logged."
+msgstr "Pour des raisons de sécurité, elle a été bloquée et enregistrée."
+
+#: ninjafirewall.php:756
+msgid ""
+"If you think that was a mistake, please contact the<br />webmaster and "
+"enclose the following incident ID:"
+msgstr ""
+"Si vous pensez qu'il s'agit d'une erreur, veuillez contacter<br />le "
+"webmaster et joindre le numéro d'incident suivant:"
+
+#: ninjafirewall.php:789
+msgid "NinjaFirewall: Overview"
+msgstr "NinjaFirewall : Aperçu"
+
+#: ninjafirewall.php:794
+msgid "NinjaFirewall: Statistics"
+msgstr "NinjaFirewall : Statistiques"
+
+#: ninjafirewall.php:799
+msgid "NinjaFirewall: Firewall Options"
+msgstr "NinjaFirewall : Options du Pare-feu"
+
+#: ninjafirewall.php:804
+msgid "NinjaFirewall: Firewall Policies"
+msgstr "NinjaFirewall : Politiques du Pare-feu"
+
+#: ninjafirewall.php:819
+msgid "NinjaFirewall: Network"
+msgstr "NinjaFirewall : Réseau"
+
+#: ninjafirewall.php:824
+msgid "NinjaFirewall: Event Notifications"
+msgstr "NinjaFirewall : Notifications d’Événement"
+
+#: ninjafirewall.php:829
+msgid "NinjaFirewall: Log-in Protection"
+msgstr "NinjaFirewall : Page de Connexion"
+
+#: ninjafirewall.php:834
+msgid "NinjaFirewall: Firewall Log"
+msgstr "NinjaFirewall : Journal du Pare-feu"
+
+#: ninjafirewall.php:844
+msgid "NinjaFirewall: Rules Editor"
+msgstr "NinjaFirewall : Éditeur de Règles"
+
+#: ninjafirewall.php:849
+msgid "NinjaFirewall: Updates"
+msgstr "NinjaFirewall : Mises à Jour"
+
+#: ninjafirewall.php:858
+msgid "NinjaFirewall: About"
+msgstr "NinjaFirewall : À Propos"
+
+#: ninjafirewall.php:858
+msgid "About..."
+msgstr "À Propos..."
+
+#: ninjafirewall.php:905
+msgid "NinjaFirewall Settings"
+msgstr "Réglages de NinjaFirewall"
+
+#: ninjafirewall.php:914
+msgid "NinjaFirewall is enabled"
+msgstr "NinjaFirewall est activé"
+
+#: ninjafirewall.php:962
+msgid "Congratulations, NinjaFirewall is up and running!"
+msgstr "Félicitations, NinjaFirewall est bien activé&nbsp;!"
+
+#: ninjafirewall.php:963
+msgid ""
+"If you need help, click on the contextual <code>Help</code> menu tab located "
+"in the upper right corner of each page."
+msgstr ""
+"Si vous avez besoin d'aide, cliquez sur l'onglet <code>Aide</code> situé "
+"dans le coin supérieur droit de chaque page."
+
+#: ninjafirewall.php:981 ninjafirewall.php:991
+msgid "Firewall"
+msgstr "Pare-feu"
+
+#: ninjafirewall.php:1004
+msgid "Enabled."
+msgstr "Activé."
+
+#: ninjafirewall.php:1004
+msgid "Click here to turn Debugging Mode off"
+msgstr "Cliquez ici pour désactiver le mode Débogage"
+
+#: ninjafirewall.php:1010
+msgid "PHP SAPI"
+msgstr "PHP SAPI"
+
+#: ninjafirewall.php:1023 ninjafirewall.php:3524
+msgid "Version"
+msgstr "Version"
+
+#: ninjafirewall.php:1025
+msgid "security rules:"
+msgstr "règles de sécurité&nbsp;:"
+
+#: ninjafirewall.php:1032 ninjafirewall.php:1041
+msgid "Admin user"
+msgstr "Administrateur"
+
+#: ninjafirewall.php:1034
+#, php-format
+msgid ""
+"You are not whitelisted. Ensure that the \"Do not block WordPress "
+"administrator\" option is enabled in the <a href=\"%s\">Firewall Policies</"
+"a> menu, otherwise you will likely get blocked by the firewall while working "
+"from your administration dashboard."
+msgstr ""
+"Vous n'êtes pas dans la liste blanche. Assurez vous que l'option \"Ne pas "
+"bloquer l'Administrateur de WordPress\" est activée dans la page  <a href="
+"\"%s\">Politiques du Pare-feu</a>, sinon vous pourriez être bloqué par le "
+"pare-feu lorsque vous travaillez depuis votre Tableau de bord."
+
+#: ninjafirewall.php:1043
+msgid "you are whitelisted by the firewall"
+msgstr "vous êtes dans la liste blanche du pare-feu"
+
+#: ninjafirewall.php:1053 ninjafirewall.php:1063
+msgid "User session"
+msgstr "Session utilisateur"
+
+#: ninjafirewall.php:1055
+msgid ""
+"It seems the user session was not set by the firewall script or may have "
+"been destroyed by another plugin. You may get blocked by the firewall while "
+"working from the WordPress administration dashboard."
+msgstr ""
+"Il semble que la session de l'utilisateur n'a pas été définie par le script "
+"du pare-feu, ou bien a peut être été détruite malencontreusement par une "
+"autre extension. Vous pourriez être bloqué par le pare-feu lorsque vous "
+"travaillez depuis le Tableau de bord de WordPress."
+
+#: ninjafirewall.php:1065
+msgid ""
+"It seems that the user session set by NinjaFirewall was not found by the "
+"firewall script. You may get blocked by the firewall while working from the "
+"WordPress administration dashboard."
+msgstr ""
+"Il semble que la session d'utilisateur définie par NinjaFirewall n'a pas été "
+"trouvé par le script du pare-feu. Vous pourriez être bloqué par le pare-feu "
+"lorsque vous travaillez depuis le Tableau de bord de WordPress."
+
+#: ninjafirewall.php:1074
+msgid "Source IP"
+msgstr "IP source"
+
+#: ninjafirewall.php:1076
+#, php-format
+msgid "You have a private IP : %s"
+msgstr "Vous avez l'adresse IP d'un réseau privé : %s"
+
+#: ninjafirewall.php:1076
+#, php-format
+msgid ""
+"If your site is behind a reverse proxy or a load balancer, ensure that you "
+"have setup your HTTP server or PHP to forward the correct visitor IP, "
+"otherwise use the NinjaFirewall %s configuration file."
+msgstr ""
+"Si votre blog se trouve derrière un load-balancer, reverse-proxy ou CDN, "
+"pensez à configurer correctement votre serveur HTTP afin qu'il fasse suivre "
+"la bonne adresse IP, sinon utilisez le fichier de configuration %s de "
+"NinjaFirewall. "
+
+#: ninjafirewall.php:1087 ninjafirewall.php:1099
+msgid "CDN detection"
+msgstr "Détection CDN"
+
+#: ninjafirewall.php:1089
+#, php-format
+msgid ""
+"%s detected: you seem to be using Cloudflare CDN services. Ensure that you "
+"have setup your HTTP server or PHP to forward the correct visitor IP, "
+"otherwise use the NinjaFirewall %s configuration file."
+msgstr ""
+"%s détecté : il semble que vous utilisez le service CDN Cloudflare. Assurez "
+"vous d'avoir configuré votre serveur HTTP afin qu'il fasse suivre la bonne "
+"adresse IP, sinon utilisez le fichier de configuration %s de NinjaFirewall."
+
+#: ninjafirewall.php:1101
+#, php-format
+msgid ""
+"%s detected: you seem to be using Incapsula CDN services. Ensure that you "
+"have setup your HTTP server or PHP to forward the correct visitor IP, "
+"otherwise use the NinjaFirewall %s configuration file."
+msgstr ""
+"%s détecté : il semble que vous utilisez le service CDN Incapsula. Assurez "
+"vous d'avoir configuré votre serveur HTTP afin qu'il fasse suivre la bonne "
+"adresse IP, sinon utilisez le fichier de configuration %s de NinjaFirewall."
+
+#: ninjafirewall.php:1111 ninjafirewall.php:1122
+msgid "Log dir"
+msgstr "Répertoire du Journal"
+
+#: ninjafirewall.php:1113 ninjafirewall.php:1124
+#, php-format
+msgid "%s directory is not writable! Please chmod it to 0777 or equivalent."
+msgstr ""
+"Le répertoire %s est en lecture seule ! Veuillez changer ses permissions "
+"(0777 ou équivalent)."
+
+#: ninjafirewall.php:1133
+msgid "Optional configuration file"
+msgstr "Fichier de configuration"
+
+#: ninjafirewall.php:1136
+#, php-format
+msgid "%s is writable. Consider changing its permissions to read-only."
+msgstr ""
+"%s est accessible en écriture. Pensez à changer ses permissions en lecture "
+"seule."
+
+#: ninjafirewall.php:1146
+msgid "System Files"
+msgstr "Fichiers système"
+
+#: ninjafirewall.php:1156 ninjafirewall.php:1173
+#, php-format
+msgid "%s is read-only."
+msgstr "%s est en lecture seule."
+
+#: ninjafirewall.php:1182
+#, php-format
+msgid ""
+"Warning: you have some read-only system files; please <a href=\"%s\">read "
+"this</a> if you want to uninstall NinjaFirewall."
+msgstr ""
+"Attention: vous avez certains fichiers système en lecture seule; veuillez "
+"suivre <a href=\"%s\">ces instructions</a> si vous décidez de désinstaller "
+"NinjaFirewall."
+
+#: ninjafirewall.php:1220 ninjafirewall.php:1361 ninjafirewall.php:1404
+#: ninjafirewall.php:1424 ninjafirewall.php:1475 ninjafirewall.php:1520
+#: ninjafirewall.php:1530 ninjafirewall.php:1540 ninjafirewall.php:1583
+#: ninjafirewall.php:1716 ninjafirewall.php:1736 ninjafirewall.php:1779
+#: ninjafirewall.php:1789 ninjafirewall.php:1799 ninjafirewall.php:1809
+#: ninjafirewall.php:1819 ninjafirewall.php:1867 ninjafirewall.php:1877
+#: ninjafirewall.php:1887 ninjafirewall.php:2652 ninjafirewall.php:2764
+msgid "No"
+msgstr "Non"
+
+#: ninjafirewall.php:1221
+msgid " (default)"
+msgstr "(défaut)"
+
+#: ninjafirewall.php:1229
+msgid "All fields will be restored to their default values. Go ahead ?"
+msgstr ""
+"Tous les champs vont être réinitialisés avec leur valeur par défaut. "
+"Continuer ?"
+
+#: ninjafirewall.php:1250
+msgid ""
+"WARNING: ensure that you can access your admin console over HTTPS before "
+"enabling this option, otherwise you will lock yourself out of your site. Go "
+"ahead ?"
+msgstr ""
+"AVERTISSEMENT: assurez-vous que vous pouvez accéder à votre Tableau de bord "
+"via HTTPS avant d'activer cette option, sinon vous risquez de bloquer "
+"l’accès à votre site. Continuer ?"
+
+#: ninjafirewall.php:1258
+msgid ""
+"If your PHP scripts send cookies that need to be accessed from JavaScript, "
+"you should keep this option disabled. Go ahead ?"
+msgstr ""
+"Si vos scripts PHP envoient des cookies qui doivent être accessibles à "
+"partir de JavaScript, vous devez garder cette option désactivée. Continuer ?"
+
+#: ninjafirewall.php:1280
+msgid "Default values were restored."
+msgstr "Les valeurs par défaut ont été restaurées."
+
+#: ninjafirewall.php:1282
+msgid "No action taken."
+msgstr "Aucune mesure prise."
+
+#: ninjafirewall.php:1301
+msgid "Enable NinjaFirewall for"
+msgstr "Activer NinjaFirewall pour le trafic"
+
+#: ninjafirewall.php:1304
+msgid "<code>HTTP</code> and <code>HTTPS</code> traffic (default)"
+msgstr "<code>HTTP</code> et <code>HTTPS</code> trafic (défaut)"
+
+#: ninjafirewall.php:1305
+msgid "<code>HTTP</code> traffic only"
+msgstr "<code>HTTP</code> seulement"
+
+#: ninjafirewall.php:1306
+msgid "<code>HTTPS</code> traffic only"
+msgstr "<code>HTTPS</code> seulement"
+
+#: ninjafirewall.php:1327
+msgid "File Uploads"
+msgstr "Autoriser les téléchargements (uploads)"
+
+#: ninjafirewall.php:1331
+msgid "Allow uploads"
+msgstr "Autoriser"
+
+#: ninjafirewall.php:1332
+msgid "Disallow uploads (default)"
+msgstr "Ne pas autoriser (défaut)"
+
+#: ninjafirewall.php:1333
+msgid "Sanitise filenames"
+msgstr "Nettoyer le nom des fichiers"
+
+#: ninjafirewall.php:1355
+msgid "Scan <code>GET</code> variable"
+msgstr "Filtrer la variable <code>GET</code>"
+
+#: ninjafirewall.php:1365
+msgid "Sanitise <code>GET</code> variable"
+msgstr "Nettoyer la variable <code>GET</code>"
+
+#: ninjafirewall.php:1398
+msgid "Scan <code>POST</code> variable"
+msgstr "Filtrer la variable <code>POST</code>"
+
+#: ninjafirewall.php:1408
+msgid "Sanitise <code>POST</code> variable"
+msgstr "Nettoyer la variable  <code>POST</code>"
+
+#: ninjafirewall.php:1414
+msgid "Do not enable this option unless you know what you are doing!"
+msgstr ""
+"N'activez pas cette option si vous n'êtes pas sûr de ce que vous "
+"faites&nbsp;!"
+
+#: ninjafirewall.php:1418
+msgid "Decode Base64-encoded <code>POST</code> variable"
+msgstr ""
+"Décoder les chaîne encodées en Base64 dans la variable <code>POST</code>"
+
+#: ninjafirewall.php:1441
+msgid "Sanitise <code>REQUEST</code> variable"
+msgstr "Nettoyer la variable <code>REQUEST</code>"
+
+#: ninjafirewall.php:1469
+msgid "Scan cookies"
+msgstr "Filtrer les cookies"
+
+#: ninjafirewall.php:1479
+msgid "Sanitise cookies"
+msgstr "Nettoyer les cookies"
+
+#: ninjafirewall.php:1514
+msgid "Scan <code>HTTP_USER_AGENT</code>"
+msgstr "Filtrer <code>HTTP_USER_AGENT</code>"
+
+#: ninjafirewall.php:1524
+msgid "Sanitise <code>HTTP_USER_AGENT</code>"
+msgstr "Nettoyer <code>HTTP_USER_AGENT</code>"
+
+#: ninjafirewall.php:1534
+msgid "Block suspicious bots/scanners"
+msgstr "Bloquer les requêtes provenant de bots/scanners suspects"
+
+#: ninjafirewall.php:1567
+msgid "Scan <code>HTTP_REFERER</code>"
+msgstr "Nettoyer <code>HTTP_REFERER</code>"
+
+#: ninjafirewall.php:1577
+msgid "Sanitise <code>HTTP_REFERER</code>"
+msgstr "Nettoyer <code>HTTP_REFERER</code>"
+
+#: ninjafirewall.php:1587
+msgid ""
+"Block <code>POST</code> requests that do not have an <code>HTTP_REFERER</"
+"code> header"
+msgstr ""
+"Bloquer les requêtes <code>POST</code> qui n'ont pas d'en-tête "
+"<code>HTTP_REFERER</code>"
+
+#: ninjafirewall.php:1593
+msgid ""
+"Keep this option disabled if you are using scripts like Paypal IPN, "
+"WordPress WP-Cron..."
+msgstr ""
+"N'activez pas cette option si vous utilisez des scripts comme Paypal IPN, "
+"WordPress WP-Cron..."
+
+#: ninjafirewall.php:1606
+#, php-format
+msgid ""
+"This option is disabled because the %s PHP function is not available on your "
+"server."
+msgstr ""
+"Cette option n'est pas disponible parce que la fonction PHP %s n'est pas "
+"présente sur votre serveur."
+
+#: ninjafirewall.php:1624
+#, php-format
+msgid "Set %s to protect against MIME type confusion attacks"
+msgstr ""
+"Activer %s pour protéger contre les attaques basées sur la confusion du type "
+"MIME"
+
+#: ninjafirewall.php:1634
+#, php-format
+msgid "Set %s to protect against clickjacking attempts"
+msgstr ""
+"Activer %s pour protéger contre les attaques de détournement de clic "
+"(clickjacking)"
+
+#: ninjafirewall.php:1643
+#, php-format
+msgid "Set %s to enable browser's built-in XSS filter (IE, Chrome and Safari)"
+msgstr ""
+"Activer %s pour utiliser les filtres anti-XSS des navigateurs (IE, Chrome et "
+"Safari)"
+
+#: ninjafirewall.php:1653
+#, php-format
+msgid "Force %s flag on all cookies to mitigate XSS attacks"
+msgstr ""
+"Activer la propriété %s pour tous les cookies afin d'atténuer les menaces "
+"XSS qui génèrent des vols de cookies"
+
+#: ninjafirewall.php:1667
+msgid ""
+"HSTS headers can only be set when you are accessing your site over HTTPS."
+msgstr ""
+"Les en-têtes HSTS ne peuvent être utilisés que lorsque vous vous connectez à "
+"votre site en HTTPS (connexion sécurisée)."
+
+#: ninjafirewall.php:1673
+#, php-format
+msgid "Set %s (HSTS) to enforce secure connections to the server"
+msgstr ""
+"Activer %s (HSTS) pour forcer les connexions sécurisées vers le serveur"
+
+#: ninjafirewall.php:1676
+msgid "1 month"
+msgstr "1 mois"
+
+#: ninjafirewall.php:1677
+msgid "6 months"
+msgstr "6 mois"
+
+#: ninjafirewall.php:1678
+msgid "1 year"
+msgstr "1 année"
+
+#: ninjafirewall.php:1680
+msgid "Apply to subdomains"
+msgstr "Appliquer aux sous-domaines"
+
+#: ninjafirewall.php:1710
+msgid "Block localhost IP in <code>GET/POST</code> request"
+msgstr "Bloquer les requêtes <code>GET/POST</code> contenant l'IP localhost"
+
+#: ninjafirewall.php:1720
+msgid "Block HTTP requests with an IP in the <code>HTTP_HOST</code> header"
+msgstr ""
+"Bloquer les requêtes HTTP dont l'en-tête <code>HTTP_HOST</code> contient une "
+"IP"
+
+#: ninjafirewall.php:1730
+msgid "Scan traffic coming from localhost and private IP address spaces"
+msgstr "Filtrer les connexions provenant de localhost et d'adresses IP privées"
+
+#: ninjafirewall.php:1773
+msgid "Block PHP built-in wrappers"
+msgstr "Bloquer les gestionnaires (wrappers) PHP dangereux"
+
+#: ninjafirewall.php:1783
+msgid "Hide PHP notice and error messages"
+msgstr "Masquer les messages d'erreur de PHP"
+
+#: ninjafirewall.php:1793
+msgid "Sanitise <code>PHP_SELF</code>"
+msgstr "Nettoyer <code>PHP_SELF</code>"
+
+#: ninjafirewall.php:1803
+msgid "Sanitise <code>PATH_TRANSLATED</code>"
+msgstr "Nettoyer <code>PATH_TRANSLATED</code>"
+
+#: ninjafirewall.php:1813
+msgid "Sanitise <code>PATH_INFO</code>"
+msgstr "Nettoyer <code>PATH_INFO</code>"
+
+#: ninjafirewall.php:1834
+msgid "This option is not compatible with your actual configuration."
+msgstr ""
+"Cette option n'est pas compatible avec la configuration de votre serveur."
+
+#: ninjafirewall.php:1861
+msgid "Block the <code>DOCUMENT_ROOT</code> server variable in HTTP request"
+msgstr ""
+"Bloquer les requêtes HTTP contenant la variable <code>DOCUMENT_ROOT</code>"
+
+#: ninjafirewall.php:1871
+msgid "Block ASCII character 0x00 (NULL byte)"
+msgstr "Bloquer le caractère ASCII 0x00 (NULL byte)"
+
+#: ninjafirewall.php:1881
+msgid "Block ASCII control characters 1 to 8 and 14 to 31"
+msgstr "Bloquer les caractères de contrôle ASCII 1 à 8 et 14 à 31"
+
+#: ninjafirewall.php:1957
+msgid "Block direct access to any PHP file located in one of these directories"
+msgstr ""
+"Bloquer l'accès direct à un fichier PHP situé dans l'un de ces répertoires"
+
+#: ninjafirewall.php:1983
+msgid ""
+"NinjaFirewall will not block access to the TinyMCE WYSIWYG editor even if "
+"this option is enabled."
+msgstr ""
+"NinjaFirewall ne bloquera pas l'accès à l'éditeur WYSIWYG TinyMCE même si "
+"cette option est activée."
+
+#: ninjafirewall.php:1998
+msgid ""
+"Unless you have PHP scripts in a \"/cache/\" folder that need to be accessed "
+"by your visitors, we recommend to enable this option."
+msgstr ""
+"Sauf si vous avez des scripts PHP se trouvant dans un dossier \"*/cache/*\" "
+"pouvant être consultés par vos visiteurs, nous vous recommandons d'activer "
+"cette option."
+
+#: ninjafirewall.php:2009
+msgid "Protect against username enumeration"
+msgstr "Protéger contre l'énumération des comptes utilisateurs"
+
+#: ninjafirewall.php:2012
+msgid "Through the author archives (default)"
+msgstr "Via la page d'archive d'un auteur (défaut)"
+
+#: ninjafirewall.php:2013
+msgid "Through the login page"
+msgstr "Via la page de connexion"
+
+#: ninjafirewall.php:2020
+msgid "Block access to WordPress XML-RPC API"
+msgstr "Bloque l’accès au fichier XML-RPC API de WordPress"
+
+#: ninjafirewall.php:2030
+msgid "Block <code>POST</code> requests in the themes folder"
+msgstr "Bloquer les requêtes <code>POST</code> dans le dossier des thèmes"
+
+#: ninjafirewall.php:2040
+msgid "Force SSL for admin and logins"
+msgstr "Forcer la connexion sécurisée au Tableau de bord"
+
+#: ninjafirewall.php:2050
+msgid "Disable the plugin and theme editor"
+msgstr "Désactiver l’éditeur de thème et d'extension"
+
+#: ninjafirewall.php:2060
+msgid "Disable plugin and theme update/installation"
+msgstr "Désactiver l'installation et mise à jour des thèmes et extensions"
+
+#: ninjafirewall.php:2083
+msgid "Do not block WordPress administrator (must be logged in)"
+msgstr "Ne pas bloquer l'Administrateur de WordPress"
+
+#: ninjafirewall.php:2086
+msgid "Yes, do not block the Administrator (default)"
+msgstr "Oui, ne pas bloquer l'Administrateur (défaut)"
+
+#: ninjafirewall.php:2087
+msgid "No, block everyone, including the Admin if needed!"
+msgstr "Non, bloquer tout le monde si nécessaire&nbsp;!"
+
+#: ninjafirewall.php:2088
+msgid ""
+"Note : does not apply to <code>FORCE_SSL_ADMIN</code>, "
+"<code>DISALLOW_FILE_EDIT</code> and <code>DISALLOW_FILE_MODS</code> options "
+"which, if enabled, are always enforced."
+msgstr ""
+"Ne s'applique pas aux options  <code>FORCE_SSL_ADMIN</code>, "
+"<code>DISALLOW_FILE_EDIT</code> et <code>DISALLOW_FILE_MODS</code> qui, si "
+"elles sont activées, seront toujours  appliquées."
+
+#: ninjafirewall.php:2095
+msgid "Save Firewall Policies"
+msgstr "Sauvegarder les Options"
+
+#: ninjafirewall.php:2097
+msgid "Restore Default Values"
+msgstr "Rétablir les valeurs par defaut"
+
+#: ninjafirewall.php:2594 ninjafirewall.php:2600
+msgid "Please enter a number from 1 to 99."
+msgstr "Veuillez entrer un chiffre de 1 à 99."
+
+#: ninjafirewall.php:2609
+msgid "File Guard"
+msgstr "File Guard"
+
+#: ninjafirewall.php:2616
+#, php-format
+msgid ""
+"The cache directory %s is not writable. Please change its permissions (0777 "
+"or equivalent)."
+msgstr ""
+"Impossible d'écrire dans le répertoire du cache %s. Assurez-vous que ce "
+"répertoire n'est pas en lecture seule."
+
+#: ninjafirewall.php:2647
+msgid "Enable File Guard"
+msgstr "Activer File Guard"
+
+#: ninjafirewall.php:2649
+msgid "Yes (recommended)"
+msgstr "Oui (recommandé)"
+
+#: ninjafirewall.php:2661
+msgid "Real-time detection"
+msgstr "Détection en temps réel"
+
+#: ninjafirewall.php:2664
+#, php-format
+msgid ""
+"Monitor file activity and send an alert when someone is accessing a PHP "
+"script that was modified or created less than %s hour(s) ago."
+msgstr ""
+"Surveiller et alerter par e-mail lorsqu'un visiteur accède à un script PHP "
+"qui a été modifié ou créé il y a moins de %s heure(s)."
+
+#: ninjafirewall.php:2669
+msgid "Exclude the following folder (optional)"
+msgstr "Exclure le dossier suivant (optionnel)"
+
+#: ninjafirewall.php:2670
+msgid "or"
+msgstr "ou"
+
+#: ninjafirewall.php:2670
+msgid "A full or partial case-sensitive string, max 150 characters."
+msgstr ""
+"Chaîne de caractères complète ou partielle, sensible à la casse, 150 "
+"caractères max."
+
+#: ninjafirewall.php:2674
+msgid "Save File Guard options"
+msgstr "Sauvegarder les Options"
+
+#: ninjafirewall.php:2721 ninjafirewall.php:3594
+#, php-format
+msgid "You are not allowed to perform this task (%s)."
+msgstr "Vous n'êtes pas autorisé à effectuer cette tâche (%s)."
+
+#: ninjafirewall.php:2733
+msgid "You do not have a multisite network."
+msgstr "Vous ne disposez pas d'un réseau multisite."
+
+#: ninjafirewall.php:2759
+msgid "NinjaFirewall Status"
+msgstr "Statut de NinjaFirewall"
+
+#: ninjafirewall.php:2762
+msgid ""
+"Display NinjaFirewall status icon in the admin bar of all sites in the "
+"network"
+msgstr ""
+"Afficher l'icône du statut de NinjaFirewall dans la barre d'administration "
+"de tous les sites du réseau"
+
+#: ninjafirewall.php:2770
+msgid "Save Network options"
+msgstr "Sauvegarder les Options"
+
+#: ninjafirewall.php:2877 ninjafirewall.php:2899 ninjafirewall.php:3179
+msgid "Access restricted"
+msgstr "Accès limité"
+
+#. translators: quotes ('") must be escaped
+#: ninjafirewall.php:2911
+msgid "Please enter a number from 1 to 99 in 'Password-protect' field."
+msgstr ""
+"Veuillez entrer uniquement des nombres de 1 à 99 dans les champs \\'Protéger "
+"par mot de passe\\'."
+
+#. translators: quotes ('") must be escaped
+#: ninjafirewall.php:2920 ninjafirewall.php:2937
+msgid "Invalid character."
+msgstr "Caractère invalide."
+
+#. translators: quotes ('") must be escaped
+#: ninjafirewall.php:2927
+msgid "\"admin\" is not acceptable, please choose another user name."
+msgstr ""
+"\"admin\" n\\'est pas acceptable, merci de bien vouloir choisir un autre "
+"identifiant."
+
+#: ninjafirewall.php:2973
+msgid "Enable brute force attack protection"
+msgstr "Activer la protection contre les attaques par force brute"
+
+#: ninjafirewall.php:2976
+msgid "Yes, if under attack"
+msgstr "Oui, si attaque en cours"
+
+#: ninjafirewall.php:2979
+msgid "Always ON"
+msgstr "Toujours activer"
+
+#: ninjafirewall.php:2989
+msgid "Protect the login page against"
+msgstr "Protéger la page de connexion contre"
+
+#: ninjafirewall.php:2991
+msgid "<code>GET</code> request attacks"
+msgstr "Les attaques <code>GET</code>"
+
+#: ninjafirewall.php:2992
+msgid "<code>POST</code> request attacks (default)"
+msgstr "Les attaques <code>POST</code> (défaut)"
+
+#: ninjafirewall.php:2993
+msgid "<code>GET</code> and <code>POST</code> requests attacks"
+msgstr "Les attaques <code>GET</code> et <code>POST</code>"
+
+#: ninjafirewall.php:2997
+msgid "Password-protect it"
+msgstr "Protéger par mot de passe"
+
+#: ninjafirewall.php:3000
+#, php-format
+msgid "For %1$s minutes, if more than %2$s %3$s requests within %4$s seconds."
+msgstr ""
+"Pendant %1$s minutes, si plus de %2$s requêtes %3$s détectées en moins de "
+"%4$s secondes."
+
+#: ninjafirewall.php:3013
+msgid "Apply the protection to the <code>xmlrpc.php</code> script as well."
+msgstr "Activer aussi la protection pour le fichier <code>xmlrpc.php</code>."
+
+#: ninjafirewall.php:3027
+msgid "HTTP authentication"
+msgstr "Authentification HTTP"
+
+#: ninjafirewall.php:3029
+msgid "User:"
+msgstr "Utilisateur&nbsp;:"
+
+#: ninjafirewall.php:3029
+msgid "Password:"
+msgstr "Mot de passe&nbsp;:"
+
+#: ninjafirewall.php:3030
+msgid "User and Password must be from 6 to 32 characters."
+msgstr "L'utilisateur et mot de passe doivent comporter de 6 à 32 caractères."
+
+#: ninjafirewall.php:3031
+msgid "Message (max. 150 ASCII characters)"
+msgstr "Message (150 caractères ASCII maximum)"
+
+#: ninjafirewall.php:3044
+msgid "Your server configuration is not compatible with that option."
+msgstr ""
+"La configuration de votre serveur n'est pas compatible avec cette option."
+
+#: ninjafirewall.php:3047
+msgid "See contextual help before enabling this option."
+msgstr "Consultez l'aide contextuelle avant d'activer cette option."
+
+#: ninjafirewall.php:3051
+msgid "Write incident to the server <code>AUTH</code> log."
+msgstr ""
+"Enregistrer l'incident dans le journal des authentifications du serveur "
+"(<code>auth.log</code>)."
+
+#: ninjafirewall.php:3059
+msgid "Save Login Protection"
+msgstr "Sauvegarder les Options"
+
+#: ninjafirewall.php:3060
+msgid "See our benchmark and stress-test:"
+msgstr "Consultez nos benchmarks&nbsp;:"
+
+#: ninjafirewall.php:3084
+#, php-format
+msgid "Error : %s directory is not writable. Please chmod it to 0777."
+msgstr ""
+"Erreur : impossible d’écrire dans le répertoire %s.  Assurez-vous qu'il "
+"n'est pas en lecture seule."
+
+#: ninjafirewall.php:3099 ninjafirewall.php:3104 ninjafirewall.php:3109
+#, php-format
+msgid "Error : %s is read-only and cannot be deleted. Please chmod it to 0777."
+msgstr "Erreur : %s est en lecture seule et ne peut pas être supprimé."
+
+#: ninjafirewall.php:3161
+msgid "Error : please enter a user name for HTTP authentication."
+msgstr ""
+"Erreur : veuillez entrer un nom d'utilisateur pour l'authentification HTTP."
+
+#: ninjafirewall.php:3163
+msgid "Error : HTTP authentication user name is not valid."
+msgstr ""
+"Erreur: le nom d'utilisateur pour l'authentification HTTP n'est pas valide."
+
+#: ninjafirewall.php:3169
+msgid "Error : please enter a user name and password for HTTP authentication."
+msgstr ""
+"Erreur : veuillez entrer un nom d'utilisateur et mot de passe pour "
+"l'authentification HTTP."
+
+#: ninjafirewall.php:3172
+msgid "Error : password must be from 6 to 32 characters."
+msgstr "Erreur : le mot de passe doit comporter de 6 à 32 caractères."
+
+#: ninjafirewall.php:3197
+#, php-format
+msgid "Error : unable to write to the %s configuration file"
+msgstr "Erreur : impossible d’écrire dans le fichier de configuration %s"
+
+#: ninjafirewall.php:3308
+msgid "Error : you did not select a rule to disable."
+msgstr "Erreur : vous devez sélectionner la règle à désactiver."
+
+#: ninjafirewall.php:3310 ninjafirewall.php:3325
+msgid "Error : to change this rule, use the \"Firewall Policies\" menu."
+msgstr ""
+"Erreur : pour modifier cette règle, utilisez le menu \"Politiques du Pare-feu"
+"\"."
+
+#: ninjafirewall.php:3312 ninjafirewall.php:3327
+msgid "Error : this rule does not exist."
+msgstr "Erreur : cette règle n'existe pas."
+
+#: ninjafirewall.php:3316
+#, php-format
+msgid "Rule ID %s has been disabled."
+msgstr "La règle %s a été désactivée."
+
+#: ninjafirewall.php:3323
+msgid "Error : you did not select a rule to enable."
+msgstr "Erreur : vous devez sélectionner la règle à activer."
+
+#: ninjafirewall.php:3331
+#, php-format
+msgid "Rule ID %s has been enabled."
+msgstr "La règle %s a été activée."
+
+#: ninjafirewall.php:3348
+msgid "NinjaFirewall built-in security rules"
+msgstr "Éditeur de règles du pare-feu"
+
+#: ninjafirewall.php:3351
+msgid "Select the rule you want to disable or enable"
+msgstr "Sélectionnez la règle à activer ou désactiver"
+
+#: ninjafirewall.php:3355
+msgid "Total rules enabled"
+msgstr "Règles activées"
+
+#: ninjafirewall.php:3364 ninjafirewall.php:3381 ninjafirewall.php:3397
+#: ninjafirewall.php:3414
+msgid "Rule ID"
+msgstr "Règle"
+
+#: ninjafirewall.php:3364 ninjafirewall.php:3397
+msgid "Firewall policy"
+msgstr "Politique du pare-feu"
+
+# Todo ?
+#: ninjafirewall.php:3367 ninjafirewall.php:3400
+msgid "Remote/local file inclusion"
+msgstr "Remote/local file inclusion"
+
+# Todo ?
+#: ninjafirewall.php:3369 ninjafirewall.php:3402
+msgid "Cross-site scripting"
+msgstr "Cross-site scripting"
+
+# Todo ?
+#: ninjafirewall.php:3371 ninjafirewall.php:3404
+msgid "Code injection"
+msgstr "Code injection"
+
+# Todo ?
+#: ninjafirewall.php:3373 ninjafirewall.php:3406
+msgid "SQL injection"
+msgstr "SQL injection"
+
+#: ninjafirewall.php:3375 ninjafirewall.php:3408
+msgid "Various vulnerability"
+msgstr "Vulnérabilité (divers)"
+
+# Todo ?
+#: ninjafirewall.php:3377 ninjafirewall.php:3410
+msgid "Backdoor/shell"
+msgstr "Backdoor/shell"
+
+#: ninjafirewall.php:3379 ninjafirewall.php:3412
+msgid "WordPress vulnerability"
+msgstr "Vulnérabilité WordPress"
+
+#: ninjafirewall.php:3385
+msgid "Disable it"
+msgstr "Désactiver"
+
+#: ninjafirewall.php:3390
+msgid "Total rules disabled"
+msgstr "Règles désactivées"
+
+#: ninjafirewall.php:3419
+msgid "Enable it"
+msgstr "Activer"
+
+#: ninjafirewall.php:3421
+#, php-format
+msgid ""
+"Greyed out rules can be changed in the <a href=\"%s\">Firewall Policies</a> "
+"page."
+msgstr ""
+"Les règles grisées ne peuvent être modifiées que dans la page <a href=\"%s"
+"\">Politiques du Pare-feu</a>."
+
+#: ninjafirewall.php:3470
+msgid "Settings"
+msgstr "Réglages"
+
+#: ninjafirewall.php:3516
+msgid "Plugin"
+msgstr "Extension"
+
+#: ninjafirewall.php:3516 ninjafirewall.php:3520
+msgid "uploaded"
+msgstr "téléchargé(e)"
+
+#: ninjafirewall.php:3516 ninjafirewall.php:3520
+msgid "installed"
+msgstr "installé(e)"
+
+#: ninjafirewall.php:3516 ninjafirewall.php:3520
+msgid "activated"
+msgstr "activé(e)"
+
+#: ninjafirewall.php:3517
+msgid "updated"
+msgstr "mis(e) à jour"
+
+#: ninjafirewall.php:3517
+msgid "deactivated"
+msgstr "désactivé(e)"
+
+#: ninjafirewall.php:3517 ninjafirewall.php:3521
+msgid "deleted"
+msgstr "supprimé(e)"
+
+#: ninjafirewall.php:3517 ninjafirewall.php:3521
+msgid "Name"
+msgstr "Nom"
+
+#: ninjafirewall.php:3520
+msgid "Theme"
+msgstr "Thème"
+
+#: ninjafirewall.php:3524
+msgid "upgraded"
+msgstr "mis(e) à jour"
+
+#: ninjafirewall.php:3535
+msgid "[NinjaFirewall] Alert:"
+msgstr "[NinjaFirewall] Alerte :"
+
+#: ninjafirewall.php:3541
+msgid "NinjaFirewall has detected the following activity on your account:"
+msgstr "NinjaFirewall a détecté l'activité suivante sur votre compte :"
+
+#~ msgid "directory is not writable! Please chmod it to 0777 or equivalent."
+#~ msgstr ""
+#~ "le répertoire est en lecture seule ! Veuillez changer ses permissions "
+#~ "(0777 ou équivalent)."

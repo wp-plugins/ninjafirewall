@@ -91,7 +91,7 @@ function nfw_welcome() {
 	?>
 	<p><?php _e('Thank you for using NinjaFirewall (WP Edition)!', 'ninjafirewall') ?></p>
 	<p><?php _e('This installer will help you to make the setup process as quick and easy as possible. But before doing so, please read carefully the following lines:', 'ninjafirewall') ?></p>
-	<p><?php _e('Although NinjaFirewall looks like a regular plugin, it is not. It can be installed and configured from WordPress admin console, but it is a stand-alone Web Application Firewall that sits in front of WordPress. That means that it will hook, scan, reject and/or sanitise any HTTP/HTTPS request sent to a PHP script before it reaches WordPress and any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren\'t part of the WordPress package. Even encoded PHP scripts, hackers backdoors and shell scripts will be filtered by NinjaFirewall.', 'ninjafirewall') ?></p>
+	<p><?php _e('Although NinjaFirewall looks like a regular plugin, it is not. It can be installed and configured from WordPress admin console, but it is a stand-alone Web Application Firewall that sits in front of WordPress. That means that it will hook, scan, reject and/or sanitise any HTTP/HTTPS request sent to a PHP script before it reaches WordPress and any of its plugins. All scripts located inside the blog installation directories and sub-directories will be protected, including those that aren\'t part of the WordPress package. Even encoded PHP scripts (e.g., ionCube) or any potential backdoor/shell script (e.g., c99, r57) will be filtered by NinjaFirewall.', 'ninjafirewall') ?></p>
 	<p><?php _e('That\'s cool and makes NinjaFirewall a true firewall. And probably the most powerful security applications for WordPress. But just like any firewall, if you misuse it, you can get into serious problems and crash your site.', 'ninjafirewall') ?></p>
 	<div class="updated settings-error">
 	<br />
@@ -105,7 +105,7 @@ function nfw_welcome() {
 	<center><img src="<?php echo plugins_url( '/images/icon_warn_16.png', __FILE__ ) ?>" border="0" height="16" width="16">&nbsp;<strong><?php _e('Failure to do so will almost always cause you to be locked out of your own site and/or to crash it.', 'ninjafirewall') ?></strong><br />&nbsp;</center>
 	</div>
 	<h3><?php _e('Privacy Policy', 'ninjafirewall') ?></h3>
-	<?php printf( __('<a href="%s">NinTechNet</a> strictly follows the WordPress <a href="%s">Plugin Developer Guidelines</a>: our software, NinjaFirewall (WP edition), is 100% free, 100% open source and 100% fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.', 'ninjafirewall'), 'http://nintechnet.com/', 'http://wordpress.org/plugins/about/guidelines/') ?>
+	<?php printf( __('<a href="%s">NinTechNet</a> strictly follows the WordPress <a href="%s">Plugin Developer Guidelines</a>: our software, NinjaFirewall (WP edition), is free, open source and fully functional, no "trialware", no "obfuscated code", no "crippleware", no "phoning home". It does not require a registration process or an activation key to be installed or used.', 'ninjafirewall'), 'http://nintechnet.com/', 'http://wordpress.org/plugins/about/guidelines/') ?>
 	<br />
 	<?php _e('Because we do not collect any user data, we do not even know that you are using (and hopefully enjoying!) our product.', 'ninjafirewall') ?>
 	<br />
@@ -343,7 +343,7 @@ function nfw_presave($err) {
 	}
 
 	?>
-	<h3>System configuration</h3>
+	<h3><?php _e('System configuration', 'ninjafirewall') ?></h3>
 	<?php
 	// Multisite ?
 	if ( is_multisite() ) {
@@ -920,7 +920,7 @@ function nfw_firewalltest() {
 		} else {
 			// Very likely a PHP INI issue :
 			if ($_SESSION['php_ini_type'] == 2) {
-				echo '<li>'. __('You have selected <code>.user.ini</code> as your PHP initialization file. Unlike <code>php.ini</code>, <code>.user.ini</code> files are not reloaded immediately by PHP, but every five minutes. If this is your own server, restart Apache (or PHP-FPM if you are running Nginx) to force PHP to reload it, otherwise please <strong>wait up to five minutes</strong> and then, click the "Test Again" button below.', 'ninjafirewall'). '</li>
+				echo '<li>'. __('You have selected <code>.user.ini</code> as your PHP initialization file. Unlike <code>php.ini</code>, <code>.user.ini</code> files are not reloaded immediately by PHP, but every five minutes. If this is your own server, restart Apache (or PHP-FPM if applicable) to force PHP to reload it, otherwise please <strong>wait up to five minutes</strong> and then, click the "Test Again" button below.', 'ninjafirewall'). '</li>
 				<form method="POST">
 					<input type="submit" class="button-secondary" value="'. __('Test Again', 'ninjafirewall'). '" />
 					<input type="hidden" name="nfw_act" value="postsave" />

@@ -94,7 +94,9 @@ function getHTTPObject(){
 var http = getHTTPObject();
 function live_fetch() {
 	if (count) {
-		document.getElementById("loading").innerHTML = "<?php _e('Loading...', 'ninjafirewall') ?>";
+		document.getElementById("loading").innerHTML = "<?php
+		// translators: quotes ('") must be escaped
+		_e('Loading...', 'ninjafirewall') ?>";
 		document.getElementById('radioon').style.background = 'orange';
 		document.getElementById('radiooff').disabled = true;
 	}
@@ -112,10 +114,14 @@ function live_fetchRes() {
 	if (http.readyState == 4) {
 		if (http.status == 200) {
 			if (http.responseText == '') {
-				document.liveform.txtlog.value = '<?php _e('No traffic yet, please wait...', 'ninjafirewall') ?>' + "\n";
+				document.liveform.txtlog.value = '<?php
+				// translators: quotes ('") must be escaped
+				_e('No traffic yet, please wait...', 'ninjafirewall') ?>' + "\n";
 			} else if (http.responseText != '*') {
 				if ( http.responseText.charAt(0) != '^' ) {
-					document.liveform.txtlog.value = '<?php _e('Error: Live Log did not receive the expected response from your server:', 'ninjafirewall') ?>' + "\n\n" + http.responseText;
+					document.liveform.txtlog.value = '<?php
+					// translators: quotes ('") must be escaped
+					_e('Error: Live Log did not receive the expected response from your server:', 'ninjafirewall') ?>' + "\n\n" + http.responseText;
 				} else {
 					var line = http.responseText.substr(1);
 					// Get number of lines :
@@ -134,14 +140,22 @@ function live_fetchRes() {
 				}
 			}
 		} else if (http.status == 404) {
-			document.liveform.txtlog.value += '<?php _e('Error: URL does not seem to exist: ', 'ninjafirewall') ?>' + ajaxURL + "\n";
+			document.liveform.txtlog.value += '<?php
+			// translators: quotes ('") must be escaped
+			_e('Error: URL does not seem to exist:', 'ninjafirewall') ?> ' + ajaxURL + "\n";
 		} else if (http.status == 503) {
-			document.liveform.txtlog.value += '<?php _e('Error: cannot find your log file. Try to reload this page.', 'ninjafirewall') ?>' + "\n";
+			document.liveform.txtlog.value += '<?php
+			// translators: quotes ('") must be escaped
+			_e('Error: cannot find your log file. Try to reload this page.', 'ninjafirewall') ?>' + "\n";
 		} else {
-			document.liveform.txtlog.value += '<?php _e('Error: the HTTP server returned the following error code: ', 'ninjafirewall') ?>' + http.status + "\n";
+			document.liveform.txtlog.value += '<?php
+			// translators: quotes ('") must be escaped
+			_e('Error: the HTTP server returned the following error code:', 'ninjafirewall') ?> ' + http.status + "\n";
 		}
 		if (document.liveform.txtlog.value == '') {
-			document.liveform.txtlog.value = '<?php _e('No traffic yet, please wait...', 'ninjafirewall') ?>' + "\n";
+			document.liveform.txtlog.value = '<?php
+			// translators: quotes ('") must be escaped
+			_e('No traffic yet, please wait...', 'ninjafirewall') ?>' + "\n";
 		}
 		document.getElementById('loading').innerHTML = "<?php _e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php _e('seconds', 'ninjafirewall') ?>...";
 		document.getElementById('radioon').style.background = 'green';
@@ -156,7 +170,11 @@ function on_off(onoff) {
 		if (scroll == 1) {
 			document.getElementById("idtxtlog").scrollTop = document.getElementById("idtxtlog").scrollHeight;
 		}
-		document.getElementById("loading").innerHTML = "<?php _e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php _e('seconds', 'ninjafirewall') ?>...";
+		document.getElementById("loading").innerHTML = "<?php
+		// translators: quotes ('") must be escaped
+		_e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php
+		// translators: quotes ('") must be escaped
+		_e('seconds', 'ninjafirewall') ?>...";
 		document.getElementById("liveint").disabled = false;
 		document.getElementById("livescroll").disabled = false;
 		document.getElementById('radioon').style.background = 'green';
@@ -176,7 +194,11 @@ function on_off(onoff) {
 function change_int(intv) {
 	clearInterval(myinterval);
 	liveint = intv;
-	document.getElementById("loading").innerHTML = "<?php _e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php _e('seconds', 'ninjafirewall') ?>...";
+	document.getElementById("loading").innerHTML = "<?php
+	// translators: quotes ('") must be escaped
+	_e('Sleeping', 'ninjafirewall') ?> " + liveint/1000 + " <?php
+	// translators: quotes ('") must be escaped
+	_e('seconds', 'ninjafirewall') ?>...";
 	myinterval = setInterval(live_fetch, liveint);
 	// Add cookie so that we remember the user choice for 365 days:
 	create_cookie('nfwintval', intv);

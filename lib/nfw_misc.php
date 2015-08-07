@@ -105,7 +105,7 @@ function nfw_query( $query ) { // i18n
 			return;
 		}
 		$query->set('author_name', '0');
-		nfw_log2( __('User enumeration scan (author archives)', 'ninjafirewall'), $tmp, 2, 0);
+		nfw_log2('User enumeration scan (author archives)', $tmp, 2, 0);
 		wp_redirect( home_url('/') );
 		exit;
 	}
@@ -202,11 +202,11 @@ function nf_check_dbdata() {
 		$subject = __('[NinjaFirewall] Alert: Database changes detected', 'ninjafirewall');
 		$message = __('NinjaFirewall has detected that one or more administrator accounts were modified in the database:', 'ninjafirewall') . "\n\n";
 		if ( is_multisite() ) {
-			$message.= __('Blog : ', 'ninjafirewall') . network_home_url('/') . "\n";
+			$message.= __('Blog:', 'ninjafirewall') .' '. network_home_url('/') . "\n";
 		} else {
-			$message.= __('Blog : ', 'ninjafirewall') . home_url('/') . "\n";
+			$message.= __('Blog:', 'ninjafirewall') .' '. home_url('/') . "\n";
 		}
-		$message.= __('Date : ', 'ninjafirewall') . date_i18n('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
+		$message.= __('Date:', 'ninjafirewall') .' '. date_i18n('F j, Y @ H:i:s') . ' (UTC '. date('O') . ")\n\n";
 		$message.= sprintf(__('Total administrators : %s', 'ninjafirewall'), count($adm_users) ) . "\n\n";
 		foreach( $adm_users as $obj => $adm ) {
 			$message.= 'Admin ID : ' . $adm->ID . "\n";
@@ -223,7 +223,7 @@ function nf_check_dbdata() {
 
 		// Log event if required :
 		if (! empty($nfw_options['a_41']) ) {
-			nfw_log2( __('Database changes detected', 'ninjafirewall'), __('administrator account', 'ninjafirewall'), 4, 0);
+			nfw_log2('Database changes detected', __('administrator account', 'ninjafirewall'), 4, 0);
 		}
 	}
 

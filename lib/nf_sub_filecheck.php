@@ -307,16 +307,16 @@ if (file_exists($nfmon_diff) ) {
 				<p><?php printf( __('Created on: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O', $stat['ctime'])); ?></p>
 				<p><?php printf( __('Total files: %s ', 'ninjafirewall'), number_format($count) ); ?></p>
 
-				<p><?php _e('Directory : ', 'ninjafirewall') ?><code><?php echo htmlspecialchars($nfw_options['snapdir']) ?></code></p>
+				<p><?php _e('Directory:', 'ninjafirewall') ?> <code><?php echo htmlspecialchars($nfw_options['snapdir']) ?></code></p>
 				<?php
 				if (! empty($nfw_options['snapexclude']) ) {
 					$res = @explode(',', $nfw_options['snapexclude']);
-					echo '<p>' .  __('Exclusion : ', 'ninjafirewall');
+					echo '<p>' .  __('Exclusion:', 'ninjafirewall') . ' ';
 					foreach ($res as $exc) {
 						echo '<code>' . htmlspecialchars($exc) . '</code>&nbsp;';
 					}
 					echo '</p>
-					<p>' .  __('Symlinks : ', 'ninjafirewall');
+					<p>' .  __('Symlinks:', 'ninjafirewall') . ' ';
 					if ( empty($nfw_options['snapnoslink']) ) {
 						echo __('follow', 'ninjafirewall');
 					} else {
@@ -325,7 +325,7 @@ if (file_exists($nfmon_diff) ) {
 					echo '</p>';
 				}
 				if (! empty($nfw_options['snapproc']) ) {
-					echo '<p>' . sprintf( __('Processing time : %s seconds', 'ninjafirewall'), $nfw_options['snapproc']) . '</p>';
+					echo '<p>' . sprintf( __('Processing time: %s seconds', 'ninjafirewall'), $nfw_options['snapproc']) . '</p>';
 				}
 				?>
 				<form method="post">
@@ -365,7 +365,7 @@ if (file_exists($nfmon_diff) ) {
 				$more_info = __('Click a file to get more info about it.', 'ninjafirewall');
 				if ($new_file) {
 					echo '<tr><td>';
-					echo __('New files: ', 'ninjafirewall') . count($new_file). '<br />';
+					echo __('New files:', 'ninjafirewall') . ' ' . count($new_file). '<br />';
 					echo '<select name="sometext" multiple="multiple" style="width:100%;height:150px" onClick="file_info(this.value, 1);">';
 					foreach($new_file as $k => $v) {
 						echo '<option value="' . htmlspecialchars($v) . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
@@ -400,7 +400,7 @@ if (file_exists($nfmon_diff) ) {
 				if ($del_file) {
 					echo '
 			<tr>
-				<td>' . __('Deleted files: ', 'ninjafirewall') . count($del_file). '<br />' .
+				<td>' . __('Deleted files:', 'ninjafirewall') .' '. count($del_file). '<br />' .
 					'<select name="sometext" multiple="multiple" style="width:100%;height:150px">';
 					foreach($del_file as $k => $v) {
 						echo '<option title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
@@ -413,7 +413,7 @@ if (file_exists($nfmon_diff) ) {
 				if ($mod_file) {
 					echo '
 			<tr>
-				<td>' . __('Modified files: ', 'ninjafirewall') . count($mod_file). '<br />' .
+				<td>' . __('Modified files:', 'ninjafirewall') .' '. count($mod_file). '<br />' .
 					'<select name="sometext" multiple="multiple" style="width:100%;height:150px" onClick="file_info(this.value, 2);">';
 					foreach($mod_file as $k => $v) {
 						echo '<option value="' . htmlspecialchars($v) . '" title="' . htmlspecialchars($k) . '">' . htmlspecialchars($k) . '</option>';
@@ -461,7 +461,7 @@ if (file_exists($nfmon_diff) ) {
 		</tr>
 		</table>';
 			} else {
-				echo __('None', 'ninjfirewall') . '
+				echo __('None', 'ninjafirewall') . '
 			</td>
 		</tr>
 	</table>
@@ -513,7 +513,7 @@ if (file_exists($nfmon_diff) ) {
 						$now = new DateTime( date('M d, Y H:i:s', time() ) );
 						$diff = $now->diff($sched);
 					?>
-						<p><span class="description"><?php printf( __('Next scan will start in approximately %s days, %s hours, %s minutes and %s seconds.', 'ninjafirewall'), $diff->format('%a') % 7, $diff->format('%h'), $diff->format('%i'), $diff->format('%s') ) ?></span></p>
+						<p><span class="description"><?php printf( __('Next scan will start in approximately %s day(s), %s hour(s), %s minute(s) and %s second(s).', 'ninjafirewall'), $diff->format('%a') % 7, $diff->format('%h'), $diff->format('%i'), $diff->format('%s') ) ?></span></p>
 					<?php
 						// Ensure that the scheduled scan time is in the future,
 						// not in the past, otherwise send a warning because wp-cron
@@ -823,14 +823,14 @@ function nf_scan_email($nfmon_diff, $log_dir) {
 		$subject = __('[NinjaFirewall] Alert: File Check detection', 'ninjafirewall');
 		$msg = __('NinjaFirewall detected that changes were made to your files.', 'ninjafirewall') . "\n\n";
 		if ( is_multisite() ) {
-			$msg .=__('Blog: ', 'ninjafirewall') . network_home_url('/') . "\n";
+			$msg .=__('Blog:', 'ninjafirewall') .' '. network_home_url('/') . "\n";
 		} else {
-			$msg .=__('Blog: ', 'ninjafirewall') . home_url('/') . "\n";
+			$msg .=__('Blog:', 'ninjafirewall') .' '. home_url('/') . "\n";
 		}
 		$msg .= sprintf( __('Date: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O') )."\n\n";
 		$msg .= __('See attached file for details.', 'ninjafirewall') . "\n\n" .
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
-			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
+			__('Support forum:', 'ninjafirewall') .' http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 
 		wp_mail( $recipient, $subject, $msg, '', $log_dir . 'nf_filecheck.txt' );
 		unlink($log_dir . 'nf_filecheck.txt');
@@ -841,13 +841,13 @@ function nf_scan_email($nfmon_diff, $log_dir) {
 		$subject = __('[NinjaFirewall] File Check report', 'ninjafirewall');
 		$msg = __('NinjaFirewall did not detect changes in your files.', 'ninjafirewall') . "\n\n";
 		if ( is_multisite() ) {
-			$msg .=__('Blog: ', 'ninjafirewall') . network_home_url('/') . "\n";
+			$msg .=__('Blog:', 'ninjafirewall') .' '. network_home_url('/') . "\n";
 		} else {
-			$msg .=__('Blog: ', 'ninjafirewall') . home_url('/') . "\n";
+			$msg .=__('Blog:', 'ninjafirewall') .' '. home_url('/') . "\n";
 		}
 		$msg .= sprintf( __('Date: %s', 'ninjafirewall'), date_i18n('M d, Y @ H:i:s O') ) . "\n\n" .
 			'NinjaFirewall (WP edition) - http://ninjafirewall.com/' . "\n" .
-			'Support forum: http://wordpress.org/support/plugin/ninjafirewall' . "\n";
+			__('Support forum:', 'ninjafirewall') .' http://wordpress.org/support/plugin/ninjafirewall' . "\n";
 		wp_mail( $recipient, $subject, $msg );
 	}
 }

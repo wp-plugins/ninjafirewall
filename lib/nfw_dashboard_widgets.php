@@ -52,7 +52,7 @@ function nfw_stats_widget(){
 		<tr>
 			<th width="50%" align="left">' . __('Hacking attempts severity', 'ninjafirewall') .'</th>
 			<td width="50%" align="left">
-				<i>' . __('Critical : ', 'ninjafirewall') . $critical . '%</i>
+				<i>' . __('Critical:', 'ninjafirewall') . ' ' . $critical . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -60,7 +60,7 @@ function nfw_stats_widget(){
 					</tr>
 				</table>
 				<br />
-				<i>' . __('High : ', 'ninjafirewall') . $high . '%</i>
+				<i>' . __('High:', 'ninjafirewall') . ' ' . $high . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
@@ -68,7 +68,7 @@ function nfw_stats_widget(){
 					</tr>
 				</table>
 				<br />
-				<i>' . __('Medium : ', 'ninjafirewall') . $medium . '%</i>
+				<i>' . __('Medium:', 'ninjafirewall') . ' ' . $medium . '%</i>
 				<br />
 				<table bgcolor="#DFDFDF" border="0" cellpadding="0" cellspacing="0" height="14" width="100%" align="left" style="height:14px;">
 					<tr>
