@@ -3,7 +3,7 @@
 Plugin Name: NinjaFirewall (WP edition)
 Plugin URI: http://NinjaFirewall.com/
 Description: A true Web Application Firewall to protect and secure WordPress.
-Version: 1.5-RC2
+Version: 1.5-RC3
 Author: The Ninja Technologies Network
 Author URI: http://NinTechNet.com/
 License: GPLv2 or later
@@ -18,11 +18,11 @@ Domain Path: /languages
  |                                                                     |
  | (c) NinTechNet - http://nintechnet.com/                             |
  +---------------------------------------------------------------------+
- | REVISION: 2015-08-05 19:31:02                                       |
+ | REVISION: 2015-08-14 12:08:47                                       |
  +---------------------------------------------------------------------+
 */
-define( 'NFW_ENGINE_VERSION', '1.5-RC2' );
-define( 'NFW_RULES_VERSION',  '20150724.1' );
+define( 'NFW_ENGINE_VERSION', '1.5-RC3' );
+define( 'NFW_RULES_VERSION',  '20150813.3' );
  /*
  +---------------------------------------------------------------------+
  | This program is free software: you can redistribute it and/or       |
@@ -769,7 +769,7 @@ function ninjafirewall_admin_menu() {
 		add_menu_page( 'NinjaFirewall', 'NinjaFirewall', 'manage_options',
 			'NinjaFirewall', 'nf_menu_install',	plugins_url( '/images/nf_icon.png', __FILE__ )
 		);
-		add_submenu_page( 'NinjaFirewall', 'Installation', 'Installation', 'manage_options',
+		add_submenu_page( 'NinjaFirewall', __('Installation', 'ninjafirewall'), __('Installation', 'ninjafirewall'), 'manage_options',
 			'NinjaFirewall', 'nf_menu_install' );
 		return;
 	}
@@ -806,12 +806,12 @@ function ninjafirewall_admin_menu() {
 	add_action( 'load-' . $menu_hook, 'help_nfsubpolicies' );
 
 	// File Guard menu :
-	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: File Guard', 'File Guard', 'manage_options',
+	$menu_hook = add_submenu_page( 'NinjaFirewall',  __('NinjaFirewall: File Guard', 'ninjafirewall'), __( 'File Guard', 'ninjafirewall'), 'manage_options',
 		'nfsubfileguard', 'nf_sub_fileguard' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubfileguard' );
 
 	// File Check menu :
-	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: File Check', 'File Check', 'manage_options',
+	$menu_hook = add_submenu_page( 'NinjaFirewall',  __('NinjaFirewall: File Check', 'ninjafirewall'),  __('File Check', 'ninjafirewall'), 'manage_options',
 		'nfsubfilecheck', 'nf_sub_filecheck' );
 	add_action( 'load-' . $menu_hook, 'help_nfsubfilecheck' );
 
@@ -836,7 +836,7 @@ function ninjafirewall_admin_menu() {
 	add_action( 'load-' . $menu_hook, 'help_nfsublog' );
 
 	// Live log menu :
-	$menu_hook = add_submenu_page( 'NinjaFirewall', 'NinjaFirewall: Live Log', 'Live Log', 'manage_options',
+	$menu_hook = add_submenu_page( 'NinjaFirewall',  __('NinjaFirewall: Live Log', 'ninjafirewall'),  __('Live Log', 'ninjafirewall'), 'manage_options',
 		'nfsublive', 'nf_sub_live' );
 	add_action( 'load-' . $menu_hook, 'help_nfsublivelog' );
 
@@ -1321,7 +1321,7 @@ function httponly() {
 		$uploads = 1;
 	}
 	?>
-	<h3>Uploads</h3>
+	<h3><?php _e('Uploads', 'ninjafirewall') ?></h3>
 	<table class="form-table">
 		<tr>
 			<th scope="row"><?php _e('File Uploads', 'ninjafirewall') ?></th>
@@ -2661,7 +2661,7 @@ function nf_sub_fileguard() {
 				<th scope="row"><?php _e('Real-time detection', 'ninjafirewall') ?></th>
 				<td align="left">
 				<?php
-					printf( __('Monitor file activity and send an alert when someone is accessing a PHP script that was modified or created less than %s hour(s) ago.', 'ninjafirewall'), '<input maxlength="2" size="2" value="'. $nfw_options['fg_mtime'] .'" name="nfw_options[fg_mtime]" id="mtime" onkeyup="is_number(\'mtime\')" type="text" title="Enter a value from 1 to 99" />');
+					printf( __('Monitor file activity and send an alert when someone is accessing a PHP script that was modified or created less than %s hour(s) ago.', 'ninjafirewall'), '<input maxlength="2" size="2" value="'. $nfw_options['fg_mtime'] .'" name="nfw_options[fg_mtime]" id="mtime" onkeyup="is_number(\'mtime\')" type="text" />');
 				?>
 				</td>
 			</tr>
@@ -2841,7 +2841,6 @@ function nf_sub_loginprot() {
 		if (! $res ) {
 			echo '<div class="updated notice is-dismissible"><p>' . __('Your changes have been saved.', 'ninjafirewall') . '</p></div>';
 		} else {
-
 			echo '<div class="error notice is-dismissible"><p>' . $res . '</p></div>';
 		}
 	}
@@ -2907,7 +2906,7 @@ function nf_sub_loginprot() {
 		if (! e.value ) { return }
 		if (! /^[1-9][0-9]?$/.test(e.value) ) {
 			alert("<?php
-			// translators: quotes ('") must be escaped
+			// translators: quotes (') must be escaped
 			_e('Please enter a number from 1 to 99 in \'Password-protect\' field.', 'ninjafirewall') ?>");
 			e.value = e.value.substring(0, e.value.length-1);
 		}
@@ -2916,14 +2915,14 @@ function nf_sub_loginprot() {
 		var e = document.bp_form.elements['nfw_options[auth_name]'];
 		if ( e.value.match(/[^-\/\\_.a-zA-Z0-9]/) ) {
 			alert('<?php
-			// translators: quotes ('") must be escaped
+			// translators: quotes (') must be escaped
 			_e('Invalid character.', 'ninjafirewall') ?>');
 			e.value = e.value.replace(/[^-\/\\_.a-zA-Z0-9]/g,'');
 			return false;
 		}
 		if (e.value == 'admin') {
 			alert('<?php
-			// translators: quotes ('") must be escaped
+			// translators: quotes (') must be escaped
 			_e('"admin" is not acceptable, please choose another user name.', 'ninjafirewall') ?>');
 			e.value = '';
 			return false;
@@ -2933,7 +2932,7 @@ function nf_sub_loginprot() {
 		var e = document.bp_form.elements['nfw_options[auth_msg]'];
 		if ( e.value.match(/[^\x20-\x7e\x80-\xff]/) ) {
 			alert('<?php
-			// translators: quotes ('") must be escaped
+			// translators: quotes (') must be escaped
 			_e('Invalid character.', 'ninjafirewall') ?>');
 			e.value = e.value.replace(/[^\x20-\x7e\x80-\xff]/g,'');
 			return false;
@@ -2998,9 +2997,9 @@ function nf_sub_loginprot() {
 			<td align="left">
 			<?php
 				printf( __('For %1$s minutes, if more than %2$s %3$s requests within %4$s seconds.', 'ninjafirewall'),
-					'<input maxlength="2" size="2" value="'. $bf_bantime .'" name="nfw_options[bf_bantime]" id="ban1" onkeyup="is_number(\'ban1\')" type="text" title="Enter a value from 1 to 99" />',
-					'<input maxlength="2" size="2" value="'. $bf_attempt .'" name="nfw_options[bf_attempt]" id="ban2" onkeyup="is_number(\'ban2\')" type="text" title="Enter a value from 1 to 99" />', '<code id="get_post">'. $get_post .'</code>',
-					'<input maxlength="2" size="2" value="'. $bf_maxtime .'" name="nfw_options[bf_maxtime]" id="ban3" onkeyup="is_number(\'ban3\')" type="text" title="Enter a value from 1 to 99" />'
+					'<input maxlength="2" size="2" value="'. $bf_bantime .'" name="nfw_options[bf_bantime]" id="ban1" onkeyup="is_number(\'ban1\')" type="text" />',
+					'<input maxlength="2" size="2" value="'. $bf_attempt .'" name="nfw_options[bf_attempt]" id="ban2" onkeyup="is_number(\'ban2\')" type="text" />', '<code id="get_post">'. $get_post .'</code>',
+					'<input maxlength="2" size="2" value="'. $bf_maxtime .'" name="nfw_options[bf_maxtime]" id="ban3" onkeyup="is_number(\'ban3\')" type="text" />'
 				);
 			?>
 			</td>
@@ -3081,7 +3080,7 @@ function nf_sub_loginprot_save() {
 
 	// The directory must be writable :
 	if (! is_writable( NFW_LOG_DIR . '/nfwlog/cache' ) ) {
-		return( sprintf( __('Error : %s directory is not writable. Please chmod it to 0777.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/cache</code>') );
+		return( sprintf( __('Error: %s directory is not writable. Please chmod it to 0777.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/cache</code>') );
 	}
 
 	$nfw_options = get_option( 'nfw_options' );
@@ -3096,17 +3095,17 @@ function nf_sub_loginprot_save() {
 		// Remove all files :
 		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
 			if (! unlink( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php' ) ) {
-				return( sprintf( __('Error : %s is read-only and cannot be deleted. Please chmod it to 0777.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/cache/bf_conf.php</code>') );
+				return( sprintf( __('Error: %s is read-only and cannot be deleted. Please chmod it to 0777.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/cache/bf_conf.php</code>') );
 			}
 		}
 		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
 			if (! unlink( NFW_LOG_DIR . '/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand )) {
-				return( sprintf( __('Error : %s is read-only and cannot be deleted. Please chmod it to 0777.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand . '</code>') );
+				return( sprintf( __('Error: %s is read-only and cannot be deleted. Please chmod it to 0777.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/cache/bf_blocked' . $_SERVER['SERVER_NAME'] . $bf_rand . '</code>') );
 			}
 		}
 		if ( file_exists( NFW_LOG_DIR . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand ) ) {
 			if (! unlink( NFW_LOG_DIR . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand )) {
-				return( sprintf( __('Error : %s is read-only and cannot be deleted. Please chmod it to 0777.', 'ninjafirewall'), '<code>' . htmlspecialchars(NFW_LOG_DIR) . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand . '</code>') );
+				return( sprintf( __('Error: %s is read-only and cannot be deleted. Please chmod it to 0777.', 'ninjafirewall'), '<code>' . htmlspecialchars(NFW_LOG_DIR) . '/nfwlog/cache/bf_' . $_SERVER['SERVER_NAME'] . $bf_rand . '</code>') );
 			}
 		}
 		return 0;
@@ -3158,18 +3157,18 @@ function nf_sub_loginprot_save() {
 	}
 
 	if ( empty($_POST['nfw_options']['auth_name']) ) {
-		return( __('Error : please enter a user name for HTTP authentication.', 'ninjafirewall') );
+		return( __('Error: please enter a user name for HTTP authentication.', 'ninjafirewall') );
 	} elseif (! preg_match('`^[-/\\_.a-zA-Z0-9]{6,32}$`', $_POST['nfw_options']['auth_name']) ) {
-		return( __('Error : HTTP authentication user name is not valid.', 'ninjafirewall') );
+		return( __('Error: HTTP authentication user name is not valid.', 'ninjafirewall') );
 	}
 	$auth_name = $_POST['nfw_options']['auth_name'];
 
 	if ( empty($_POST['nfw_options']['auth_pass']) ) {
 		if ( empty($auth_name) || empty($auth_pass) ) {
-			return( __('Error : please enter a user name and password for HTTP authentication.', 'ninjafirewall') );
+			return( __('Error: please enter a user name and password for HTTP authentication.', 'ninjafirewall') );
 		}
 	} elseif ( (strlen($_POST['nfw_options']['auth_pass']) < 6 ) || (strlen($_POST['nfw_options']['auth_pass']) > 32 ) ) {
-		return( __('Error : password must be from 6 to 32 characters.', 'ninjafirewall') );
+		return( __('Error: password must be from 6 to 32 characters.', 'ninjafirewall') );
 	} else {
 		// Use stripslashes() to prevent WordPress from escaping the password:
 		$auth_pass = sha1( stripslashes( $_POST['nfw_options']['auth_pass'] ) );
@@ -3194,7 +3193,7 @@ function nf_sub_loginprot_save() {
 
 	$fh = fopen( NFW_LOG_DIR . '/nfwlog/cache/bf_conf.php', 'w' );
 	if (! $fh) {
-		return( sprintf( __('Error : unable to write to the %s configuration file', 'ninjafirewall'), '<code>' .
+		return( sprintf( __('Error: unable to write to the %s configuration file', 'ninjafirewall'), '<code>' .
 				htmlspecialchars(NFW_LOG_DIR) . '/nfwlog/cache/bf_conf.php</code>') );
 	}
 	fwrite( $fh, $data );
@@ -3305,11 +3304,11 @@ function nf_sub_edit() {
 			wp_nonce_ays('editor_save');
 		}
 		if ( $_POST['sel_e_r'] < 1 ) {
-			echo '<div class="error notice is-dismissible"><p>' . __('Error : you did not select a rule to disable.', 'ninjafirewall') .'</p></div>';
+			echo '<div class="error notice is-dismissible"><p>' . __('Error: you did not select a rule to disable.', 'ninjafirewall') .'</p></div>';
 		} else if ( ( $_POST['sel_e_r'] == 2 ) || ( $_POST['sel_e_r'] > 499 ) && ( $_POST['sel_e_r'] < 600 ) ) {
-			echo '<div class="error notice is-dismissible"><p>' . __('Error : to change this rule, use the "Firewall Policies" menu.', 'ninjafirewall') .'</p></div>';
+			echo '<div class="error notice is-dismissible"><p>' . __('Error: to change this rule, use the "Firewall Policies" menu.', 'ninjafirewall') .'</p></div>';
 		} else if (! isset( $nfw_rules[$_POST['sel_e_r']] ) ) {
-			echo '<div class="error notice is-dismissible"><p>' . __('Error : this rule does not exist.', 'ninjafirewall') .'</p></div>';
+			echo '<div class="error notice is-dismissible"><p>' . __('Error: this rule does not exist.', 'ninjafirewall') .'</p></div>';
 		} elseif ($_POST['sel_e_r'] != 999) {
 			$nfw_rules[$_POST['sel_e_r']]['on'] = 0;
 			$is_update = 1;
@@ -3320,11 +3319,11 @@ function nf_sub_edit() {
 			wp_nonce_ays('editor_save');
 		}
 		if ( $_POST['sel_d_r'] < 1 ) {
-			echo '<div class="error notice is-dismissible"><p>' . __('Error : you did not select a rule to enable.', 'ninjafirewall') .'</p></div>';
+			echo '<div class="error notice is-dismissible"><p>' . __('Error: you did not select a rule to enable.', 'ninjafirewall') .'</p></div>';
 		} else if ( ( $_POST['sel_d_r'] == 2 ) || ( $_POST['sel_d_r'] > 499 ) && ( $_POST['sel_d_r'] < 600 ) ) {
-			echo '<div class="error notice is-dismissible"><p>' . __('Error : to change this rule, use the "Firewall Policies" menu.', 'ninjafirewall') .'</p></div>';
+			echo '<div class="error notice is-dismissible"><p>' . __('Error: to change this rule, use the "Firewall Policies" menu.', 'ninjafirewall') .'</p></div>';
 		} else if (! isset( $nfw_rules[$_POST['sel_d_r']] ) ) {
-			echo '<div class="error notice is-dismissible"><p>' . __('Error : this rule does not exist.', 'ninjafirewall') .'</p></div>';
+			echo '<div class="error notice is-dismissible"><p>' . __('Error: this rule does not exist.', 'ninjafirewall') .'</p></div>';
 		} elseif ($_POST['sel_d_r'] != 999) {
 			$nfw_rules[$_POST['sel_d_r']]['on'] = 1;
 			$is_update = 1;

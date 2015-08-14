@@ -48,11 +48,11 @@ function nfw_admin_notice(){
 		}
 	}
 	if (! file_exists(NFW_LOG_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p><strong>' . __('NinjaFirewall error', 'ninjafirewall') . ' :</strong> ' .
+		echo '<div class="error notice is-dismissible"><p><strong>' . __('NinjaFirewall error', 'ninjafirewall') . ' :</strong> ' .
 			sprintf( __('%s directory cannot be created. Please review your installation and ensure that %s is writable.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/</code>',  '<code>/wp-content/</code>') . '</p></div>';
 	}
 	if (! is_writable(NFW_LOG_DIR . '/nfwlog') ) {
-		echo '<div class="error"><p><strong>' . __('NinjaFirewall error', 'ninjafirewall') . ' :</strong> ' .
+		echo '<div class="error notice is-dismissible"><p><strong>' . __('NinjaFirewall error', 'ninjafirewall') . ' :</strong> ' .
 			sprintf( __('%s directory is read-only. Please review your installation and ensure that %s is writable.', 'ninjafirewall'), '<code>'. htmlspecialchars(NFW_LOG_DIR) .'/nfwlog/</code>', '<code>/nfwlog/</code>') . '</p></div>';
 	}
 
@@ -81,7 +81,7 @@ function nfw_admin_notice(){
 	} else {
 		$msg = __('unknown error', 'ninjafirewall') . ' #' . NF_DISABLED;
 	}
-	echo '<div class="error"><p><strong>' . __('NinjaFirewall fatal error :', 'ninjafirewall') . '</strong> ' . $msg .
+	echo '<div class="error notice is-dismissible"><p><strong>' . __('NinjaFirewall fatal error:', 'ninjafirewall') . '</strong> ' . $msg .
 		'. ' . __('Review your installation, your site is not protected.', 'ninjafirewall') . '</p></div>';
 }
 

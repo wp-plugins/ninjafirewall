@@ -254,10 +254,10 @@ function help_nfsubpolicies() {
 
 function help_nfsubfileguard() {
 
-	// Web Filter :
+	// File Guard :
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'fileguard01',
-		'title'     => 'File Guard',
+		'title'     => __('File Guard', 'ninjafirewall'),
 		'content'   => '<br/>' .
 			__('File Guard can detect, in real-time, any access to a PHP file that was recently modified or created, and alert you about this.', 'ninjafirewall') .
 			'<br />' .
@@ -288,7 +288,7 @@ function help_nfsubfilecheck() {
 	// File check menu help :
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'filecheck01',
-		'title'     => 'File Check',
+		'title'     => __('File Check', 'ninjafirewall'),
 		'content'   => '<p>'. __('File Check lets you perform file integrity monitoring upon request or on a specific interval.', 'ninjafirewall') .
 			'<br />' .
 			__('You need to create a snapshot of all your files and then, at a later time, you can scan your system to compare it with the previous snapshot. Any modification will be immediately detected: file content, file permissions, file ownership, timestamp as well as file creation and deletion.', 'ninjafirewall') .'</p>' .
@@ -309,7 +309,6 @@ function help_nfsubfilecheck() {
 			__('Reports will be sent to the contact email address defined in the "Event Notifications" menu.', 'ninjafirewall'). '</p>'.
 
 			'<p><img src="' . plugins_url( '/images/icon_warn_16.png', __FILE__ ) . '" height="16" border="0" width="16">&nbsp;<span class="description">'. sprintf( __('Scheduled scans rely on <a href="%s">WordPress pseudo cron</a> which works only if your site gets sufficient traffic.', 'ninjafirewall'), 'http://codex.wordpress.org/Category:WP-Cron_Functions') . '</span></p>'
-
 	) );
 
 }
@@ -422,7 +421,7 @@ function help_nfsublivelog() {
 
 	get_current_screen()->add_help_tab( array(
 		'id'        => 'log01',
-		'title'     => 'Live Log',
+		'title'     => __('Live Log', 'ninjafirewall'),
 		'content'   =>
 			'<p>' .	__('Live Log lets you watch your website traffic in real time. It displays connections in a format similar to the one used by most HTTP server logs. Note that requests sent to static elements like JS/CSS files and images are not managed by NinjaFirewall.', 'ninjafirewall') .'</p>
 
@@ -523,7 +522,7 @@ function help_nfsubabout() {
 		<br/>
 		<li>Server-side scan&nbsp;: we will detect any modification of your files.</li>
 		<li>Adjustable scanning interval, from 15 to 180 minutes.</li>
-		<li>Unlimited number of files to monitor&nbsp;: 500, 5000 or even 50000+</li>
+		<li>Unlimited number of files to monitor: 500, 5000 or even 50000+</li>
 		<li>Fully configurable options&nbsp;: file extensions, exclusions, detection types etc.</li>
 		<li>Compatible with any shared hosting account offering either PHP or Perl/CGI.</li>
 		<li>Free trial.</li>

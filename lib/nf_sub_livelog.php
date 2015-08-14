@@ -259,7 +259,7 @@ $nfw_options = get_option('nfw_options');
 						<option value="10000"<?php selected($nfwintval, 10000) ?>><?php _e('10 seconds', 'ninjafirewall') ?></option>
 						<option value="20000"<?php selected($nfwintval, 20000) ?>><?php _e('20 seconds', 'ninjafirewall') ?></option>
 						<option value="45000"<?php selected($nfwintval, 45000) ?>><?php _e('45 seconds', 'ninjafirewall') ?></option>
-					</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button-secondary" name="livecls" value="Clear screen" onClick="cls()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label><input type="checkbox" name="livescroll" id="livescroll" value="1" onchange="is_scroll()" <?php checked($nfwscroll, 1)?>><?php _e('Autoscrolling', 'ninjafirewall') ?></label>
+					</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button-secondary" name="livecls" value="<?php _e('Clear screen', 'ninjafirewall') ?>" onClick="cls()"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label><input type="checkbox" name="livescroll" id="livescroll" value="1" onchange="is_scroll()" <?php checked($nfwscroll, 1)?>><?php _e('Autoscrolling', 'ninjafirewall') ?></label>
 				</p>
 				</center>
 			</td>
