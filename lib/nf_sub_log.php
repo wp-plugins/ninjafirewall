@@ -116,7 +116,7 @@ foreach ($avail_logs as $log_name => $tmp) {
 		echo ' selected';
 	}
 	$log_stat = stat($log_dir . $log_name);
-	echo '>' . str_replace('.php', '', $log_name) . ' (' . number_format($log_stat['size']) . __(' bytes', 'ninjafirewall') . ')</option>';
+	echo '>' . str_replace('.php', '', $log_name) . ' (' . number_format($log_stat['size']) .' '. __('bytes', 'ninjafirewall') . ')</option>';
 }
 echo '</select></center>';
 

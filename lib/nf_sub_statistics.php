@@ -171,7 +171,7 @@ function summary_stats_combo( $xtr ) {
 				if (preg_match( '/^(firewall_(\d{4})-(\d\d)\.php)$/', $file, $match ) ) {
 					$log_stat = stat( NFW_LOG_DIR . '/nfwlog/' . $file );
 					if ( $log_stat['size'] < 10 ) { continue; }
-					$month = date_i18n('F', mktime(0, 0, 0, $match[3], 1, 2000) );
+					$month = ucfirst( date_i18n('F', mktime(0, 0, 0, $match[3], 1, 2000) ) );
 					$avail_logs[$match[1] ] = $month . ' ' . $match[2];
 				}
 			}

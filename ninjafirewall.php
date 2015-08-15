@@ -1218,7 +1218,7 @@ function nf_sub_policies() {
 
 	$yes = __('Yes', 'ninjafirewall');
 	$no =  __('No', 'ninjafirewall');
-	$default =  __(' (default)', 'ninjafirewall');
+	$default =  ' ' . __('(default)', 'ninjafirewall');
 
 	$nfw_options = get_option( 'nfw_options' );
 	$nfw_rules = get_option( 'nfw_rules' );
@@ -1590,7 +1590,7 @@ function httponly() {
 				<label><input type="radio" name="nfw_options[referer_post]" value="1"<?php checked( $referer_post, 1 ) ?>>&nbsp;<?php _e('Yes', 'ninjafirewall') ?></label>
 			</td>
 			<td align="left" style="vertical-align:top;">
-				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php checked( $referer_post, 0 ) ?>>&nbsp;<?php _e('No (default)', 'ninjafirewall') ?></label><br /><span class="description">&nbsp;<?php _e('Keep this option disabled if you are using scripts like Paypal IPN, WordPress WP-Cron...', 'ninjafirewall') ?></span>
+				<label><input type="radio" name="nfw_options[referer_post]" value="0"<?php checked( $referer_post, 0 ) ?>>&nbsp;<?php _e('No (default)', 'ninjafirewall') ?></label><br /><span class="description">&nbsp;<?php _e('Keep this option disabled if you are using scripts like Paypal IPN, WordPress WP-Cron etc', 'ninjafirewall') ?></span>
 			</td>
 		</tr>
 	</table>

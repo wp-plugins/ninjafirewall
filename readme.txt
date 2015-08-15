@@ -120,6 +120,11 @@ If you need help, click on the *Help* menu tab located in the upper right corner
 It does not require a registration process or an activation key to be installed or used.
 Because **we do not collect any user data**, we do not even know that you are using (and hopefully enjoying !) our product.
 
+= Supported Languages =
+
+* English
+* French
+
 = Need more security ? =
 
 Check out our new supercharged edition: [NinjaFirewall WP+](http://ninjafirewall.com/wordpress/nfwplus.php "NinjaFirewall WP+")
